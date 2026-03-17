@@ -1,0 +1,5 @@
+LIBRARY "MuOffsetLogger"
+
+EXPORTS
+    StartLogging     @1
+    StopLogging      @2

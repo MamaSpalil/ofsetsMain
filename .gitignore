@@ -1,0 +1,35 @@
+# Build artifacts
+*.obj
+*.o
+*.lib
+*.dll
+*.exp
+*.pdb
+*.ilk
+*.idb
+*.suo
+*.sdf
+*.opensdf
+*.ncb
+*.user
+*.aps
+*.cachefile
+*.log
+*.tlog
+
+# Build directories
+Debug/
+Release/
+x64/
+Win32/
+ipch/
+
+# Visual Studio files
+*.suo
+*.sdf
+*.opensdf
+.vs/
+
+# Temporary files
+*.tmp
+~$*
