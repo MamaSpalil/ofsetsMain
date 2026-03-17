@@ -1,0 +1,1436 @@
+====================================================================================================
+  ПОЛНЫЙ СПИСОК ОФСЕТОВ (OFFSETS) — main.exe
+  MU Online Game Client — PE32 (GUI) Intel 80386, Windows
+  Размер файла: 4,316,672 байт (0x0041DC3D)
+  ImageBase: 0x00400000
+====================================================================================================
+
+Примечание:
+  File Offset — смещение в файле main.exe (физический адрес)
+  VA (Virtual Address) — виртуальный адрес в памяти после загрузки
+  RVA (Relative Virtual Address) — относительный виртуальный адрес (VA - ImageBase)
+
+
+====================================================================================================
+  1. ЗАГОЛОВКИ PE-ФАЙЛА (PE HEADERS)
+====================================================================================================
+
+--- 1.1 DOS Header ---
+  0x00000000  (File)  DOS Header (MZ Signature)
+  0x00000000  (File)  e_magic = 0x5A4D ('MZ') — сигнатура DOS-заголовка
+  0x00000100  (File)  e_lfanew = 0x00000100 — смещение до PE-заголовка
+
+--- 1.2 NT Headers (PE Signature + COFF Header) ---
+  0x00000100  (File)  PE Signature = 0x00004550 ('PE\0\0')
+  0x00000104  (File)  COFF File Header (IMAGE_FILE_HEADER)
+                      Machine: 0x014C (Intel 386)
+                      NumberOfSections: 10
+                      TimeDateStamp: 0x00000000
+                      Characteristics: 0x010F (EXEC, STRIPPED, 32-BIT)
+
+--- 1.3 Optional Header ---
+  0x00000118  (File)  Optional Header (IMAGE_OPTIONAL_HEADER)
+                      Magic: 0x010B (PE32)
+                      LinkerVersion: 6.0
+                      AddressOfEntryPoint: 0x08D7C200 (RVA)
+                      EntryPoint (VA): 0x0917C200 — точка входа (в секции .LibHook)
+                      BaseOfCode: 0x00001000 (RVA)
+                      BaseOfData: 0x003B3000 (RVA)
+                      ImageBase: 0x00400000 — базовый адрес загрузки
+                      SectionAlignment: 0x00001000 (4 KB)
+                      FileAlignment: 0x00000200 (512 B)
+                      SizeOfImage: 0x08D7D000
+                      SizeOfHeaders: 0x00000400
+                      Subsystem: 2 (Windows GUI)
+                      SizeOfStackReserve: 0x00100000 (1 MB)
+                      SizeOfHeapReserve: 0x00100000 (1 MB)
+
+--- 1.4 Data Directories ---
+  RVA: 0x07AEA000  Size: 0x00002126  Import Directory — Таблица импорта функций из DLL
+  RVA: 0x07AE7000  Size: 0x00002048  Resource Directory — Ресурсы (иконки, диалоги, версия)
+  RVA: 0x003B3620  Size: 0x0000001C  Debug Directory — Отладочная информация
+
+
+====================================================================================================
+  2. СЕКЦИИ (SECTIONS)
+====================================================================================================
+
+  Секция: .text
+    File Offset:     0x00000400
+    RVA:             0x00001000
+    VA:              0x00401000
+    Virtual Size:    0x003B2000
+    Raw Size:        0x003B1200
+    Characteristics: 0xE0000020
+    Описание:        Основной код программы (исполняемый)
+
+  Секция: .data
+    File Offset:     0x003B1600
+    RVA:             0x003B3000
+    VA:              0x007B3000
+    Virtual Size:    0x0001C000
+    Raw Size:        0x0001B800
+    Characteristics: 0xC0000040
+    Описание:        Глобальные переменные и данные (чтение/запись)
+
+  Секция: (без имени)
+    File Offset:     0x003CCE00
+    RVA:             0x003CF000
+    VA:              0x007CF000
+    Virtual Size:    0x07718000
+    Raw Size:        0x00023E00
+    Characteristics: 0xC0000040
+    Описание:        Неименованная секция данных (дополнительные данные)
+
+  Секция: .rsrc
+    File Offset:     0x003F0C00
+    RVA:             0x07AE7000
+    VA:              0x07EE7000
+    Virtual Size:    0x00003000
+    Raw Size:        0x00002200
+    Characteristics: 0xC0000040
+    Описание:        Ресурсы приложения (иконки, диалоги, информация о версии)
+
+  Секция: .idata
+    File Offset:     0x003F2E00
+    RVA:             0x07AEA000
+    VA:              0x07EEA000
+    Virtual Size:    0x00003000
+    Raw Size:        0x00002200
+    Characteristics: 0xE0000020
+    Описание:        Таблица импорта (Import Address Table)
+
+  Секция: .zero
+    File Offset:     0x003F5000
+    RVA:             0x07AED000
+    VA:              0x07EED000
+    Virtual Size:    0x01223000
+    Raw Size:        0x00000000
+    Characteristics: 0x00000000
+    Описание:        Пустая секция-заполнитель (защита ASProtect)
+
+  Секция: .as_0001
+    File Offset:     0x003F5000
+    RVA:             0x08D10000
+    VA:              0x09110000
+    Virtual Size:    0x0001E000
+    Raw Size:        0x0001CA00
+    Characteristics: 0xE0000020
+    Описание:        Секция ASProtect — код распаковщика/протектора (Borland Delphi runtime)
+
+  Секция: .zero
+    File Offset:     0x00411A00
+    RVA:             0x08D2E000
+    VA:              0x0912E000
+    Virtual Size:    0x00042000
+    Raw Size:        0x00000000
+    Characteristics: 0x00000000
+    Описание:        Пустая секция-заполнитель (защита ASProtect)
+
+  Секция: .as_0002
+    File Offset:     0x00411A00
+    RVA:             0x08D70000
+    VA:              0x09170000
+    Virtual Size:    0x0000C000
+    Raw Size:        0x0000C000
+    Characteristics: 0xE0000020
+    Описание:        Секция ASProtect — дополнительный код защиты и DLL-загрузчик
+
+  Секция: .LibHook
+    File Offset:     0x0041DA00
+    RVA:             0x08D7C000
+    VA:              0x0917C000
+    Virtual Size:    0x00001000
+    Raw Size:        0x0000023D
+    Characteristics: 0x60000060
+    Описание:        Секция перехвата DLL (LibHook) — точка входа и проверка main.dll
+
+
+====================================================================================================
+  3. ТАБЛИЦА ИМПОРТА (IMPORT TABLE) — IAT OFFSETS
+====================================================================================================
+
+  Формат: IAT VA — DLL — Функция (количество вызовов в .text)
+
+  --- advapi32.dll ---
+    0x007B3000  RegEnumValueA — вызовов: 0
+    0x007B3004  RegDeleteKeyA — вызовов: 1 (первый вызов: 0x0078350F)
+    0x007B3008  CryptGetHashParam — вызовов: 1 (первый вызов: 0x0077F560)
+    0x007B300C  CryptDeriveKey — вызовов: 2 (первый вызов: 0x0077EAA4)
+    0x007B3010  CryptDecrypt — вызовов: 2 (первый вызов: 0x0077EAD6)
+    0x007B3014  CryptImportKey — вызовов: 0
+    0x007B3018  CryptCreateHash — вызовов: 3 (первый вызов: 0x0077E754)
+    0x007B301C  CryptHashData — вызовов: 3 (первый вызов: 0x0077E780)
+    0x007B3020  CryptVerifySignatureA — вызовов: 2 (первый вызов: 0x0077E7AB)
+    0x007B3024  CryptDestroyHash — вызовов: 3 (первый вызов: 0x0077E740)
+    0x007B3028  CryptDestroyKey — вызовов: 3 (первый вызов: 0x0077E6B1)
+    0x007B302C  SetSecurityDescriptorDacl — вызовов: 2 (первый вызов: 0x0077A83D)
+    0x007B3030  InitializeSecurityDescriptor — вызовов: 2 (первый вызов: 0x0077A82A)
+    0x007B3034  GetUserNameA — вызовов: 1 (первый вызов: 0x0077B217)
+    0x007B3038  RegDeleteValueA — вызовов: 1 (первый вызов: 0x0077D0B2)
+    0x007B303C  CryptReleaseContext — вызовов: 1 (первый вызов: 0x0077E464)
+    0x007B3040  RegSetValueExA — вызовов: 6 (первый вызов: 0x004E0F9C)
+    0x007B3044  RegCreateKeyExA — вызовов: 11 (первый вызов: 0x004DC052)
+    0x007B3048  RegOpenKeyExA — вызовов: 3 (первый вызов: 0x004223A8)
+    0x007B304C  RegQueryValueExA — вызовов: 16 (первый вызов: 0x004223D4)
+    0x007B3050  RegCloseKey — вызовов: 18 (первый вызов: 0x0042246F)
+    0x007B3054  CryptAcquireContextA — вызовов: 6 (первый вызов: 0x0077E3ED)
+
+  --- dinput8.dll ---
+    0x007B305C  DirectInput8Create — вызовов: 0
+
+  --- dsound.dll ---
+    0x007B3064  DirectSoundCreate — вызовов: 0
+    0x007B3068  DirectSoundEnumerateA — вызовов: 0
+
+  --- gdi32.dll ---
+    0x007B3070  GetTextExtentPointA — вызовов: 80 (первый вызов: 0x004105EB)
+    0x007B3074  SelectObject — вызовов: 221 (первый вызов: 0x004088BA)
+    0x007B3078  SetBkColor — вызовов: 1 (первый вызов: 0x004DA3F7)
+    0x007B307C  SetPixelFormat — вызовов: 1 (первый вызов: 0x004DBB47)
+    0x007B3080  ChoosePixelFormat — вызовов: 1 (первый вызов: 0x004DBAF1)
+    0x007B3084  CreateFontA — вызовов: 5 (первый вызов: 0x004DD62C)
+    0x007B3088  GetTextExtentPoint32A — вызовов: 9 (первый вызов: 0x0046FE52)
+    0x007B308C  SwapBuffers — вызовов: 3 (первый вызов: 0x006CF9E6)
+    0x007B3090  SetTextAlign — вызовов: 1 (первый вызов: 0x0073CE48)
+    0x007B3094  GetTextExtentExPointA — вызовов: 1 (первый вызов: 0x0073D092)
+    0x007B3098  CreateFontIndirectA — вызовов: 1 (первый вызов: 0x0073D034)
+    0x007B309C  CreateCompatibleDC — вызовов: 3 (первый вызов: 0x00488EE5)
+    0x007B30A0  BitBlt — вызовов: 1 (первый вызов: 0x004896F9)
+    0x007B30A4  TextOutA — вызовов: 14 (первый вызов: 0x00470647)
+    0x007B30A8  SetTextColor — вызовов: 10 (первый вызов: 0x00470622)
+    0x007B30AC  CreateDIBSection — вызовов: 3 (первый вызов: 0x00488FCD)
+    0x007B30B0  SetBkMode — вызовов: 2 (первый вызов: 0x006B0024)
+    0x007B30B4  DeleteDC — вызовов: 3 (первый вызов: 0x004885EF)
+    0x007B30B8  DeleteObject — вызовов: 8 (первый вызов: 0x00488618)
+    0x007B30BC  GetStockObject — вызовов: 3 (первый вызов: 0x004DA40E)
+
+  --- glu32.dll ---
+    0x007B30C4  gluOrtho2D — вызовов: 0
+    0x007B30C8  gluPerspective — вызовов: 0
+
+  --- imm32.dll ---
+    0x007B30D0  ImmGetDefaultIMEWnd — вызовов: 0
+    0x007B30D4  ImmReleaseContext — вызовов: 0
+    0x007B30D8  ImmGetCompositionStringA — вызовов: 0
+    0x007B30DC  ImmGetCompositionWindow — вызовов: 0
+    0x007B30E0  ImmSetCompositionWindow — вызовов: 0
+    0x007B30E4  ImmGetProperty — вызовов: 0
+    0x007B30E8  ImmSetOpenStatus — вызовов: 0
+    0x007B30EC  ImmGetConversionStatus — вызовов: 0
+    0x007B30F0  ImmSetConversionStatus — вызовов: 0
+    0x007B30F4  ImmGetContext — вызовов: 0
+    0x007B30F8  ImmGetDescriptionA — вызовов: 0
+    0x007B30FC  ImmGetIMEFileNameA — вызовов: 0
+    0x007B3100  ImmNotifyIME — вызовов: 0
+    0x007B3104  ImmGetOpenStatus — вызовов: 0
+
+  --- kernel32.dll ---
+    0x007B310C  CreateThread — вызовов: 3 (первый вызов: 0x0077A575)
+    0x007B3110  OpenMutexA — вызовов: 0
+    0x007B3114  EnterCriticalSection — вызовов: 10 (первый вызов: 0x00779CAF)
+    0x007B3118  LeaveCriticalSection — вызовов: 10 (первый вызов: 0x00779DCB)
+    0x007B311C  lstrcatA — вызовов: 0
+    0x007B3120  OpenEventA — вызовов: 3 (первый вызов: 0x007788E3)
+    0x007B3124  TerminateThread — вызовов: 2 (первый вызов: 0x0077A6B8)
+    0x007B3128  CreateMutexA — вызовов: 0
+    0x007B312C  ReleaseMutex — вызовов: 1 (первый вызов: 0x0077AA11)
+    0x007B3130  WaitForSingleObject — вызовов: 10 (первый вызов: 0x00778904)
+    0x007B3134  GetComputerNameA — вызовов: 1 (первый вызов: 0x0077B1F8)
+    0x007B3138  lstrcmpA — вызовов: 1 (первый вызов: 0x0077AE5A)
+    0x007B313C  ExitProcess — вызовов: 4 (первый вызов: 0x0077B72A)
+    0x007B3140  VirtualAlloc — вызовов: 4 (первый вызов: 0x0077D18E)
+    0x007B3144  VirtualFree — вызовов: 6 (первый вызов: 0x0077D1AA)
+    0x007B3148  VirtualProtect — вызовов: 2 (первый вызов: 0x0077D1CD)
+    0x007B314C  LoadLibraryExA — вызовов: 0
+    0x007B3150  GetTempFileNameA — вызовов: 1 (первый вызов: 0x0077D2F3)
+    0x007B3154  GetTempPathA — вызовов: 2 (первый вызов: 0x0077D2E4)
+    0x007B3158  HeapFree — вызовов: 8 (первый вызов: 0x0077D444)
+    0x007B315C  GetCurrentThreadId — вызовов: 6 (первый вызов: 0x00402A04)
+    0x007B3160  GetTickCount — вызовов: 77 (первый вызов: 0x0040C5BE)
+    0x007B3164  Sleep — вызовов: 8 (первый вызов: 0x00414330)
+    0x007B3168  lstrlenA — вызовов: 123 (первый вызов: 0x0041901A)
+    0x007B316C  CloseHandle — вызовов: 54 (первый вызов: 0x0041F4EA)
+    0x007B3170  WriteFile — вызовов: 16 (первый вызов: 0x0041F4E0)
+    0x007B3174  SetFilePointer — вызовов: 6 (первый вызов: 0x0041F4BF)
+    0x007B3178  CreateFileA — вызовов: 24 (первый вызов: 0x0041F4AC)
+    0x007B317C  DeleteFileA — вызовов: 4 (первый вызов: 0x004217F4)
+    0x007B3180  ReadFile — вызовов: 15 (первый вызов: 0x00421757)
+    0x007B3184  GetLocalTime — вызовов: 11 (первый вызов: 0x00421CC7)
+    0x007B3188  GetSystemDirectoryA — вызовов: 4 (первый вызов: 0x004220A6)
+    0x007B318C  lstrcmpiA — вызовов: 3 (первый вызов: 0x004223EE)
+    0x007B3190  GetVersionExA — вызовов: 5 (первый вызов: 0x0042218B)
+    0x007B3194  QueryPerformanceCounter — вызовов: 6 (первый вызов: 0x0042263C)
+    0x007B3198  SetProcessAffinityMask — вызовов: 4 (первый вызов: 0x00422630)
+    0x007B319C  SetThreadPriority — вызовов: 4 (первый вызов: 0x00422622)
+    0x007B31A0  SetPriorityClass — вызовов: 4 (первый вызов: 0x00422616)
+    0x007B31A4  GetProcessAffinityMask — вызовов: 2 (первый вызов: 0x00422607)
+    0x007B31A8  GetThreadPriority — вызовов: 2 (первый вызов: 0x004225EB)
+    0x007B31AC  GetPriorityClass — вызовов: 2 (первый вызов: 0x004225DE)
+    0x007B31B0  GetCurrentThread — вызовов: 3 (первый вызов: 0x004225D1)
+    0x007B31B4  GetCurrentProcess — вызовов: 3 (первый вызов: 0x004225C8)
+    0x007B31B8  GetProcessHeap — вызовов: 1 (первый вызов: 0x0077D43D)
+    0x007B31BC  OutputDebugStringA — вызовов: 10 (первый вызов: 0x00422C6C)
+    0x007B31C0  FreeLibrary — вызовов: 23 (первый вызов: 0x00422C61)
+    0x007B31C4  GetProcAddress — вызовов: 5 (первый вызов: 0x00422C3E)
+    0x007B31C8  LoadLibraryA — вызовов: 8 (первый вызов: 0x00422C11)
+    0x007B31CC  GlobalMemoryStatus — вызовов: 2 (первый вызов: 0x00423172)
+    0x007B31D0  GlobalUnlock — вызовов: 1 (первый вызов: 0x004886C8)
+    0x007B31D4  GlobalLock — вызовов: 1 (первый вызов: 0x0048866B)
+    0x007B31D8  GetCommandLineA — вызовов: 5 (первый вызов: 0x004D936F)
+    0x007B31DC  GetFileSize — вызовов: 7 (первый вызов: 0x004D9641)
+    0x007B31E0  GetLastError — вызовов: 41 (первый вызов: 0x004DBAAE)
+    0x007B31E4  GetPrivateProfileStringA — вызовов: 1 (первый вызов: 0x004DBEC6)
+    0x007B31E8  GetCurrentDirectoryA — вызовов: 1 (первый вызов: 0x004DBE47)
+    0x007B31EC  CopyFileA — вызовов: 2 (первый вызов: 0x004DC48D)
+    0x007B31F0  SetFileAttributesA — вызовов: 2 (первый вызов: 0x004DC455)
+    0x007B31F4  Process32Next — вызовов: 0
+    0x007B31F8  TerminateProcess — вызовов: 3 (первый вызов: 0x004DC588)
+    0x007B31FC  OpenProcess — вызовов: 1 (первый вызов: 0x004DC56A)
+    0x007B3200  Process32First — вызовов: 0
+    0x007B3204  CreateToolhelp32Snapshot — вызовов: 0
+    0x007B3208  WinExec — вызовов: 2 (первый вызов: 0x004DC947)
+    0x007B320C  FindClose — вызовов: 4 (первый вызов: 0x004DC7BC)
+    0x007B3210  FindFirstFileA — вызовов: 3 (первый вызов: 0x004DC797)
+    0x007B3214  GetModuleFileNameA — вызовов: 8 (первый вызов: 0x004E5653)
+    0x007B3218  IsBadReadPtr — вызовов: 23 (первый вызов: 0x006E222B)
+    0x007B321C  GetModuleHandleA — вызовов: 10 (первый вызов: 0x0071A561)
+    0x007B3220  GetNumberFormatA — вызовов: 1 (первый вызов: 0x0073C731)
+    0x007B3224  CreateEventA — вызовов: 3 (первый вызов: 0x0077A542)
+    0x007B3228  CreateProcessA — вызовов: 2 (первый вызов: 0x00778E0B)
+    0x007B322C  WaitForMultipleObjects — вызовов: 2 (первый вызов: 0x00778E91)
+    0x007B3230  GetExitCodeProcess — вызовов: 3 (первый вызов: 0x00778EA5)
+    0x007B3234  ResetEvent — вызовов: 1 (первый вызов: 0x007795A2)
+    0x007B3238  ResumeThread — вызовов: 1 (первый вызов: 0x007797C4)
+    0x007B323C  SetEndOfFile — вызовов: 5 (первый вызов: 0x007781C8)
+    0x007B3240  DeleteCriticalSection — вызовов: 8 (первый вызов: 0x007781E3)
+    0x007B3244  InitializeCriticalSection — вызовов: 8 (первый вызов: 0x00777E43)
+    0x007B3248  SetEvent — вызовов: 4 (первый вызов: 0x00777EF0)
+    0x007B324C  WideCharToMultiByte — вызовов: 10 (первый вызов: 0x00777D93)
+    0x007B3250  CreateFileMappingA — вызовов: 2 (первый вызов: 0x00775209)
+    0x007B3254  UnmapViewOfFile — вызовов: 3 (первый вызов: 0x00775285)
+    0x007B3258  MapViewOfFile — вызовов: 2 (первый вызов: 0x007752C0)
+    0x007B325C  FindNextFileA — вызовов: 2 (первый вызов: 0x00774C71)
+    0x007B3260  RemoveDirectoryA — вызовов: 1 (первый вызов: 0x00774CC8)
+    0x007B3264  GetFileAttributesA — вызовов: 1 (первый вызов: 0x007953D3)
+    0x007B3268  CreateDirectoryA — вызовов: 3 (первый вызов: 0x00774974)
+    0x007B326C  GetThreadContext — вызовов: 1 (первый вызов: 0x0077470B)
+    0x007B3270  lstrcpynA — вызовов: 0
+    0x007B3274  GetCurrentProcessId — вызовов: 3 (первый вызов: 0x007715E3)
+    0x007B3278  Module32First — вызовов: 0
+    0x007B327C  Module32Next — вызовов: 0
+    0x007B3280  SetUnhandledExceptionFilter — вызовов: 7 (первый вызов: 0x0077101A)
+    0x007B3284  GetOEMCP — вызовов: 0
+    0x007B3288  IsValidLocale — вызовов: 1 (первый вызов: 0x0079B804)
+    0x007B328C  IsValidCodePage — вызовов: 1 (первый вызов: 0x0079B7EE)
+    0x007B3290  GetLocaleInfoA — вызовов: 6 (первый вызов: 0x0079BEB2)
+    0x007B3294  EnumSystemLocalesA — вызовов: 3 (первый вызов: 0x0079B945)
+    0x007B3298  GetUserDefaultLCID — вызовов: 1 (первый вызов: 0x0079BD43)
+    0x007B329C  SetHandleCount — вызовов: 1 (первый вызов: 0x0079C162)
+    0x007B32A0  GetFileType — вызовов: 4 (первый вызов: 0x0079C0BA)
+    0x007B32A4  GetEnvironmentVariableA — вызовов: 1 (первый вызов: 0x0079D3C2)
+    0x007B32A8  HeapDestroy — вызовов: 2 (первый вызов: 0x0079D506)
+    0x007B32AC  HeapCreate — вызовов: 1 (первый вызов: 0x0079D4C7)
+    0x007B32B0  GetACP — вызовов: 0
+    0x007B32B4  IsBadWritePtr — вызовов: 4 (первый вызов: 0x0079E2C3)
+    0x007B32B8  UnhandledExceptionFilter — вызовов: 1 (первый вызов: 0x0079F0B9)
+    0x007B32BC  FreeEnvironmentStringsA — вызовов: 1 (первый вызов: 0x0079F57A)
+    0x007B32C0  FreeEnvironmentStringsW — вызовов: 1 (первый вызов: 0x0079F529)
+    0x007B32C4  GetEnvironmentStrings — вызовов: 2 (первый вызов: 0x0079F48A)
+    0x007B32C8  GetEnvironmentStringsW — вызовов: 0
+    0x007B32CC  GetStringTypeA — вызовов: 4 (первый вызов: 0x007A08CE)
+    0x007B32D0  GetStringTypeW — вызовов: 4 (первый вызов: 0x007A08B4)
+    0x007B32D4  IsBadCodePtr — вызовов: 1 (первый вызов: 0x007A0A00)
+    0x007B32D8  SetEnvironmentVariableA — вызовов: 1 (первый вызов: 0x007A3619)
+    0x007B32DC  SetConsoleCtrlHandler — вызовов: 1 (первый вызов: 0x007A399F)
+    0x007B32E0  GetLocaleInfoW — вызовов: 5 (первый вызов: 0x007A4369)
+    0x007B32E4  HeapAlloc — вызовов: 7 (первый вызов: 0x00794C08)
+    0x007B32E8  GetFileInformationByHandle — вызовов: 1 (первый вызов: 0x0077D961)
+    0x007B32EC  DuplicateHandle — вызовов: 2 (первый вызов: 0x0077DD99)
+    0x007B32F0  SetStdHandle — вызовов: 4 (первый вызов: 0x0077DD6C)
+    0x007B32F4  CreatePipe — вызовов: 2 (первый вызов: 0x0077DD53)
+    0x007B32F8  GetStdHandle — вызовов: 4 (первый вызов: 0x0077DD32)
+    0x007B32FC  PeekNamedPipe — вызовов: 1 (первый вызов: 0x0077E044)
+    0x007B3300  FlushFileBuffers — вызовов: 2 (первый вызов: 0x0077EB71)
+    0x007B3304  lstrcpyA — вызовов: 2 (первый вызов: 0x0077F807)
+    0x007B3308  InterlockedExchange — вызовов: 2 (первый вызов: 0x007842E9)
+    0x007B330C  InterlockedDecrement — вызовов: 19 (первый вызов: 0x007903F4)
+    0x007B3310  InterlockedIncrement — вызовов: 19 (первый вызов: 0x00786DB7)
+    0x007B3314  MultiByteToWideChar — вызовов: 13 (первый вызов: 0x007907F8)
+    0x007B3318  RtlUnwind — вызовов: 0
+    0x007B331C  GetTimeZoneInformation — вызовов: 3 (первый вызов: 0x00792E64)
+    0x007B3320  GetSystemTime — вызовов: 1 (первый вызов: 0x00792E0F)
+    0x007B3324  RaiseException — вызовов: 2 (первый вызов: 0x00793ED3)
+    0x007B3328  GetStartupInfoA — вызовов: 2 (первый вызов: 0x007945A1)
+    0x007B332C  GetVersion — вызовов: 1 (первый вызов: 0x00794516)
+    0x007B3330  GetSystemTimeAsFileTime — вызовов: 1 (первый вызов: 0x007950ED)
+    0x007B3334  HeapReAlloc — вызовов: 4 (первый вызов: 0x00795E46)
+    0x007B3338  FatalAppExitA — вызовов: 1 (первый вызов: 0x007963EF)
+    0x007B333C  LCMapStringA — вызовов: 5 (первый вызов: 0x0079645F)
+    0x007B3340  LCMapStringW — вызовов: 6 (первый вызов: 0x00796443)
+    0x007B3344  GetCPInfo — вызовов: 4 (первый вызов: 0x007974C0)
+    0x007B3348  CompareStringA — вызовов: 2 (первый вызов: 0x00797411)
+    0x007B334C  CompareStringW — вызовов: 2 (первый вызов: 0x007973F4)
+    0x007B3350  TlsSetValue — вызовов: 3 (первый вызов: 0x00797EFA)
+    0x007B3354  TlsAlloc — вызовов: 1 (первый вызов: 0x00797ED2)
+    0x007B3358  TlsFree — вызовов: 1 (первый вызов: 0x00797F30)
+    0x007B335C  SetLastError — вызовов: 1 (первый вызов: 0x00797FAD)
+    0x007B3360  TlsGetValue — вызовов: 2 (первый вызов: 0x00797F61)
+    0x007B3364  HeapSize — вызовов: 1 (первый вызов: 0x0079869B)
+    0x007B3368  QueryPerformanceFrequency — вызовов: 3 (первый вызов: 0x004225B5)
+
+  --- opengl32.dll ---
+    0x007B3370  glColor3f — вызовов: 292 (первый вызов: 0x00408813)
+    0x007B3374  glEnd — вызовов: 60 (первый вызов: 0x0041D356)
+    0x007B3378  glVertex3fv — вызовов: 131 (первый вызов: 0x0041D34E)
+    0x007B337C  glTexCoord2f — вызовов: 146 (первый вызов: 0x0041D337)
+    0x007B3380  glBegin — вызовов: 59 (первый вызов: 0x0041D2D6)
+    0x007B3384  glColor3fv — вызовов: 50 (первый вызов: 0x0041E268)
+    0x007B3388  glGetIntegerv — вызовов: 2 (первый вызов: 0x00421E4F)
+    0x007B338C  glGetString — вызовов: 4 (первый вызов: 0x00421DF4)
+    0x007B3390  glAlphaFunc — вызовов: 5 (первый вызов: 0x0042A8DC)
+    0x007B3394  glFogf — вызовов: 4 (первый вызов: 0x0044399B)
+    0x007B3398  glFogfv — вызовов: 2 (первый вызов: 0x0044398B)
+    0x007B339C  glEnable — вызовов: 51 (первый вызов: 0x0044397C)
+    0x007B33A0  glDisable — вызовов: 24 (первый вызов: 0x004439CB)
+    0x007B33A4  glClearColor — вызовов: 12 (первый вызов: 0x004517E0)
+    0x007B33A8  glTexImage2D — вызовов: 12 (первый вызов: 0x004707A4)
+    0x007B33AC  glBindTexture — вызовов: 19 (первый вызов: 0x00470764)
+    0x007B33B0  glVertex3f — вызовов: 10 (первый вызов: 0x00475180)
+    0x007B33B4  glDepthMask — вызовов: 4 (первый вызов: 0x0047725A)
+    0x007B33B8  glPolygonMode — вызовов: 2 (первый вызов: 0x00477252)
+    0x007B33BC  glFrontFace — вызовов: 3 (первый вызов: 0x00477393)
+    0x007B33C0  glStencilFunc — вызовов: 2 (первый вызов: 0x0047732E)
+    0x007B33C4  glColorMask — вызовов: 2 (первый вызов: 0x0047731F)
+    0x007B33C8  glVertex2f — вызовов: 28 (первый вызов: 0x004774D5)
+    0x007B33CC  glDepthFunc — вызовов: 7 (первый вызов: 0x004773FF)
+    0x007B33D0  glStencilOp — вызовов: 3 (первый вызов: 0x004773F4)
+    0x007B33D4  glTexParameteri — вызовов: 21 (первый вызов: 0x00486E2B)
+    0x007B33D8  glTexEnvf — вызовов: 3 (первый вызов: 0x00486E16)
+    0x007B33DC  glPixelStorei — вызовов: 1 (первый вызов: 0x00486E01)
+    0x007B33E0  glDeleteTextures — вызовов: 5 (первый вызов: 0x00487BED)
+    0x007B33E4  glIsTexture — вызовов: 3 (первый вызов: 0x00487BCA)
+    0x007B33E8  glColor4ub — вызовов: 42 (первый вызов: 0x0048B7BE)
+    0x007B33EC  glLoadIdentity — вызовов: 15 (первый вызов: 0x004BA59C)
+    0x007B33F0  glMatrixMode — вызовов: 18 (первый вызов: 0x004BA596)
+    0x007B33F4  glPopMatrix — вызовов: 17 (первый вызов: 0x004BF4C4)
+    0x007B33F8  glClear — вызовов: 5 (первый вызов: 0x004BF3EC)
+    0x007B33FC  glTranslatef — вызовов: 13 (первый вызов: 0x004BF2E9)
+    0x007B3400  glRotatef — вызовов: 9 (первый вызов: 0x004BF2C3)
+    0x007B3404  glPushMatrix — вызовов: 17 (первый вызов: 0x004BF1F6)
+    0x007B3408  wglDeleteContext — вызовов: 1 (первый вызов: 0x004D917C)
+    0x007B340C  wglMakeCurrent — вызовов: 2 (первый вызов: 0x004D9146)
+    0x007B3410  wglCreateContext — вызовов: 1 (первый вызов: 0x004DBB91)
+    0x007B3414  glScalef — вызовов: 1 (первый вызов: 0x0051A2CF)
+    0x007B3418  glGenTextures — вызовов: 5 (первый вызов: 0x0057E2AE)
+    0x007B341C  glTexEnvi — вызовов: 2 (первый вызов: 0x005925D4)
+    0x007B3420  glReadPixels — вызовов: 2 (первый вызов: 0x006B7ABC)
+    0x007B3424  glGetFloatv — вызовов: 1 (первый вызов: 0x006B7B29)
+    0x007B3428  glBlendFunc — вызовов: 6 (первый вызов: 0x006B8264)
+    0x007B342C  glViewport — вызовов: 2 (первый вызов: 0x006B85D0)
+    0x007B3430  glFogi — вызовов: 1 (первый вызов: 0x006B87FB)
+    0x007B3434  glFlush — вызовов: 3 (первый вызов: 0x006CF9DB)
+    0x007B3438  glTexSubImage2D — вызовов: 1 (первый вызов: 0x0073CA44)
+    0x007B343C  glColor4f — вызовов: 190 (первый вызов: 0x00411590)
+
+  --- shell32.dll ---
+    0x007B3444  ShellExecuteA — вызовов: 1 (первый вызов: 0x006B77C1)
+    0x007B3448  ShellExecuteExA — вызовов: 1 (первый вызов: 0x007A4B4C)
+
+  --- user32.dll ---
+    0x007B3450  GetFocus — вызовов: 13 (первый вызов: 0x004890D8)
+    0x007B3454  UnregisterHotKey — вызовов: 1 (первый вызов: 0x00476F34)
+    0x007B3458  RegisterHotKey — вызовов: 1 (первый вызов: 0x00476EDF)
+    0x007B345C  GetAsyncKeyState — вызовов: 76 (первый вызов: 0x00423548)
+    0x007B3460  GetKeyboardLayout — вызовов: 2 (первый вызов: 0x00421ED5)
+    0x007B3464  GetKeyboardLayoutNameA — вызовов: 1 (первый вызов: 0x00421F5B)
+    0x007B3468  OpenClipboard — вызовов: 1 (первый вызов: 0x00488648)
+    0x007B346C  SendMessageA — вызовов: 72 (первый вызов: 0x0040AFD9)
+    0x007B3470  wsprintfA — вызовов: 113 (первый вызов: 0x004088A4)
+    0x007B3474  GetWindowRect — вызовов: 3 (первый вызов: 0x00402B0F)
+    0x007B3478  SetWindowPos — вызовов: 2 (первый вызов: 0x00402C1F)
+    0x007B347C  CallNextHookEx — вызовов: 2 (первый вызов: 0x00402C54)
+    0x007B3480  UnhookWindowsHookEx — вызовов: 2 (первый вызов: 0x00402A4A)
+    0x007B3484  SetWindowsHookExA — вызовов: 2 (первый вызов: 0x00402A14)
+    0x007B3488  GetDesktopWindow — вызовов: 2 (первый вызов: 0x00402979)
+    0x007B348C  MessageBoxA — вызовов: 72 (первый вызов: 0x004029AE)
+    0x007B3490  SetWindowLongA — вызовов: 3 (первый вызов: 0x004885C9)
+    0x007B3494  CallWindowProcA — вызовов: 3 (первый вызов: 0x00488A6C)
+    0x007B3498  GetWindowLongA — вызовов: 1 (первый вызов: 0x004886F0)
+    0x007B349C  GetCaretPos — вызовов: 2 (первый вызов: 0x00488B27)
+    0x007B34A0  GetWindowTextA — вызовов: 1 (первый вызов: 0x00488BE3)
+    0x007B34A4  SetWindowTextA — вызовов: 2 (первый вызов: 0x00488C0B)
+    0x007B34A8  ShowWindow — вызовов: 7 (первый вызов: 0x00489058)
+    0x007B34AC  ReleaseDC — вызовов: 2 (первый вызов: 0x00489030)
+    0x007B34B0  CloseClipboard — вызовов: 1 (первый вызов: 0x004886CE)
+    0x007B34B4  CreateWindowExA — вызовов: 5 (первый вызов: 0x00488E93)
+    0x007B34B8  PostMessageA — вызовов: 12 (первый вызов: 0x0048914F)
+    0x007B34BC  SetFocus — вызовов: 20 (первый вызов: 0x0048910C)
+    0x007B34C0  IsWindowVisible — вызовов: 1 (первый вызов: 0x00489197)
+    0x007B34C4  GetScrollPos — вызовов: 1 (первый вызов: 0x00489AF2)
+    0x007B34C8  SetScrollPos — вызовов: 1 (первый вызов: 0x0048A5EB)
+    0x007B34CC  SetTimer — вызовов: 7 (первый вызов: 0x0048C428)
+    0x007B34D0  ShowCursor — вызовов: 3 (первый вызов: 0x004D9228)
+    0x007B34D4  ChangeDisplaySettingsA — вызовов: 3 (первый вызов: 0x004D9220)
+    0x007B34D8  SystemParametersInfoA — вызовов: 5 (первый вызов: 0x004DA023)
+    0x007B34DC  ReleaseCapture — вызовов: 3 (первый вызов: 0x004DA824)
+    0x007B34E0  SetCapture — вызовов: 3 (первый вызов: 0x004DA7C0)
+    0x007B34E4  DefWindowProcA — вызовов: 3 (первый вызов: 0x004DA60A)
+    0x007B34E8  PostQuitMessage — вызовов: 1 (первый вызов: 0x004DA4B1)
+    0x007B34EC  EndPaint — вызовов: 1 (первый вызов: 0x004DA445)
+    0x007B34F0  BeginPaint — вызовов: 1 (первый вызов: 0x004DA42E)
+    0x007B34F4  DestroyWindow — вызовов: 1 (первый вызов: 0x004DBA51)
+    0x007B34F8  RegisterClassA — вызовов: 2 (первый вызов: 0x004DB9C1)
+    0x007B34FC  LoadCursorA — вызовов: 2 (первый вызов: 0x004DB99C)
+    0x007B3500  LoadIconA — вызовов: 2 (первый вызов: 0x004DB98C)
+    0x007B3504  SetForegroundWindow — вызовов: 2 (первый вызов: 0x004DBC3E)
+    0x007B3508  GetSystemMetrics — вызовов: 4 (первый вызов: 0x004DBD4F)
+    0x007B350C  AdjustWindowRect — вызовов: 2 (первый вызов: 0x004DBD07)
+    0x007B3510  IsIconic — вызовов: 1 (первый вызов: 0x004DE40E)
+    0x007B3514  DispatchMessageA — вызовов: 1 (первый вызов: 0x004DE268)
+    0x007B3518  TranslateMessage — вызовов: 1 (первый вызов: 0x004DE25B)
+    0x007B351C  GetDC — вызовов: 2 (первый вызов: 0x00488ED8)
+    0x007B3520  GetClipboardData — вызовов: 1 (первый вызов: 0x00488658)
+    0x007B3524  GetMessageA — вызовов: 1 (первый вызов: 0x004DE245)
+    0x007B3528  PeekMessageA — вызовов: 1 (первый вызов: 0x004DE22E)
+    0x007B352C  UpdateWindow — вызовов: 1 (первый вызов: 0x004DD4E5)
+    0x007B3530  EnumDisplaySettingsA — вызовов: 2 (первый вызов: 0x004DD160)
+    0x007B3534  SetCursorPos — вызовов: 4 (первый вызов: 0x004F554B)
+    0x007B3538  SetRect — вызовов: 10 (первый вызов: 0x0059FBFA)
+    0x007B353C  OffsetRect — вызовов: 1 (первый вызов: 0x006DBF8D)
+    0x007B3540  PtInRect — вызовов: 15 (первый вызов: 0x006DBF1A)
+    0x007B3544  GetDoubleClickTime — вызовов: 1 (первый вызов: 0x006DC399)
+    0x007B3548  ScreenToClient — вызовов: 3 (первый вызов: 0x006DC37A)
+    0x007B354C  GetCursorPos — вызовов: 3 (первый вызов: 0x006DC366)
+    0x007B3550  GetActiveWindow — вызовов: 1 (первый вызов: 0x006DCA52)
+    0x007B3554  IntersectRect — вызовов: 1 (первый вызов: 0x006FBFFD)
+    0x007B3558  ClientToScreen — вызовов: 1 (первый вызов: 0x00719C70)
+    0x007B355C  KillTimer — вызовов: 2 (первый вызов: 0x0074996A)
+    0x007B3560  wvsprintfA — вызовов: 2 (первый вызов: 0x0041F52A)
+    0x007B3564  FindWindowA — вызовов: 11 (первый вызов: 0x004D9051)
+
+  --- version.dll ---
+    0x007B356C  VerQueryValueA — вызовов: 0
+    0x007B3570  GetFileVersionInfoSizeA — вызовов: 0
+    0x007B3574  GetFileVersionInfoA — вызовов: 0
+
+  --- winmm.dll ---
+    0x007B357C  mmioAscend — вызовов: 1 (первый вызов: 0x00420FC5)
+    0x007B3580  mmioOpenA — вызовов: 2 (первый вызов: 0x00420E4E)
+    0x007B3584  mmioClose — вызовов: 18 (первый вызов: 0x00420E1B)
+    0x007B3588  timeGetTime — вызовов: 59 (первый вызов: 0x00405772)
+    0x007B358C  mmioDescend — вызовов: 3 (первый вызов: 0x00420E8A)
+    0x007B3590  mmioRead — вызовов: 2 (первый вызов: 0x00420F41)
+    0x007B3594  timeGetDevCaps — вызовов: 2 (первый вызов: 0x0047C8B3)
+    0x007B3598  timeBeginPeriod — вызовов: 1 (первый вызов: 0x0047C8BD)
+    0x007B359C  mmioWrite — вызовов: 9 (первый вызов: 0x00421130)
+    0x007B35A0  timeEndPeriod — вызовов: 1 (первый вызов: 0x0047C953)
+
+  --- ws2_32.dll ---
+    0x007B35A8  gethostbyname — вызовов: 1 (первый вызов: 0x0051038A)
+    0x007B35AC  WSAAsyncSelect — вызовов: 1 (первый вызов: 0x00510446)
+    0x007B35B0  setsockopt — вызовов: 1 (первый вызов: 0x0051022F)
+    0x007B35B4  socket — вызовов: 1 (первый вызов: 0x0051014A)
+    0x007B35B8  shutdown — вызовов: 1 (первый вызов: 0x005100B4)
+    0x007B35BC  recv — вызовов: 2 (первый вызов: 0x005100DE)
+    0x007B35C0  WSASend — вызовов: 0
+    0x007B35C4  WSAStartup — вызовов: 1 (первый вызов: 0x0050FFD2)
+    0x007B35C8  WSACleanup — вызовов: 2 (первый вызов: 0x0051003C)
+    0x007B35CC  send — вызовов: 508 (первый вызов: 0x00403D5A)
+    0x007B35D0  WSAGetLastError — вызовов: 514 (первый вызов: 0x00403D6D)
+    0x007B35D4  inet_addr — вызовов: 1 (первый вызов: 0x00510377)
+    0x007B35D8  htons — вызовов: 1 (первый вызов: 0x00510369)
+    0x007B35DC  connect — вызовов: 1 (первый вызов: 0x00510406)
+    0x007B35E0  closesocket — вызовов: 5 (первый вызов: 0x0051010A)
+
+  --- ole32.dll ---
+    0x007B35E8  CoUninitialize — вызовов: 1 (первый вызов: 0x00423022)
+    0x007B35EC  CoCreateInstance — вызовов: 1 (первый вызов: 0x00422FD1)
+    0x007B35F0  CoInitialize — вызовов: 2 (первый вызов: 0x0041FA28)
+
+  --- wzaudio.dll ---
+    0x007B35F8  wzAudioStop — вызовов: 0
+    0x007B35FC  wzAudioPlay — вызовов: 0
+    0x007B3600  wzAudioGetStreamOffsetRange — вызовов: 0
+    0x007B3604  wzAudioDestroy — вызовов: 0
+    0x007B3608  wzAudioOption — вызовов: 0
+    0x007B360C  wzAudioCreate — вызовов: 0
+
+
+====================================================================================================
+  4. ТОЧКА ВХОДА И ЗАЩИТА (ENTRY POINT / PROTECTION)
+====================================================================================================
+
+  0x0917C200  (VA)    AddressOfEntryPoint — точка входа программы (в секции .LibHook)
+  0x0041DC00  (File)  Файловое смещение точки входа
+  0x0917C000  (VA)    .LibHook секция — проверка main.dll и перехват
+  0x0041DA00  (File)  Начало секции .LibHook
+    Содержит строки:
+      0x0917C000 (VA): 'main.dll' — имя перехватываемой библиотеки
+      0x0917C032 (VA): 'Main.dll Incorrect' — сообщение об ошибке проверки
+
+  --- ASProtect (Антиотладка / Упаковщик) ---
+  0x09110000  (VA)    .as_0001 секция — код ASProtect распаковщика
+  0x003F5000  (File)  Файловое смещение .as_0001
+  0x09170000  (VA)    .as_0002 секция — дополнительный код защиты
+  0x00411A00  (File)  Файловое смещение .as_0002
+
+  Обнаруженные строки антиотладки:
+    0x09174654 (VA): 'Debugger detected - please close it down and restart!'
+    0x091746BD (VA): 'WinIce/SoftIce service installed means that you are running a debugger!'
+    0x09174A8D (VA): 'Debugger detected - please close it down and restart!' (копия)
+    0x0917A701 (VA): 'Debugger detected - please close it down and restart!' (копия)
+
+  Borland Delphi Runtime (внутри ASProtect):
+    0x09112980 (VA): 'SOFTWARE\Borland\Delphi\RTL'
+    0x091141DC (VA): 'Software\Borland\Locales'
+    0x091141F8 (VA): 'Software\Borland\Delphi\Locales'
+    0x091133FA (VA): 'Portions Copyright (c) 1983,97 Borland'
+
+
+====================================================================================================
+  5. СЕРВЕРЫ ПОДКЛЮЧЕНИЯ (CONNECTION SERVERS)
+====================================================================================================
+
+  0x003D05C0  (File)  0x007D27C0  (VA)  'connect.muonline.co.kr' — Корейский сервер MU Online
+  0x003D05F2  (File)  0x007D27F2  (VA)  'connect.globalmuonline.com' — Глобальный сервер MU Online
+  0x003D0624  (File)  0x007D2824  (VA)  'connection.muonline.com.tw' — Тайваньский сервер MU Online
+  0x003D0656  (File)  0x007D2856  (VA)  'connect.muchina.com' — Китайский сервер MU Online
+  0x003D06BA  (File)  0x007D28BA  (VA)  'cs.muonline.in.th' — Тайский сервер MU Online
+  0x003D06EC  (File)  0x007D28EC  (VA)  'connect.muonline.com.ph' — Филиппинский сервер MU Online
+
+
+====================================================================================================
+  6. СЕТЬ И ПАКЕТЫ (NETWORK / PACKETS)
+====================================================================================================
+
+  0x003D16DC  (File)  0x007D38DC  (VA)  — Формат строки подключения (IP и порт)
+    Строка: '[Virtual Connection] Connect IP : %s, Port : %d'
+
+  0x003D19C4  (File)  0x007D3BC4  (VA)  — Подключение к серверу с IP и портом
+    Строка: '[Connect to Server] ip address = %s, port = %d'
+
+  0x003D19F8  (File)  0x007D3BF8  (VA)  — Ошибка подключения к серверу
+    Строка: 'Failed to connect.'
+
+  0x003D1A0C  (File)  0x007D3C0C  (VA)  — Успешное получение списка серверов
+    Строка: 'Success Receive Server List.'
+
+  0x003D1A2C  (File)  0x007D3C2C  (VA)  — Получение подключения к серверу
+    Строка: '[ReceiveServerConnect]'
+
+  0x003D1A44  (File)  0x007D3C44  (VA)  — Ошибка соединения
+    Строка: 'Connectting error.'
+
+  0x003D1A58  (File)  0x007D3C58  (VA)  — Несовпадение версии — подключение к серверу
+    Строка: 'Version dismatch - Join server.'
+
+  0x003D1AB8  (File)  0x007D3CB8  (VA)  — Отправка запроса списка серверов
+    Строка: 'Send Request Server List.'
+
+  0x003D1D1C  (File)  0x007D3F1C  (VA)  — Ошибка дешифрации пакета (серийный номер)
+    Строка: 'Decrypt error : g_byPacketSerialRecv'
+
+  0x003D1D6C  (File)  0x007D3F6C  (VA)  — Получен неизвестный/повреждённый пакет
+    Строка: 'Strange packet'
+
+  0x003D1D80  (File)  0x007D3F80  (VA)  — Несовпадение версии при входе
+    Строка: 'Version dismatch. - Login'
+
+  0x003D1DF4  (File)  0x007D3FF4  (VA)  — Версия Winsock слишком низкая
+    Строка: 'Winsock version low.'
+
+  0x003D1E50  (File)  0x007D4050  (VA)  — Сокет закрыт, очистка очереди пакетов
+    Строка: '[Socket Closed][Clear PacketQueue]'
+
+  0x003D1E94  (File)  0x007D4094  (VA)  — Ошибка отправки пакета (Winsock)
+    Строка: '[Send Packet Error] WSAGetLastError() != WSAEWOULDBLOCK'
+
+  0x003D1ED0  (File)  0x007D40D0  (VA)  — Переполнение буфера отправки пакетов
+    Строка: '[Send Packet Error] SendBuffer Overflow'
+
+  0x003D1EFC  (File)  0x007D40FC  (VA)  — Функция send() вернула 0
+    Строка: 'send() result is zero'
+
+  0x003D1F14  (File)  0x007D4114  (VA)  — Ошибка записи в сокет
+    Строка: 'FD_WRITE Send Error = %d'
+
+  0x003D1F94  (File)  0x007D4194  (VA)  — Переполнение буфера приёма пакетов
+    Строка: 'Receive Packet Buffer Overflow'
+
+  0x003CD85C  (File)  0x007CFA5C  (VA)  — Переполнение буфера отправки (ShopModule)
+    Строка: '[Send Packet Error] SendBuffer Overflow'
+
+  0x003CD888  (File)  0x007CFA88  (VA)  — Ошибка Winsock (ShopModule)
+    Строка: '[Send Packet Error] WSAGetLastError() != WSAEWOULDBLOCK'
+
+
+====================================================================================================
+  7. GAMEGUARD / ЗАЩИТА ОТ ЧИТОВ
+====================================================================================================
+
+  0x003D0B18  (File)  0x007D2D18  (VA)  'GameGuard Error : %lu' — ошибка GameGuard (nProtect)
+  0x003D18EA  (File)  0x007D3AEA  (VA)  'gg connect Window Handle' — дескриптор окна GameGuard
+
+
+====================================================================================================
+  8. АВТОРИЗАЦИЯ И ВХОД (LOGIN / AUTH)
+====================================================================================================
+
+  0x003D14DC  (File)  0x007D36DC  (VA)  'LOGIN' — Строка-маркер экрана входа
+  0x003D12DC  (File)  0x007D34DC  (VA)  'MU launching' — Строка запуска MU
+  0x003D17B0  (File)  0x007D39B0  (VA)  'Mu online %s (%s) executed. (%d.%d.%d.%d)' — Формат строки запуска с версией
+  0x003D15C4  (File)  0x007D37C4  (VA)  'Win MU' — Заголовок/класс окна игры
+  0x003D12A8  (File)  0x007D34A8  (VA)  'MuPlayer' — Идентификатор объекта MuPlayer
+  0x003D1064  (File)  0x007D3264  (VA)  'mu.exe' — Имя исполняемого файла
+  0x003D1078  (File)  0x007D3278  (VA)  'MuJP' — Маркер японской версии
+  0x003D1684  (File)  0x007D3884  (VA)  'MU Auto Update' — Заголовок окна автообновления
+  0x003E336C  (File)  0x007E556C  (VA)  'Logo\Login_Back01.jpg' — Фон экрана входа (изображение 1)
+  0x003E3384  (File)  0x007E5584  (VA)  'Logo\Login_Back02.jpg' — Фон экрана входа (изображение 2)
+  0x003E34C4  (File)  0x007E56C4  (VA)  'Interface\login_back.tga' — Интерфейс экрана входа (фон)
+  0x003E34E0  (File)  0x007E56E0  (VA)  'Interface\login_me.tga' — Интерфейс экрана входа (элемент)
+  0x003E6540  (File)  0x007E8740  (VA)  '> Login Scene init success.' — Успешная инициализация сцены входа
+  0x003E6B84  (File)  0x007E8D84  (VA)  '> Login Request.' — Запрос на вход в систему
+
+
+====================================================================================================
+  9. КОНФИГУРАЦИЯ И РЕЕСТР (CONFIG / REGISTRY)
+====================================================================================================
+
+  0x003D1278  (File)  0x007D3478  (VA)  'SOFTWARE\Webzen\Mu\Config' — Путь реестра — основная конфигурация MU
+  0x003D14F0  (File)  0x007D36F0  (VA)  'SOFTWARE\Webzen\Mu\Config' — Путь реестра — конфигурация (дубль)
+  0x003D1908  (File)  0x007D3B08  (VA)  'SOFTWARE\Webzen\Mu\Config' — Путь реестра — конфигурация (дубль)
+  0x003EC7CC  (File)  0x007EE9CC  (VA)  'SOFTWARE\Webzen\Mu\Connection' — Путь реестра — настройки соединения
+  0x003D1528  (File)  0x007D3728  (VA)  'Resolution' — Ключ реестра — разрешение экрана
+  0x003D1534  (File)  0x007D3734  (VA)  'ColorDepth' — Ключ реестра — глубина цвета
+  0x003D1548  (File)  0x007D3748  (VA)  'WindowMode' — Ключ реестра — оконный режим
+  0x003D151C  (File)  0x007D371C  (VA)  'MusicOnOff' — Ключ реестра — включение/выключение музыки
+  0x003D14D4  (File)  0x007D36D4  (VA)  'Version' — Ключ реестра — версия клиента
+  0x003D1540  (File)  0x007D3740  (VA)  'TextOut' — Ключ реестра — метод отрисовки текста
+
+
+====================================================================================================
+  10. КРИПТОГРАФИЯ И ЦЕЛОСТНОСТЬ (CRYPTOGRAPHY / INTEGRITY)
+====================================================================================================
+
+  0x003EB748  (File)  0x007ED948  (VA)  'Microsoft Base Cryptographic Provider v1.0' — Криптопровайдер Windows (CryptoAPI)
+  0x003D17DC  (File)  0x007D39DC  (VA)  'Data\Enc1.dat' — Файл ключей шифрования (encryption)
+  0x003D17EC  (File)  0x007D39EC  (VA)  'Data\Dec2.dat' — Файл ключей дешифрации (decryption)
+  0x003D6E94  (File)  0x007D9094  (VA)  'devilkey.smd' — Файл ключей Devil Square (шифрование)
+  0x003E9970  (File)  0x007EBB70  (VA)  'CheckSumTable dismatched.' — Ошибка — несовпадение контрольной суммы
+  0x003E998C  (File)  0x007EBB8C  (VA)  'Couldn't generate CheckSumTable.' — Ошибка генерации таблицы контрольных сумм
+  0x003E9A1C  (File)  0x007EBC1C  (VA)  'Couldn't generate CheckSumTable from resource files.' — Ошибка генерации КС из файлов ресурсов
+  0x003D0C04  (File)  0x007D2E04  (VA)  '@ CheckKeyIntegrity - player key dismatch' — Проверка целостности ключа игрока (несовпадение)
+  0x003D0C6C  (File)  0x007D2E6C  (VA)  '@ CheckKeyIntegrity - player type invalid' — Проверка целостности — недопустимый тип игрока
+  0x003CD8C4  (File)  0x007CFAC4  (VA)  'Hash table full!!! - Insert' — Хеш-таблица переполнена (вставка)
+  0x003CD8E4  (File)  0x007CFAE4  (VA)  'Hash table full!!! - GetIndex' — Хеш-таблица переполнена (получение индекса)
+
+
+====================================================================================================
+  11. РЕНДЕРИНГ / OPENGL
+====================================================================================================
+
+  0x003CE4E0  (File)  0x007D06E0  (VA)  '<OpenGL information>' — Заголовок секции информации OpenGL
+  0x003CE508  (File)  0x007D0708  (VA)  'Render : %s' — Строка рендерера (видеокарта)
+  0x003CE518  (File)  0x007D0718  (VA)  'OpenGL version : %s' — Версия OpenGL
+  0x003CE530  (File)  0x007D0730  (VA)  'Max Texture size : %d x %d' — Максимальный размер текстур
+  0x003CE550  (File)  0x007D0750  (VA)  'Max Viewport size : %d x %d' — Максимальный размер viewport
+  0x003D1894  (File)  0x007D3A94  (VA)  '> Screen size = %d x %d.' — Размер экрана (разрешение)
+  0x003D18B0  (File)  0x007D3AB0  (VA)  '> Start window success.' — Успешное создание окна
+  0x003D11E4  (File)  0x007D33E4  (VA)  'GL - Release Rendering Context Failed' — Ошибка освобождения контекста рендеринга
+  0x003D12F8  (File)  0x007D34F8  (VA)  'Create OpenGL Window For Savage Test.' — Создание тестового окна OpenGL
+
+
+====================================================================================================
+  12. ИГРОВЫЕ КАРТЫ (GAME MAPS)
+====================================================================================================
+
+  0x003CF3EC  (File)  0x007D15EC  (VA)  'World%d' — Шаблон пути карты мира (World1, World2...)
+  0x003D0960  (File)  0x007D2B60  (VA)  'Arena' — Карта Арена
+  0x003D0968  (File)  0x007D2B68  (VA)  'Devias2' — Карта Devias 2
+  0x003D0970  (File)  0x007D2B70  (VA)  'Devias3' — Карта Devias 3
+  0x003D0978  (File)  0x007D2B78  (VA)  'Devias4' — Карта Devias 4
+  0x003D0980  (File)  0x007D2B80  (VA)  'Dungeon2' — Карта Подземелье 2
+  0x003D098C  (File)  0x007D2B8C  (VA)  'Dungeon3' — Карта Подземелье 3
+  0x003D0998  (File)  0x007D2B98  (VA)  'Atlans' — Карта Атлантида
+  0x003D09A0  (File)  0x007D2BA0  (VA)  'Atlans2' — Карта Атлантида 2
+  0x003D09A8  (File)  0x007D2BA8  (VA)  'Atlans3' — Карта Атлантида 3
+  0x003D09B0  (File)  0x007D2BB0  (VA)  'LostTower2' — Карта Потерянная Башня 2
+  0x003D09BC  (File)  0x007D2BBC  (VA)  'LostTower3' — Карта Потерянная Башня 3
+  0x003D09C8  (File)  0x007D2BC8  (VA)  'LostTower4' — Карта Потерянная Башня 4
+  0x003D09D4  (File)  0x007D2BD4  (VA)  'LostTower5' — Карта Потерянная Башня 5
+  0x003D09E0  (File)  0x007D2BE0  (VA)  'LostTower6' — Карта Потерянная Башня 6
+  0x003D09EC  (File)  0x007D2BEC  (VA)  'LostTower7' — Карта Потерянная Башня 7
+  0x003D09F8  (File)  0x007D2BF8  (VA)  'Tarkan' — Карта Таркан
+  0x003D0A00  (File)  0x007D2C00  (VA)  'Tarkan2' — Карта Таркан 2
+  0x003D0A08  (File)  0x007D2C08  (VA)  'Icarus' — Карта Икар
+  0x003D0A1C  (File)  0x007D2C1C  (VA)  'Aida1' — Карта Аида 1
+  0x003D0A24  (File)  0x007D2C24  (VA)  'Crywolf' — Карта Крайвулф
+  0x003D0A2C  (File)  0x007D2C2C  (VA)  'Aida2' — Карта Аида 2
+  0x003D0A34  (File)  0x007D2C34  (VA)  'Kanturu_ruin1' — Карта Кантуру Руины 1
+  0x003D0A44  (File)  0x007D2C44  (VA)  'Kanturu_ruin2' — Карта Кантуру Руины 2
+  0x003D0A54  (File)  0x007D2C54  (VA)  'Kanturu_Remain' — Карта Кантуру Останки
+  0x003DDEDC  (File)  0x007E00DC  (VA)  'World31\Map2.jpg' — Карта мира 31 (изображение)
+
+
+====================================================================================================
+  13. ФАЙЛЫ ДАННЫХ КАРТ (TERRAIN / ATTRIBUTES)
+====================================================================================================
+
+  0x003CF3F4  (File)  0x007D15F4  (VA)  'Data\%s\EncTerrain%d.att' — Зашифрованные атрибуты террейна
+  0x003E1A54  (File)  0x007E3C54  (VA)  'EncTerrain%d.map' — Зашифрованная карта террейна
+  0x003E1A88  (File)  0x007E3C88  (VA)  'EncTerrain%d.att' — Зашифрованные атрибуты террейна (дубль)
+  0x003E1B80  (File)  0x007E3D80  (VA)  'EncTerrain%d.obj' — Зашифрованные объекты террейна
+  0x003E1BAC  (File)  0x007E3DAC  (VA)  'TerrainHeight.bmp' — Высотная карта террейна
+  0x003E1EB0  (File)  0x007E40B0  (VA)  'Data2\%s\TerrainHeight.bmp' — Высотная карта (альтернативный путь)
+
+
+====================================================================================================
+  14. ПРЕДМЕТЫ (ITEMS)
+====================================================================================================
+
+  0x003CD93C  (File)  0x007CFB3C  (VA)  'Data\Item\' — Путь к данным предметов
+  0x003CDA78  (File)  0x007CFC78  (VA)  'Data\Local\ItemSetTypeTest.bmd' — Тестовый файл типов наборов предметов
+  0x003CDA98  (File)  0x007CFC98  (VA)  'Data\Local\ItemSetOptionTest.bmd' — Тестовый файл опций наборов предметов
+  0x003CDABC  (File)  0x007CFCBC  (VA)  'Data\Local\ItemSetType.bmd' — Файл типов наборов предметов
+  0x003CDAD8  (File)  0x007CFCD8  (VA)  'Data\Local\ItemSetOption.bmd' — Файл опций наборов предметов
+  0x003D0934  (File)  0x007D2B34  (VA)  'Data\Local\Mix.bmd' — Файл рецептов комбинирования (Chaos Machine)
+
+
+====================================================================================================
+  15. МОДЕЛИ ПЕРСОНАЖЕЙ (PLAYER MODELS)
+====================================================================================================
+
+  0x003D3FDC  (File)  0x007D61DC  (VA)  'Data2\Player\BodyFemale.smd' — Модель женского тела персонажа
+  0x003D3FF8  (File)  0x007D61F8  (VA)  'Data2\Player\set_01.smd' — Модель набора экипировки 01
+  0x003D4030  (File)  0x007D6230  (VA)  'Data2\Player\stop_female_01.smd' — Анимация остановки (женский персонаж)
+  0x003D4050  (File)  0x007D6250  (VA)  'Data2\Player\stop_sword_01.smd' — Анимация остановки (с мечом)
+  0x003D40C8  (File)  0x007D62C8  (VA)  'Data2\Player\stop_bow_01.smd' — Анимация остановки (с луком)
+  0x003D4104  (File)  0x007D6304  (VA)  'Data2\Player\stop_fly_01.smd' — Анимация остановки (полёт)
+  0x003D4144  (File)  0x007D6344  (VA)  'Data2\Player\uniconp_stop.smd' — Анимация остановки на маунте (Uniria)
+  0x003D4164  (File)  0x007D6364  (VA)  'Data2\Player\uniconp_stop_weapon.smd' — Анимация остановки на маунте с оружием
+  0x003D418C  (File)  0x007D638C  (VA)  'Data2\Player\run_male_01.smd' — Анимация бега (мужской персонаж)
+  0x003D41C8  (File)  0x007D63C8  (VA)  'Data2\Player\run_sword_01.smd' — Анимация бега (с мечом)
+  0x003D4234  (File)  0x007D6434  (VA)  'Data2\Player\run_bow_01.smd' — Анимация бега (с луком)
+  0x003D4360  (File)  0x007D6560  (VA)  'Data2\Player\run_fly_01.smd' — Анимация бега (полёт)
+  0x003D439C  (File)  0x007D659C  (VA)  'Data2\Player\uniconp_run.smd' — Анимация бега на маунте (Uniria)
+  0x003D43BC  (File)  0x007D65BC  (VA)  'Data2\Player\uniconp_run_weapon.smd' — Анимация бега на маунте с оружием
+  0x003D43E0  (File)  0x007D65E0  (VA)  'Data2\Player\attack_fist.smd' — Анимация атаки кулаком
+
+
+====================================================================================================
+  16. NPC И МОНСТРЫ (NPC / MONSTERS)
+====================================================================================================
+
+  0x003CF3B4  (File)  0x007D15B4  (VA)  'Data\Npc\' — Путь к данным NPC
+  0x003CEA74  (File)  0x007D0C74  (VA)  'Monster94_zx' — Модель монстра 94 (кость)
+  0x003CEA84  (File)  0x007D0C84  (VA)  'Monster94_zx01' — Модель монстра 94 (кость 01)
+  0x003CF900  (File)  0x007D1B00  (VA)  'Monster100_Footstepst' — Шаги монстра 100
+  0x003CF918  (File)  0x007D1B18  (VA)  'Monster100_L_Hand' — Левая рука монстра 100
+  0x003CF92C  (File)  0x007D1B2C  (VA)  'Monster100_R_Hand' — Правая рука монстра 100
+  0x003CF940  (File)  0x007D1B40  (VA)  'Monster100_Pelvis' — Таз монстра 100
+  0x003CF954  (File)  0x007D1B54  (VA)  'Monster100_Head' — Голова монстра 100
+  0x003CF9A4  (File)  0x007D1BA4  (VA)  'Monster101_L_Arm' — Левая рука монстра 101
+  0x003CF9B8  (File)  0x007D1BB8  (VA)  'Monster101_R_Arm' — Правая рука монстра 101
+  0x003CF9CC  (File)  0x007D1BCC  (VA)  'Monster101_Head' — Голова монстра 101
+  0x003CF9DC  (File)  0x007D1BDC  (VA)  'Monster102_Footstepst' — Шаги монстра 102
+  0x003CF9F4  (File)  0x007D1BF4  (VA)  'Monster102_Head' — Голова монстра 102
+  0x003CFA04  (File)  0x007D1C04  (VA)  'Monster104_Horn0' — Рог 0 монстра 104
+  0x003CFA94  (File)  0x007D1C94  (VA)  'Monster105_R_Eye' — Правый глаз монстра 105
+  0x003CFAA8  (File)  0x007D1CA8  (VA)  'Monster105_L_Eye' — Левый глаз монстра 105
+  0x003CEFC0  (File)  0x007D11C0  (VA)  'KANTURU2ND_ENTER_NPC_1' — NPC входа в Кантуру 2 (позиция 1)
+  0x003CEFD8  (File)  0x007D11D8  (VA)  'KANTURU2ND_ENTER_NPC_2' — NPC входа в Кантуру 2 (позиция 2)
+  0x003CEFF0  (File)  0x007D11F0  (VA)  'KANTURU2ND_ENTER_NPC_3' — NPC входа в Кантуру 2 (позиция 3)
+
+
+====================================================================================================
+  17. ГИЛЬДИЯ, ГРУППА, МАГАЗИН (GUILD / PARTY / SHOP)
+====================================================================================================
+
+  0x003D1B34  (File)  0x007D3D34  (VA)  'GuildAssign' — Назначение гильдии
+  0x003D1B48  (File)  0x007D3D48  (VA)  'GuildRelationShipResult' — Результат отношений гильдий
+  0x003D2C69  (File)  0x007D4E69  (VA)  'GuildWar' — Война гильдий
+  0x003DC69B  (File)  0x007DE89B  (VA)  'Guild' — Маркер гильдии
+  0x003E39CE  (File)  0x007E5BCE  (VA)  'Guild.jpg' — Интерфейс гильдии (изображение)
+  0x003E386B  (File)  0x007E5A6B  (VA)  'Party.jpg' — Интерфейс группы (изображение)
+  0x003CD800  (File)  0x007CFA00  (VA)  'ShopModule' — Модуль магазина (Shop)
+  0x003D0BC8  (File)  0x007D2DC8  (VA)  '@ AddShopTitle - player key dismatch' — Ошибка ключа при добавлении магазина
+  0x003E6F00  (File)  0x007E9100  (VA)  '@ OpenPersonalShop : SendRequestInventory' — Открытие персонального магазина
+  0x003D1BB7  (File)  0x007D3DB7  (VA)  'PersonalShop (result : %d)' — Результат персонального магазина
+
+
+====================================================================================================
+  18. ЗВУК (SOUND / AUDIO)
+====================================================================================================
+
+  0x003CDDAC  (File)  0x007CFFAC  (VA)  'Init - DS SetCooperativeLevel Error' — Ошибка инициализации DirectSound (уровень кооперации)
+  0x003CDDD4  (File)  0x007CFFD4  (VA)  'Init - DS CreateSoundBuffer Error' — Ошибка создания буфера DirectSound
+  0x003CDE34  (File)  0x007D0034  (VA)  'Failed to create Direct Sound buffer [%s]' — Ошибка создания буфера DS
+  0x003CE94C  (File)  0x007D0B4C  (VA)  'Couldn't GetProcAddress DInputCreate' — Ошибка получения адреса DirectInput
+  0x003CE974  (File)  0x007D0B74  (VA)  'Couldn't Set coop level' — Ошибка установки уровня кооперации DirectInput
+  0x003E5F89  (File)  0x007E8189  (VA)  'Lorencia.mp3' — Музыка — карта Lorencia
+  0x003E5FA3  (File)  0x007E81A3  (VA)  'Devias.mp3' — Музыка — карта Devias
+  0x003E5FBB  (File)  0x007E81BB  (VA)  'Noria.mp3' — Музыка — карта Noria
+  0x003E5FD3  (File)  0x007E81D3  (VA)  'Dungeon.mp3' — Музыка — Подземелье
+  0x003E60EB  (File)  0x007E82EB  (VA)  'Aida.mp3' — Музыка — карта Aida
+  0x003E61D3  (File)  0x007E83D3  (VA)  'KanturuMayaBattle.mp3' — Музыка — битва Maya (Кантуру)
+  0x003E61F7  (File)  0x007E83F7  (VA)  'KanturuNightmareBattle.mp3' — Музыка — битва Nightmare (Кантуру)
+  0x003E621F  (File)  0x007E841F  (VA)  'KanturuTower.mp3' — Музыка — Башня Кантуру
+  0x003E6261  (File)  0x007E8461  (VA)  'Refuge.mp3' — Музыка — Убежище
+  0x003DD698  (File)  0x007DF898  (VA)  'BloodCastle.wav' — Звук — Кровавый Замок
+  0x003E00C8  (File)  0x007E22C8  (VA)  'ChaosCastle.wav' — Звук — Замок Хаоса
+  0x003E0290  (File)  0x007E2490  (VA)  'Kalima.wav' — Звук — Калима
+
+
+====================================================================================================
+  19. ИНТЕРФЕЙС (UI / INTERFACE)
+====================================================================================================
+
+  0x003E1F08  (File)  0x007E4108  (VA)  'Interface\Skill.jpg' — Интерфейс навыков
+  0x003E1F1C  (File)  0x007E411C  (VA)  'Interface\Skill2.jpg' — Интерфейс навыков 2
+  0x003E1F34  (File)  0x007E4134  (VA)  'Interface\command.jpg' — Интерфейс команд
+  0x003E1F4C  (File)  0x007E414C  (VA)  'Interface\Item_Back01.jpg' — Фон предметов
+  0x003E3A10  (File)  0x007E5C10  (VA)  'Interface\nis_rsframe.tga' — Рамка интерфейса
+  0x003E3A2C  (File)  0x007E5C2C  (VA)  'Interface\nis_vframe.jpg' — Вертикальная рамка
+  0x003E3C38  (File)  0x007E5E38  (VA)  'Interface\DuelWindow.jpg' — Окно дуэли
+  0x003E4D84  (File)  0x007E6F84  (VA)  'Interface\frame.tga' — Основная рамка
+  0x003E4E30  (File)  0x007E7030  (VA)  'Interface\b_zoomout01.jpg' — Кнопка отдаления камеры
+  0x003E5678  (File)  0x007E7878  (VA)  'Interface\Miniframe.tga' — Мини-рамка
+  0x003E466C  (File)  0x007E686C  (VA)  'Interface\in_main.tga' — Главный экран инвентаря
+  0x003E4774  (File)  0x007E6974  (VA)  'Interface\t_main.tga' — Главное меню торговли
+  0x003E4864  (File)  0x007E6A64  (VA)  'Interface\m_main.tga' — Главное меню маунта
+  0x003E54BE  (File)  0x007E76BE  (VA)  'Interface\InventoryPanel.tga' — Панель инвентаря
+  0x003E6660  (File)  0x007E8860  (VA)  'Screen(%02d_%02d-%02d_%02d)-%04d.jpg' — Формат имени скриншота
+
+
+====================================================================================================
+  20. ОШИБКИ И ЛОГИ (ERRORS / DEBUG)
+====================================================================================================
+
+  0x003CE39C  (File)  0x007D059C  (VA)  'MuError.log' — Файл лога ошибок
+  0x003D1710  (File)  0x007D3910  (VA)  'MuError.dmp' — Файл дампа ошибок (crash dump)
+  0x003D171C  (File)  0x007D391C  (VA)  'Save DumpFile complete - MuError.dmp' — Сохранение файла дампа завершено
+  0x003CE9AC  (File)  0x007D0BAC  (VA)  'Couldn't create CLSID_DirectMusic' — Ошибка создания DirectMusic
+  0x003B90E4  (File)  0x007BAAE4  (VA)  'runtime error' — Ошибка времени выполнения (CRT)
+  0x003B90F8  (File)  0x007BAAF8  (VA)  'TLOSS error' — Ошибка потери точности (CRT math)
+  0x003B9108  (File)  0x007BAB08  (VA)  'SING error' — Математическая сингулярность (CRT math)
+  0x003B9118  (File)  0x007BAB18  (VA)  'DOMAIN error' — Ошибка домена (CRT math)
+
+
+====================================================================================================
+  21. ОПРЕДЕЛЕНИЕ ОС (OS DETECTION)
+====================================================================================================
+
+  0x003CE658  (File)  0x007D0858  (VA)  'Windows NT 3.51' — Определение Windows NT 3.51
+  0x003CE668  (File)  0x007D0868  (VA)  'Windows 95' — Определение Windows 95
+  0x003CE67C  (File)  0x007D087C  (VA)  'Windows NT 4.0' — Определение Windows NT 4.0
+  0x003CE68C  (File)  0x007D088C  (VA)  'Windows 98' — Определение Windows 98
+  0x003CE69C  (File)  0x007D089C  (VA)  'Windows Me' — Определение Windows Me
+  0x003CE6A8  (File)  0x007D08A8  (VA)  'Windows 2000' — Определение Windows 2000
+  0x003CE740  (File)  0x007D0940  (VA)  'Windows XP' — Определение Windows XP
+  0x003CE74C  (File)  0x007D094C  (VA)  'Windows 2003 family' — Определение Windows Server 2003
+
+
+====================================================================================================
+  22. РЕСУРСЫ (RESOURCES)
+====================================================================================================
+
+  Тип 3 (ICON):
+    ID 1, Lang 0x0412 (Korean): RVA 0x07AE7178, Size 0x02E8
+    ID 2, Lang 0x0412 (Korean): RVA 0x07AE7460, Size 0x0EA8
+    ID 3, Lang 0x0412 (Korean): RVA 0x07AE8308, Size 0x08A8
+    ID 4, Lang 0x0412 (Korean): RVA 0x07AE8BB0, Size 0x0128
+  Тип 14 (GROUP_ICON):
+    ID 101, Lang 0x0412 (Korean): RVA 0x07AE8CD8, Size 0x003E
+  Тип 16 (VERSION):
+    ID 1, Lang 0x0412 (Korean): RVA 0x07AE8D18, Size 0x0324
+
+
+====================================================================================================
+  23. НАИБОЛЕЕ ВЫЗЫВАЕМЫЕ ФУНКЦИИ (TOP CALLED FUNCTIONS)
+====================================================================================================
+
+  Функции отсортированы по количеству вызовов (CALL near E8) в секции .text:
+
+  0x00791799  (VA)  — вызовов:  3049 — Вероятно: функция работы со строками/памятью (вспомогательная)
+  0x0079191C  (VA)  — вызовов:  1638 — Вероятно: функция работы со строками/памятью
+  0x00421A11  (VA)  — вызовов:  1610 — Вероятно: функция логирования/вывода отладки
+  0x004017C0  (VA)  — вызовов:  1370 — Вероятно: оператор new / выделение памяти
+  0x00791B10  (VA)  — вызовов:  1330 — Вероятно: функция CRT (сравнение/копирование)
+  0x00783F60  (VA)  — вызовов:  1165 — Вероятно: функция шифрования/дешифрации пакетов
+  0x00790EB2  (VA)  — вызовов:  1123 — Вероятно: функция CRT
+  0x005101F0  (VA)  — вызовов:  1025 — Вероятно: функция рендеринга/отрисовки
+  0x00404120  (VA)  — вызовов:   870 — Вероятно: функция математических вычислений
+  0x00790F9E  (VA)  — вызовов:   853 — Вероятно: функция CRT
+  0x00402850  (VA)  — вызовов:   808 — Вероятно: оператор delete / освобождение памяти
+  0x0057F691  (VA)  — вызовов:   721 — Вероятно: функция обработки объектов мира
+  0x0042046D  (VA)  — вызовов:   694 — Вероятно: функция работы с вектором/позицией
+  0x004207F5  (VA)  — вызовов:   663 — Вероятно: функция работы с вектором/нормалью
+  0x006B97A7  (VA)  — вызовов:   646 — Вероятно: функция отрисовки UI элементов
+  0x00515A29  (VA)  — вызовов:   582 — Вероятно: функция загрузки/обработки текстур
+  0x0069BA93  (VA)  — вызовов:   578 — Вероятно: функция обработки игровых событий
+  0x00777320  (VA)  — вызовов:   570 — Вероятно: функция сетевой обработки
+  0x00593928  (VA)  — вызовов:   565 — Вероятно: функция обработки анимаций
+  0x00547CF0  (VA)  — вызовов:   554 — Вероятно: функция обработки моделей
+  0x005168A0  (VA)  — вызовов:   514 — Внутренняя функция
+  0x005106C1  (VA)  — вызовов:   508 — Внутренняя функция
+  0x00512F1A  (VA)  — вызовов:   502 — Внутренняя функция
+  0x006F5BD6  (VA)  — вызовов:   455 — Внутренняя функция
+  0x0069B617  (VA)  — вызовов:   427 — Внутренняя функция
+  0x004041E0  (VA)  — вызовов:   384 — Внутренняя функция
+  0x00403FC0  (VA)  — вызовов:   383 — Внутренняя функция
+  0x004136E0  (VA)  — вызовов:   362 — Внутренняя функция
+  0x00403880  (VA)  — вызовов:   354 — Внутренняя функция
+  0x00791A20  (VA)  — вызовов:   352 — Внутренняя функция
+  0x006D5B1B  (VA)  — вызовов:   340 — Внутренняя функция
+  0x00566220  (VA)  — вызовов:   328 — Внутренняя функция
+  0x0069B89E  (VA)  — вызовов:   328 — Внутренняя функция
+  0x00406F20  (VA)  — вызовов:   321 — Внутренняя функция
+  0x005A17E0  (VA)  — вызовов:   313 — Внутренняя функция
+  0x005A0790  (VA)  — вызовов:   305 — Внутренняя функция
+  0x0051932D  (VA)  — вызовов:   298 — Внутренняя функция
+  0x00404100  (VA)  — вызовов:   284 — Внутренняя функция
+  0x0070CF30  (VA)  — вызовов:   243 — Внутренняя функция
+  0x00401D30  (VA)  — вызовов:   238 — Внутренняя функция
+  0x0078435D  (VA)  — вызовов:   237 — Внутренняя функция
+  0x0053E757  (VA)  — вызовов:   233 — Внутренняя функция
+  0x006794D8  (VA)  — вызовов:   229 — Внутренняя функция
+  0x005A0900  (VA)  — вызовов:   225 — Внутренняя функция
+  0x00791660  (VA)  — вызовов:   224 — Внутренняя функция
+  0x006B8239  (VA)  — вызовов:   223 — Внутренняя функция
+  0x006B96C4  (VA)  — вызовов:   221 — Внутренняя функция
+  0x00679005  (VA)  — вызовов:   214 — Внутренняя функция
+  0x0047CEA4  (VA)  — вызовов:   205 — Внутренняя функция
+  0x006D606C  (VA)  — вызовов:   204 — Внутренняя функция
+
+
+====================================================================================================
+  24. IAT — ПОЛНАЯ ТАБЛИЦА ИМПОРТИРУЕМЫХ ФУНКЦИЙ
+====================================================================================================
+
+  --- advapi32.dll — API реестра Windows и криптографии ---
+    0x007B3000  RegEnumValueA — Перечисление значений реестра (вызовов: 0)
+    0x007B3004  RegDeleteKeyA — Удаление ключа реестра (вызовов: 1)
+    0x007B3008  CryptGetHashParam — Получение параметра хеша (вызовов: 1)
+    0x007B300C  CryptDeriveKey — Генерация ключа из хеша (вызовов: 2)
+    0x007B3010  CryptDecrypt — Дешифрование данных (вызовов: 2)
+    0x007B3014  CryptImportKey — Импорт криптографического ключа (вызовов: 0)
+    0x007B3018  CryptCreateHash — Создание хеш-объекта (вызовов: 3)
+    0x007B301C  CryptHashData — Хеширование данных (вызовов: 3)
+    0x007B3020  CryptVerifySignatureA — Проверка цифровой подписи (вызовов: 2)
+    0x007B3024  CryptDestroyHash — Уничтожение хеш-объекта (вызовов: 3)
+    0x007B3028  CryptDestroyKey — Уничтожение ключа (вызовов: 3)
+    0x007B302C  SetSecurityDescriptorDacl — Установка DACL дескриптора безопасности (вызовов: 2)
+    0x007B3030  InitializeSecurityDescriptor — Инициализация дескриптора безопасности (вызовов: 2)
+    0x007B3034  GetUserNameA — Получение имени пользователя Windows (вызовов: 1)
+    0x007B3038  RegDeleteValueA — Удаление значения реестра (вызовов: 1)
+    0x007B303C  CryptReleaseContext — Освобождение контекста криптопровайдера (вызовов: 1)
+    0x007B3040  RegSetValueExA — Запись значения в реестр (вызовов: 6)
+    0x007B3044  RegCreateKeyExA — Создание ключа реестра (вызовов: 11)
+    0x007B3048  RegOpenKeyExA — Открытие ключа реестра (вызовов: 3)
+    0x007B304C  RegQueryValueExA — Запрос значения реестра (вызовов: 16)
+    0x007B3050  RegCloseKey — Закрытие ключа реестра (вызовов: 18)
+    0x007B3054  CryptAcquireContextA — Получение контекста криптопровайдера (вызовов: 6)
+
+  --- dinput8.dll — DirectInput 8 — обработка ввода (клавиатура, мышь, джойстик) ---
+    0x007B305C  DirectInput8Create — Создание объекта DirectInput 8 (вызовов: 0)
+
+  --- dsound.dll — DirectSound — звуковая подсистема ---
+    0x007B3064  DirectSoundCreate — Создание объекта DirectSound (вызовов: 0)
+    0x007B3068  DirectSoundEnumerateA — Перечисление устройств DirectSound (вызовов: 0)
+
+  --- gdi32.dll — GDI — графический интерфейс устройств (шрифты, битмапы) ---
+    0x007B3070  GetTextExtentPointA — Получение размера текста (GDI) (вызовов: 80)
+    0x007B3074  SelectObject — Выбор объекта GDI (шрифт, кисть и т.д.) (вызовов: 221)
+    0x007B3078  SetBkColor — Установка цвета фона (вызовов: 1)
+    0x007B307C  SetPixelFormat — Установка формата пикселей (для OpenGL) (вызовов: 1)
+    0x007B3080  ChoosePixelFormat — Выбор формата пикселей (вызовов: 1)
+    0x007B3084  CreateFontA — Создание шрифта (вызовов: 5)
+    0x007B3088  GetTextExtentPoint32A —  (вызовов: 9)
+    0x007B308C  SwapBuffers — Переключение буферов (двойная буферизация OpenGL) (вызовов: 3)
+    0x007B3090  SetTextAlign —  (вызовов: 1)
+    0x007B3094  GetTextExtentExPointA —  (вызовов: 1)
+    0x007B3098  CreateFontIndirectA —  (вызовов: 1)
+    0x007B309C  CreateCompatibleDC —  (вызовов: 3)
+    0x007B30A0  BitBlt —  (вызовов: 1)
+    0x007B30A4  TextOutA —  (вызовов: 14)
+    0x007B30A8  SetTextColor —  (вызовов: 10)
+    0x007B30AC  CreateDIBSection —  (вызовов: 3)
+    0x007B30B0  SetBkMode —  (вызовов: 2)
+    0x007B30B4  DeleteDC —  (вызовов: 3)
+    0x007B30B8  DeleteObject —  (вызовов: 8)
+    0x007B30BC  GetStockObject —  (вызовов: 3)
+
+  --- glu32.dll — OpenGL Utility — вспомогательные функции OpenGL ---
+    0x007B30C4  gluOrtho2D — Установка 2D ортографической проекции (вызовов: 0)
+    0x007B30C8  gluPerspective — Установка перспективной проекции (вызовов: 0)
+
+  --- imm32.dll — IME — менеджер ввода (многоязычная поддержка) ---
+    0x007B30D0  ImmGetDefaultIMEWnd —  (вызовов: 0)
+    0x007B30D4  ImmReleaseContext —  (вызовов: 0)
+    0x007B30D8  ImmGetCompositionStringA —  (вызовов: 0)
+    0x007B30DC  ImmGetCompositionWindow —  (вызовов: 0)
+    0x007B30E0  ImmSetCompositionWindow — Установка окна композиции IME (вызовов: 0)
+    0x007B30E4  ImmGetProperty —  (вызовов: 0)
+    0x007B30E8  ImmSetOpenStatus —  (вызовов: 0)
+    0x007B30EC  ImmGetConversionStatus —  (вызовов: 0)
+    0x007B30F0  ImmSetConversionStatus —  (вызовов: 0)
+    0x007B30F4  ImmGetContext — Получение контекста IME (вызовов: 0)
+    0x007B30F8  ImmGetDescriptionA —  (вызовов: 0)
+    0x007B30FC  ImmGetIMEFileNameA —  (вызовов: 0)
+    0x007B3100  ImmNotifyIME —  (вызовов: 0)
+    0x007B3104  ImmGetOpenStatus —  (вызовов: 0)
+
+  --- kernel32.dll — Ядро Windows — процессы, потоки, память, файлы ---
+    0x007B310C  CreateThread — Создание потока (вызовов: 3)
+    0x007B3110  OpenMutexA —  (вызовов: 0)
+    0x007B3114  EnterCriticalSection — Вход в критическую секцию (синхронизация) (вызовов: 10)
+    0x007B3118  LeaveCriticalSection — Выход из критической секции (вызовов: 10)
+    0x007B311C  lstrcatA —  (вызовов: 0)
+    0x007B3120  OpenEventA —  (вызовов: 3)
+    0x007B3124  TerminateThread —  (вызовов: 2)
+    0x007B3128  CreateMutexA —  (вызовов: 0)
+    0x007B312C  ReleaseMutex —  (вызовов: 1)
+    0x007B3130  WaitForSingleObject — Ожидание объекта синхронизации (вызовов: 10)
+    0x007B3134  GetComputerNameA —  (вызовов: 1)
+    0x007B3138  lstrcmpA —  (вызовов: 1)
+    0x007B313C  ExitProcess — Завершение процесса (вызовов: 4)
+    0x007B3140  VirtualAlloc — Выделение виртуальной памяти (вызовов: 4)
+    0x007B3144  VirtualFree — Освобождение виртуальной памяти (вызовов: 6)
+    0x007B3148  VirtualProtect — Изменение защиты виртуальной памяти (вызовов: 2)
+    0x007B314C  LoadLibraryExA —  (вызовов: 0)
+    0x007B3150  GetTempFileNameA —  (вызовов: 1)
+    0x007B3154  GetTempPathA —  (вызовов: 2)
+    0x007B3158  HeapFree —  (вызовов: 8)
+    0x007B315C  GetCurrentThreadId —  (вызовов: 6)
+    0x007B3160  GetTickCount — Получение счётчика тиков (время) (вызовов: 77)
+    0x007B3164  Sleep — Приостановка потока (вызовов: 8)
+    0x007B3168  lstrlenA —  (вызовов: 123)
+    0x007B316C  CloseHandle — Закрытие дескриптора (вызовов: 54)
+    0x007B3170  WriteFile — Запись в файл (вызовов: 16)
+    0x007B3174  SetFilePointer —  (вызовов: 6)
+    0x007B3178  CreateFileA — Создание/открытие файла (вызовов: 24)
+    0x007B317C  DeleteFileA —  (вызовов: 4)
+    0x007B3180  ReadFile — Чтение файла (вызовов: 15)
+    0x007B3184  GetLocalTime —  (вызовов: 11)
+    0x007B3188  GetSystemDirectoryA —  (вызовов: 4)
+    0x007B318C  lstrcmpiA —  (вызовов: 3)
+    0x007B3190  GetVersionExA —  (вызовов: 5)
+    0x007B3194  QueryPerformanceCounter — Высокоточный счётчик производительности (вызовов: 6)
+    0x007B3198  SetProcessAffinityMask —  (вызовов: 4)
+    0x007B319C  SetThreadPriority —  (вызовов: 4)
+    0x007B31A0  SetPriorityClass —  (вызовов: 4)
+    0x007B31A4  GetProcessAffinityMask —  (вызовов: 2)
+    0x007B31A8  GetThreadPriority —  (вызовов: 2)
+    0x007B31AC  GetPriorityClass —  (вызовов: 2)
+    0x007B31B0  GetCurrentThread —  (вызовов: 3)
+    0x007B31B4  GetCurrentProcess —  (вызовов: 3)
+    0x007B31B8  GetProcessHeap —  (вызовов: 1)
+    0x007B31BC  OutputDebugStringA —  (вызовов: 10)
+    0x007B31C0  FreeLibrary — Выгрузка DLL библиотеки (вызовов: 23)
+    0x007B31C4  GetProcAddress — Получение адреса функции из DLL (вызовов: 5)
+    0x007B31C8  LoadLibraryA — Загрузка DLL библиотеки (вызовов: 8)
+    0x007B31CC  GlobalMemoryStatus —  (вызовов: 2)
+    0x007B31D0  GlobalUnlock —  (вызовов: 1)
+    0x007B31D4  GlobalLock —  (вызовов: 1)
+    0x007B31D8  GetCommandLineA — Получение командной строки (вызовов: 5)
+    0x007B31DC  GetFileSize —  (вызовов: 7)
+    0x007B31E0  GetLastError —  (вызовов: 41)
+    0x007B31E4  GetPrivateProfileStringA — Чтение INI-файла (вызовов: 1)
+    0x007B31E8  GetCurrentDirectoryA —  (вызовов: 1)
+    0x007B31EC  CopyFileA —  (вызовов: 2)
+    0x007B31F0  SetFileAttributesA —  (вызовов: 2)
+    0x007B31F4  Process32Next — Получение следующего процесса (вызовов: 0)
+    0x007B31F8  TerminateProcess — Завершение процесса (принудительное) (вызовов: 3)
+    0x007B31FC  OpenProcess — Открытие процесса (вызовов: 1)
+    0x007B3200  Process32First — Получение первого процесса (защита от читов) (вызовов: 0)
+    0x007B3204  CreateToolhelp32Snapshot — Снимок процессов системы (вызовов: 0)
+    0x007B3208  WinExec —  (вызовов: 2)
+    0x007B320C  FindClose —  (вызовов: 4)
+    0x007B3210  FindFirstFileA —  (вызовов: 3)
+    0x007B3214  GetModuleFileNameA — Получение пути к модулю (вызовов: 8)
+    0x007B3218  IsBadReadPtr —  (вызовов: 23)
+    0x007B321C  GetModuleHandleA — Получение дескриптора модуля (вызовов: 10)
+    0x007B3220  GetNumberFormatA —  (вызовов: 1)
+    0x007B3224  CreateEventA —  (вызовов: 3)
+    0x007B3228  CreateProcessA —  (вызовов: 2)
+    0x007B322C  WaitForMultipleObjects —  (вызовов: 2)
+    0x007B3230  GetExitCodeProcess —  (вызовов: 3)
+    0x007B3234  ResetEvent —  (вызовов: 1)
+    0x007B3238  ResumeThread —  (вызовов: 1)
+    0x007B323C  SetEndOfFile —  (вызовов: 5)
+    0x007B3240  DeleteCriticalSection —  (вызовов: 8)
+    0x007B3244  InitializeCriticalSection —  (вызовов: 8)
+    0x007B3248  SetEvent —  (вызовов: 4)
+    0x007B324C  WideCharToMultiByte —  (вызовов: 10)
+    0x007B3250  CreateFileMappingA —  (вызовов: 2)
+    0x007B3254  UnmapViewOfFile —  (вызовов: 3)
+    0x007B3258  MapViewOfFile —  (вызовов: 2)
+    0x007B325C  FindNextFileA —  (вызовов: 2)
+    0x007B3260  RemoveDirectoryA —  (вызовов: 1)
+    0x007B3264  GetFileAttributesA —  (вызовов: 1)
+    0x007B3268  CreateDirectoryA —  (вызовов: 3)
+    0x007B326C  GetThreadContext —  (вызовов: 1)
+    0x007B3270  lstrcpynA —  (вызовов: 0)
+    0x007B3274  GetCurrentProcessId —  (вызовов: 3)
+    0x007B3278  Module32First —  (вызовов: 0)
+    0x007B327C  Module32Next —  (вызовов: 0)
+    0x007B3280  SetUnhandledExceptionFilter —  (вызовов: 7)
+    0x007B3284  GetOEMCP —  (вызовов: 0)
+    0x007B3288  IsValidLocale —  (вызовов: 1)
+    0x007B328C  IsValidCodePage —  (вызовов: 1)
+    0x007B3290  GetLocaleInfoA —  (вызовов: 6)
+    0x007B3294  EnumSystemLocalesA —  (вызовов: 3)
+    0x007B3298  GetUserDefaultLCID —  (вызовов: 1)
+    0x007B329C  SetHandleCount —  (вызовов: 1)
+    0x007B32A0  GetFileType —  (вызовов: 4)
+    0x007B32A4  GetEnvironmentVariableA —  (вызовов: 1)
+    0x007B32A8  HeapDestroy —  (вызовов: 2)
+    0x007B32AC  HeapCreate —  (вызовов: 1)
+    0x007B32B0  GetACP —  (вызовов: 0)
+    0x007B32B4  IsBadWritePtr —  (вызовов: 4)
+    0x007B32B8  UnhandledExceptionFilter —  (вызовов: 1)
+    0x007B32BC  FreeEnvironmentStringsA —  (вызовов: 1)
+    0x007B32C0  FreeEnvironmentStringsW —  (вызовов: 1)
+    0x007B32C4  GetEnvironmentStrings —  (вызовов: 2)
+    0x007B32C8  GetEnvironmentStringsW —  (вызовов: 0)
+    0x007B32CC  GetStringTypeA —  (вызовов: 4)
+    0x007B32D0  GetStringTypeW —  (вызовов: 4)
+    0x007B32D4  IsBadCodePtr —  (вызовов: 1)
+    0x007B32D8  SetEnvironmentVariableA —  (вызовов: 1)
+    0x007B32DC  SetConsoleCtrlHandler —  (вызовов: 1)
+    0x007B32E0  GetLocaleInfoW —  (вызовов: 5)
+    0x007B32E4  HeapAlloc —  (вызовов: 7)
+    0x007B32E8  GetFileInformationByHandle —  (вызовов: 1)
+    0x007B32EC  DuplicateHandle —  (вызовов: 2)
+    0x007B32F0  SetStdHandle —  (вызовов: 4)
+    0x007B32F4  CreatePipe —  (вызовов: 2)
+    0x007B32F8  GetStdHandle —  (вызовов: 4)
+    0x007B32FC  PeekNamedPipe —  (вызовов: 1)
+    0x007B3300  FlushFileBuffers —  (вызовов: 2)
+    0x007B3304  lstrcpyA —  (вызовов: 2)
+    0x007B3308  InterlockedExchange —  (вызовов: 2)
+    0x007B330C  InterlockedDecrement —  (вызовов: 19)
+    0x007B3310  InterlockedIncrement —  (вызовов: 19)
+    0x007B3314  MultiByteToWideChar —  (вызовов: 13)
+    0x007B3318  RtlUnwind —  (вызовов: 0)
+    0x007B331C  GetTimeZoneInformation —  (вызовов: 3)
+    0x007B3320  GetSystemTime —  (вызовов: 1)
+    0x007B3324  RaiseException —  (вызовов: 2)
+    0x007B3328  GetStartupInfoA —  (вызовов: 2)
+    0x007B332C  GetVersion —  (вызовов: 1)
+    0x007B3330  GetSystemTimeAsFileTime —  (вызовов: 1)
+    0x007B3334  HeapReAlloc —  (вызовов: 4)
+    0x007B3338  FatalAppExitA —  (вызовов: 1)
+    0x007B333C  LCMapStringA —  (вызовов: 5)
+    0x007B3340  LCMapStringW —  (вызовов: 6)
+    0x007B3344  GetCPInfo —  (вызовов: 4)
+    0x007B3348  CompareStringA —  (вызовов: 2)
+    0x007B334C  CompareStringW —  (вызовов: 2)
+    0x007B3350  TlsSetValue —  (вызовов: 3)
+    0x007B3354  TlsAlloc —  (вызовов: 1)
+    0x007B3358  TlsFree —  (вызовов: 1)
+    0x007B335C  SetLastError —  (вызовов: 1)
+    0x007B3360  TlsGetValue —  (вызовов: 2)
+    0x007B3364  HeapSize —  (вызовов: 1)
+    0x007B3368  QueryPerformanceFrequency —  (вызовов: 3)
+
+  --- opengl32.dll — OpenGL — 3D рендеринг ---
+    0x007B3370  glColor3f — Установка цвета (RGB float) (вызовов: 292)
+    0x007B3374  glEnd — Завершение примитива (вызовов: 60)
+    0x007B3378  glVertex3fv — Вершина 3D (вектор) (вызовов: 131)
+    0x007B337C  glTexCoord2f — Текстурная координата (вызовов: 146)
+    0x007B3380  glBegin — Начало примитива (вызовов: 59)
+    0x007B3384  glColor3fv —  (вызовов: 50)
+    0x007B3388  glGetIntegerv —  (вызовов: 2)
+    0x007B338C  glGetString —  (вызовов: 4)
+    0x007B3390  glAlphaFunc —  (вызовов: 5)
+    0x007B3394  glFogf —  (вызовов: 4)
+    0x007B3398  glFogfv —  (вызовов: 2)
+    0x007B339C  glEnable — Включение функции OpenGL (вызовов: 51)
+    0x007B33A0  glDisable — Выключение функции OpenGL (вызовов: 24)
+    0x007B33A4  glClearColor — Установка цвета очистки (вызовов: 12)
+    0x007B33A8  glTexImage2D — Загрузка 2D текстуры (вызовов: 12)
+    0x007B33AC  glBindTexture — Привязка текстуры (вызовов: 19)
+    0x007B33B0  glVertex3f —  (вызовов: 10)
+    0x007B33B4  glDepthMask — Маска буфера глубины (вызовов: 4)
+    0x007B33B8  glPolygonMode —  (вызовов: 2)
+    0x007B33BC  glFrontFace —  (вызовов: 3)
+    0x007B33C0  glStencilFunc —  (вызовов: 2)
+    0x007B33C4  glColorMask —  (вызовов: 2)
+    0x007B33C8  glVertex2f —  (вызовов: 28)
+    0x007B33CC  glDepthFunc —  (вызовов: 7)
+    0x007B33D0  glStencilOp —  (вызовов: 3)
+    0x007B33D4  glTexParameteri —  (вызовов: 21)
+    0x007B33D8  glTexEnvf —  (вызовов: 3)
+    0x007B33DC  glPixelStorei —  (вызовов: 1)
+    0x007B33E0  glDeleteTextures —  (вызовов: 5)
+    0x007B33E4  glIsTexture —  (вызовов: 3)
+    0x007B33E8  glColor4ub —  (вызовов: 42)
+    0x007B33EC  glLoadIdentity — Сброс матрицы (вызовов: 15)
+    0x007B33F0  glMatrixMode — Выбор матричного режима (вызовов: 18)
+    0x007B33F4  glPopMatrix — Восстановление матрицы из стека (вызовов: 17)
+    0x007B33F8  glClear — Очистка буферов (вызовов: 5)
+    0x007B33FC  glTranslatef — Перенос (перемещение) (вызовов: 13)
+    0x007B3400  glRotatef — Поворот (вызовов: 9)
+    0x007B3404  glPushMatrix — Сохранение матрицы в стек (вызовов: 17)
+    0x007B3408  wglDeleteContext — Удаление контекста OpenGL (вызовов: 1)
+    0x007B340C  wglMakeCurrent — Установка текущего контекста OpenGL (вызовов: 2)
+    0x007B3410  wglCreateContext — Создание контекста OpenGL (вызовов: 1)
+    0x007B3414  glScalef — Масштабирование (вызовов: 1)
+    0x007B3418  glGenTextures —  (вызовов: 5)
+    0x007B341C  glTexEnvi —  (вызовов: 2)
+    0x007B3420  glReadPixels —  (вызовов: 2)
+    0x007B3424  glGetFloatv —  (вызовов: 1)
+    0x007B3428  glBlendFunc — Функция смешивания (прозрачность) (вызовов: 6)
+    0x007B342C  glViewport — Установка области видимости (вызовов: 2)
+    0x007B3430  glFogi —  (вызовов: 1)
+    0x007B3434  glFlush — Принудительный вывод (вызовов: 3)
+    0x007B3438  glTexSubImage2D —  (вызовов: 1)
+    0x007B343C  glColor4f —  (вызовов: 190)
+
+  --- shell32.dll — Shell — запуск программ и файловые операции ---
+    0x007B3444  ShellExecuteA — Запуск программы/файла (вызовов: 1)
+    0x007B3448  ShellExecuteExA — Расширенный запуск программы (вызовов: 1)
+
+  --- user32.dll — User — окна, сообщения, ввод, диалоги ---
+    0x007B3450  GetFocus —  (вызовов: 13)
+    0x007B3454  UnregisterHotKey — Удаление горячей клавиши (вызовов: 1)
+    0x007B3458  RegisterHotKey — Регистрация горячей клавиши (вызовов: 1)
+    0x007B345C  GetAsyncKeyState — Получение состояния клавиши (асинхронно) (вызовов: 76)
+    0x007B3460  GetKeyboardLayout —  (вызовов: 2)
+    0x007B3464  GetKeyboardLayoutNameA —  (вызовов: 1)
+    0x007B3468  OpenClipboard —  (вызовов: 1)
+    0x007B346C  SendMessageA — Отправка сообщения окну (вызовов: 72)
+    0x007B3470  wsprintfA —  (вызовов: 113)
+    0x007B3474  GetWindowRect —  (вызовов: 3)
+    0x007B3478  SetWindowPos — Установка позиции/размера окна (вызовов: 2)
+    0x007B347C  CallNextHookEx —  (вызовов: 2)
+    0x007B3480  UnhookWindowsHookEx — Удаление перехватчика (вызовов: 2)
+    0x007B3484  SetWindowsHookExA — Установка перехватчика сообщений (вызовов: 2)
+    0x007B3488  GetDesktopWindow —  (вызовов: 2)
+    0x007B348C  MessageBoxA — Показ диалога сообщения (вызовов: 72)
+    0x007B3490  SetWindowLongA —  (вызовов: 3)
+    0x007B3494  CallWindowProcA —  (вызовов: 3)
+    0x007B3498  GetWindowLongA —  (вызовов: 1)
+    0x007B349C  GetCaretPos —  (вызовов: 2)
+    0x007B34A0  GetWindowTextA —  (вызовов: 1)
+    0x007B34A4  SetWindowTextA —  (вызовов: 2)
+    0x007B34A8  ShowWindow — Показ/скрытие окна (вызовов: 7)
+    0x007B34AC  ReleaseDC —  (вызовов: 2)
+    0x007B34B0  CloseClipboard —  (вызовов: 1)
+    0x007B34B4  CreateWindowExA — Создание окна (вызовов: 5)
+    0x007B34B8  PostMessageA —  (вызовов: 12)
+    0x007B34BC  SetFocus —  (вызовов: 20)
+    0x007B34C0  IsWindowVisible —  (вызовов: 1)
+    0x007B34C4  GetScrollPos —  (вызовов: 1)
+    0x007B34C8  SetScrollPos —  (вызовов: 1)
+    0x007B34CC  SetTimer —  (вызовов: 7)
+    0x007B34D0  ShowCursor — Показ/скрытие курсора (вызовов: 3)
+    0x007B34D4  ChangeDisplaySettingsA — Изменение настроек дисплея (разрешение) (вызовов: 3)
+    0x007B34D8  SystemParametersInfoA — Получение/установка системных параметров (вызовов: 5)
+    0x007B34DC  ReleaseCapture —  (вызовов: 3)
+    0x007B34E0  SetCapture —  (вызовов: 3)
+    0x007B34E4  DefWindowProcA —  (вызовов: 3)
+    0x007B34E8  PostQuitMessage —  (вызовов: 1)
+    0x007B34EC  EndPaint —  (вызовов: 1)
+    0x007B34F0  BeginPaint —  (вызовов: 1)
+    0x007B34F4  DestroyWindow — Уничтожение окна (вызовов: 1)
+    0x007B34F8  RegisterClassA — Регистрация класса окна (вызовов: 2)
+    0x007B34FC  LoadCursorA —  (вызовов: 2)
+    0x007B3500  LoadIconA —  (вызовов: 2)
+    0x007B3504  SetForegroundWindow — Вывод окна на передний план (вызовов: 2)
+    0x007B3508  GetSystemMetrics — Получение системных метрик (разрешение и т.д.) (вызовов: 4)
+    0x007B350C  AdjustWindowRect —  (вызовов: 2)
+    0x007B3510  IsIconic —  (вызовов: 1)
+    0x007B3514  DispatchMessageA — Диспетчеризация сообщений (вызовов: 1)
+    0x007B3518  TranslateMessage — Трансляция сообщений (клавиатура) (вызовов: 1)
+    0x007B351C  GetDC — Получение контекста устройства (вызовов: 2)
+    0x007B3520  GetClipboardData —  (вызовов: 1)
+    0x007B3524  GetMessageA —  (вызовов: 1)
+    0x007B3528  PeekMessageA — Проверка очереди сообщений (вызовов: 1)
+    0x007B352C  UpdateWindow —  (вызовов: 1)
+    0x007B3530  EnumDisplaySettingsA —  (вызовов: 2)
+    0x007B3534  SetCursorPos — Установка позиции курсора (вызовов: 4)
+    0x007B3538  SetRect —  (вызовов: 10)
+    0x007B353C  OffsetRect —  (вызовов: 1)
+    0x007B3540  PtInRect —  (вызовов: 15)
+    0x007B3544  GetDoubleClickTime —  (вызовов: 1)
+    0x007B3548  ScreenToClient —  (вызовов: 3)
+    0x007B354C  GetCursorPos — Получение позиции курсора (вызовов: 3)
+    0x007B3550  GetActiveWindow —  (вызовов: 1)
+    0x007B3554  IntersectRect —  (вызовов: 1)
+    0x007B3558  ClientToScreen —  (вызовов: 1)
+    0x007B355C  KillTimer —  (вызовов: 2)
+    0x007B3560  wvsprintfA —  (вызовов: 2)
+    0x007B3564  FindWindowA —  (вызовов: 11)
+
+  --- version.dll — Version — информация о версии файлов ---
+    0x007B356C  VerQueryValueA — Запрос значения версии файла (вызовов: 0)
+    0x007B3570  GetFileVersionInfoSizeA — Получение размера информации о версии (вызовов: 0)
+    0x007B3574  GetFileVersionInfoA — Получение информации о версии файла (вызовов: 0)
+
+  --- winmm.dll — Windows Multimedia — звук, таймеры, MIDI ---
+    0x007B357C  mmioAscend —  (вызовов: 1)
+    0x007B3580  mmioOpenA —  (вызовов: 2)
+    0x007B3584  mmioClose —  (вызовов: 18)
+    0x007B3588  timeGetTime — Получение текущего времени (мс) (вызовов: 59)
+    0x007B358C  mmioDescend —  (вызовов: 3)
+    0x007B3590  mmioRead —  (вызовов: 2)
+    0x007B3594  timeGetDevCaps —  (вызовов: 2)
+    0x007B3598  timeBeginPeriod — Установка точности таймера (вызовов: 1)
+    0x007B359C  mmioWrite —  (вызовов: 9)
+    0x007B35A0  timeEndPeriod — Сброс точности таймера (вызовов: 1)
+
+  --- ws2_32.dll — Winsock 2 — сетевые сокеты TCP/IP ---
+    0x007B35A8  gethostbyname — Разрешение имени хоста (вызовов: 1)
+    0x007B35AC  WSAAsyncSelect — Асинхронный выбор события сокета (вызовов: 1)
+    0x007B35B0  setsockopt — Установка опции сокета (вызовов: 1)
+    0x007B35B4  socket — Создание сокета (вызовов: 1)
+    0x007B35B8  shutdown — Завершение соединения (вызовов: 1)
+    0x007B35BC  recv — Приём данных из сокета (вызовов: 2)
+    0x007B35C0  WSASend — Асинхронная отправка данных (вызовов: 0)
+    0x007B35C4  WSAStartup — Инициализация Winsock (вызовов: 1)
+    0x007B35C8  WSACleanup — Очистка Winsock (вызовов: 2)
+    0x007B35CC  send — Отправка данных в сокет (вызовов: 508)
+    0x007B35D0  WSAGetLastError — Получение последней ошибки Winsock (вызовов: 514)
+    0x007B35D4  inet_addr — Конвертация IP-адреса из строки (вызовов: 1)
+    0x007B35D8  htons — Конвертация порта в сетевой порядок байт (вызовов: 1)
+    0x007B35DC  connect — Подключение к серверу (вызовов: 1)
+    0x007B35E0  closesocket — Закрытие сокета (вызовов: 5)
+
+  --- ole32.dll — OLE/COM — объектная модель компонентов ---
+    0x007B35E8  CoUninitialize — Деинициализация COM (вызовов: 1)
+    0x007B35EC  CoCreateInstance — Создание COM-объекта (вызовов: 1)
+    0x007B35F0  CoInitialize — Инициализация COM (вызовов: 2)
+
+  --- wzaudio.dll — Webzen Audio — собственная звуковая библиотека MU Online ---
+    0x007B35F8  wzAudioStop — Остановка Webzen Audio (вызовов: 0)
+    0x007B35FC  wzAudioPlay — Воспроизведение Webzen Audio (вызовов: 0)
+    0x007B3600  wzAudioGetStreamOffsetRange — Получение диапазона потока Webzen Audio (вызовов: 0)
+    0x007B3604  wzAudioDestroy — Уничтожение Webzen Audio (вызовов: 0)
+    0x007B3608  wzAudioOption — Опции Webzen Audio (вызовов: 0)
+    0x007B360C  wzAudioCreate — Создание Webzen Audio (вызовов: 0)
+
+
+====================================================================================================
+  25. СВОДКА (SUMMARY)
+====================================================================================================
+
+  Тип файла:           PE32 (GUI) Intel 80386, Windows
+  Игра:                MU Online (Webzen)
+  ImageBase:           0x00400000
+  EntryPoint:          0x0917C200 (в секции .LibHook)
+  Количество секций:   10
+  Защита:              ASProtect (антиотладка SoftICE/WinICE)
+  Античит:             nProtect GameGuard
+  Рендеринг:           OpenGL
+  Звук:                DirectSound + wzaudio.dll (Webzen Audio)
+  Ввод:                DirectInput 8
+  Сеть:                Winsock 2 (ws2_32.dll)
+  IME:                 imm32.dll (поддержка корейского/азиатских языков)
+  Криптография:        CryptoAPI (advapi32.dll)
+  Количество импортов: 374
+  DLL зависимости:     15
+  Уникальных функций:  11257 (внутренних CALL)
+  Серверов:            6 (KR, Global, TW, CN, TH, PH)
