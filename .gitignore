@@ -33,3 +33,7 @@ ipch/
 # Temporary files
 *.tmp
 ~$*
+
+# Unpacking artifacts
+main_unpacked.exe
+main_packed_backup.exe
