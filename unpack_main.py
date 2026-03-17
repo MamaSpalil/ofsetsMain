@@ -49,6 +49,7 @@ OEP_VA = IMAGE_BASE + OEP_RVA
 #   8B EC    MOV EBP, ESP
 #   83 EC 68 SUB ESP, 0x68   (104 байта для локальных переменных)
 STOLEN_BYTES = bytes([0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x68])
+STOLEN_BYTES_LENGTH = len(STOLEN_BYTES)
 STOLEN_BYTES_FILE_OFFSET = 0x00393910  # File offset OEP в .text
 
 # Секции ASProtect (индексы 5-9 в таблице секций)
@@ -121,7 +122,7 @@ def unpack(input_path, output_path):
         print("[!] Ошибка: файл не является PE-файлом (нет MZ-сигнатуры)")
         return False
 
-    pe_offset = read_uint32(data, 0x3C)  # e_lfanew
+    pe_offset = read_uint32(data, PE_SIGNATURE_OFFSET_LOCATION)  # e_lfanew
     if data[pe_offset:pe_offset + 4] != b'PE\x00\x00':
         print("[!] Ошибка: не найдена PE-сигнатура")
         return False
@@ -174,14 +175,14 @@ def unpack(input_path, output_path):
     print(f"    Адрес: VA 0x{OEP_VA:08X}, File offset 0x{STOLEN_BYTES_FILE_OFFSET:08X}")
 
     # Проверяем что текущие байты действительно обнулены
-    current_oep_bytes = data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + 6]
+    current_oep_bytes = data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + STOLEN_BYTES_LENGTH]
     print(f"    Текущие байты: {' '.join(f'{b:02X}' for b in current_oep_bytes)}")
 
-    if current_oep_bytes != b'\x00\x00\x00\x00\x00\x00':
+    if current_oep_bytes != b'\x00' * STOLEN_BYTES_LENGTH:
         print(f"[!] Предупреждение: OEP байты не обнулены!")
         print(f"    Ожидалось: 00 00 00 00 00 00")
 
-    data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + 6] = STOLEN_BYTES
+    data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + STOLEN_BYTES_LENGTH] = STOLEN_BYTES
     print(f"    Восстановлено: {' '.join(f'{b:02X}' for b in STOLEN_BYTES)}")
     print(f"    55 = PUSH EBP")
     print(f"    8B EC = MOV EBP, ESP")
@@ -302,7 +303,7 @@ def verify(path):
     print(f"    SizeOfImage: 0x{size_of_image:08X}")
 
     # Проверка восстановленных байтов OEP
-    oep_bytes = data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + 6]
+    oep_bytes = data[STOLEN_BYTES_FILE_OFFSET:STOLEN_BYTES_FILE_OFFSET + STOLEN_BYTES_LENGTH]
     print(f"    OEP байты: {' '.join(f'{b:02X}' for b in oep_bytes)}")
     assert oep_bytes == STOLEN_BYTES, "OEP байты не восстановлены"
 
