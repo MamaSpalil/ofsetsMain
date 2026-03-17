@@ -1,7 +1,7 @@
 ====================================================================================================
-  ПОЛНЫЙ СПИСОК ОФСЕТОВ (OFFSETS) — main.exe
+  ПОЛНЫЙ СПИСОК ОФСЕТОВ (OFFSETS) — main.exe (UNPACKED)
   MU Online Game Client — PE32 (GUI) Intel 80386, Windows
-  Размер файла: 4,316,672 байт (0x0041DC3D)
+  Размер файла: 4,149,248 байт (0x003F5000) [распакован, ASProtect удалён]
   ImageBase: 0x00400000
 ====================================================================================================
 
@@ -24,7 +24,7 @@
   0x00000100  (File)  PE Signature = 0x00004550 ('PE\0\0')
   0x00000104  (File)  COFF File Header (IMAGE_FILE_HEADER)
                       Machine: 0x014C (Intel 386)
-                      NumberOfSections: 10
+                      NumberOfSections: 5 (ASProtect секции удалены)
                       TimeDateStamp: 0x00000000
                       Characteristics: 0x010F (EXEC, STRIPPED, 32-BIT)
 
@@ -32,14 +32,14 @@
   0x00000118  (File)  Optional Header (IMAGE_OPTIONAL_HEADER)
                       Magic: 0x010B (PE32)
                       LinkerVersion: 6.0
-                      AddressOfEntryPoint: 0x08D7C200 (RVA)
-                      EntryPoint (VA): 0x0917C200 — точка входа (в секции .LibHook)
+                      AddressOfEntryPoint: 0x00394510 (RVA) [восстановлен OEP]
+                      EntryPoint (VA): 0x00794510 — WinMainCRTStartup (в секции .text)
                       BaseOfCode: 0x00001000 (RVA)
                       BaseOfData: 0x003B3000 (RVA)
                       ImageBase: 0x00400000 — базовый адрес загрузки
                       SectionAlignment: 0x00001000 (4 KB)
                       FileAlignment: 0x00000200 (512 B)
-                      SizeOfImage: 0x08D7D000
+                      SizeOfImage: 0x07AED000 (пересчитан после удаления ASProtect)
                       SizeOfHeaders: 0x00000400
                       Subsystem: 2 (Windows GUI)
                       SizeOfStackReserve: 0x00100000 (1 MB)
@@ -107,7 +107,7 @@
     Virtual Size:    0x01223000
     Raw Size:        0x00000000
     Characteristics: 0x00000000
-    Описание:        Пустая секция-заполнитель (защита ASProtect)
+    Описание:        [УДАЛЕНА] Пустая секция-заполнитель (защита ASProtect)
 
   Секция: .as_0001
     File Offset:     0x003F5000
@@ -116,7 +116,7 @@
     Virtual Size:    0x0001E000
     Raw Size:        0x0001CA00
     Characteristics: 0xE0000020
-    Описание:        Секция ASProtect — код распаковщика/протектора (Borland Delphi runtime)
+    Описание:        [УДАЛЕНА] Секция ASProtect — код распаковщика/протектора (Borland Delphi runtime)
 
   Секция: .zero
     File Offset:     0x00411A00
@@ -125,7 +125,7 @@
     Virtual Size:    0x00042000
     Raw Size:        0x00000000
     Characteristics: 0x00000000
-    Описание:        Пустая секция-заполнитель (защита ASProtect)
+    Описание:        [УДАЛЕНА] Пустая секция-заполнитель (защита ASProtect)
 
   Секция: .as_0002
     File Offset:     0x00411A00
@@ -134,7 +134,7 @@
     Virtual Size:    0x0000C000
     Raw Size:        0x0000C000
     Characteristics: 0xE0000020
-    Описание:        Секция ASProtect — дополнительный код защиты и DLL-загрузчик
+    Описание:        [УДАЛЕНА] Секция ASProtect — дополнительный код защиты и DLL-загрузчик
 
   Секция: .LibHook
     File Offset:     0x0041DA00
@@ -143,7 +143,7 @@
     Virtual Size:    0x00001000
     Raw Size:        0x0000023D
     Characteristics: 0x60000060
-    Описание:        Секция перехвата DLL (LibHook) — точка входа и проверка main.dll
+    Описание:        [УДАЛЕНА] Секция перехвата DLL (LibHook) — точка входа и проверка main.dll
 
 
 ====================================================================================================
@@ -558,34 +558,45 @@
 
 
 ====================================================================================================
-  4. ТОЧКА ВХОДА И ЗАЩИТА (ENTRY POINT / PROTECTION)
+  4. ТОЧКА ВХОДА (ENTRY POINT) — ВОССТАНОВЛЕННАЯ
 ====================================================================================================
 
-  0x0917C200  (VA)    AddressOfEntryPoint — точка входа программы (в секции .LibHook)
-  0x0041DC00  (File)  Файловое смещение точки входа
-  0x0917C000  (VA)    .LibHook секция — проверка main.dll и перехват
-  0x0041DA00  (File)  Начало секции .LibHook
-    Содержит строки:
-      0x0917C000 (VA): 'main.dll' — имя перехватываемой библиотеки
-      0x0917C032 (VA): 'Main.dll Incorrect' — сообщение об ошибке проверки
+  --- Оригинальная точка входа (OEP) после распаковки ---
+  0x00794510  (VA)    AddressOfEntryPoint — WinMainCRTStartup (MSVC 6.0 CRT)
+  0x00394510  (RVA)   Относительный виртуальный адрес
+  0x00393910  (File)  Файловое смещение в секции .text
 
-  --- ASProtect (Антиотладка / Упаковщик) ---
-  0x09110000  (VA)    .as_0001 секция — код ASProtect распаковщика
-  0x003F5000  (File)  Файловое смещение .as_0001
-  0x09170000  (VA)    .as_0002 секция — дополнительный код защиты
-  0x00411A00  (File)  Файловое смещение .as_0002
+  Восстановленный пролог (6 украденных байтов):
+    55       PUSH EBP
+    8B EC    MOV EBP, ESP
+    83 EC 68 SUB ESP, 0x68    ; 104 байта для локальных переменных
 
-  Обнаруженные строки антиотладки:
-    0x09174654 (VA): 'Debugger detected - please close it down and restart!'
-    0x091746BD (VA): 'WinIce/SoftIce service installed means that you are running a debugger!'
-    0x09174A8D (VA): 'Debugger detected - please close it down and restart!' (копия)
-    0x0917A701 (VA): 'Debugger detected - please close it down and restart!' (копия)
+  Функция WinMainCRTStartup:
+    0x00794510  (VA)  Пролог функции (PUSH EBP; MOV EBP, ESP; SUB ESP, 0x68)
+    0x00794516  (VA)  CALL [GetVersion]        — определение версии ОС
+    0x00794549  (VA)  CALL _heap_init          — инициализация кучи
+    0x00794576  (VA)  CALL [GetCommandLineA]   — получение командной строки
+    0x007945A1  (VA)  CALL [GetStartupInfoA]   — получение информации запуска
+    0x007945C4  (VA)  CALL [GetModuleHandleA]  — получение HINSTANCE
+    0x007945CB  (VA)  CALL WinMain (0x004DCC32) — вызов главной функции игры
 
-  Borland Delphi Runtime (внутри ASProtect):
-    0x09112980 (VA): 'SOFTWARE\Borland\Delphi\RTL'
-    0x091141DC (VA): 'Software\Borland\Locales'
-    0x091141F8 (VA): 'Software\Borland\Delphi\Locales'
-    0x091133FA (VA): 'Portions Copyright (c) 1983,97 Borland'
+  WinMain:
+    0x004DCC32  (VA)  WinMain — главная функция MU Online
+    0x000DC032  (File) Файловое смещение WinMain
+
+  --- ASProtect (УДАЛЁН) ---
+  Все секции ASProtect полностью удалены из файла:
+    .zero     — пустая секция-заполнитель (удалена)
+    .as_0001  — код распаковщика ASProtect (удалён)
+    .zero     — пустая секция-заполнитель (удалена)
+    .as_0002  — дополнительный код защиты (удалён)
+    .LibHook  — секция перехвата DLL (удалена)
+
+  Ранее содержавшиеся строки антиотладки (удалены):
+    'Debugger detected - please close it down and restart!'
+    'WinIce/SoftIce service installed means that you are running a debugger!'
+    'SOFTWARE\Borland\Delphi\RTL' (Borland Delphi Runtime — часть ASProtect)
+    'Software\ASProtect\SpecData' (Путь реестра ASProtect)
 
 
 ====================================================================================================
@@ -1420,9 +1431,9 @@
   Тип файла:           PE32 (GUI) Intel 80386, Windows
   Игра:                MU Online (Webzen)
   ImageBase:           0x00400000
-  EntryPoint:          0x0917C200 (в секции .LibHook)
-  Количество секций:   10
-  Защита:              ASProtect (антиотладка SoftICE/WinICE)
+  EntryPoint:          0x00794510 (WinMainCRTStartup в .text) [OEP восстановлен]
+  Количество секций:   5 (ASProtect секции удалены)
+  Защита:              ASProtect — УДАЛЁН (распакован скриптом unpack_main.py)
   Античит:             nProtect GameGuard
   Рендеринг:           OpenGL
   Звук:                DirectSound + wzaudio.dll (Webzen Audio)
