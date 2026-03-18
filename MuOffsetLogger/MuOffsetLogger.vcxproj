@@ -160,6 +160,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="PEAnalyzer.cpp" />
     <ClCompile Include="OffsetDatabase.cpp" />
+    <ClCompile Include="OffsetStore.cpp" />
     <ClCompile Include="FunctionScanner.cpp" />
     <ClCompile Include="ProcessMonitor.cpp" />
     <ClCompile Include="GameMonitor.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="PEAnalyzer.h" />
     <ClInclude Include="OffsetDatabase.h" />
+    <ClInclude Include="OffsetStore.h" />
     <ClInclude Include="FunctionScanner.h" />
     <ClInclude Include="ProcessMonitor.h" />
     <ClInclude Include="GameMonitor.h" />
