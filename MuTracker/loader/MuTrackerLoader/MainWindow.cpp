@@ -660,8 +660,11 @@ void MainWindow::OnInjectDLL()
 
     if (errorMsg.empty()) {
         AppendLog("[+] DLL injected successfully!\r\n");
+        AppendLog("[*] Starting base: offsets=0, functions=0, variables=0, modules=0\r\n");
+        AppendLog("[*] Database will be populated from main.exe scan...\r\n");
+        AppendLog("[*] Real-time monitoring of all game actions enabled.\r\n");
         SendMessageW(m_hStatusBar, SB_SETTEXTW, 1,
-                      (LPARAM)L" DLL: Injected");
+                      (LPARAM)L" DLL: Injected - Scanning");
     } else {
         AppendLog("[-] Injection failed: %s\r\n", errorMsg.c_str());
         AppendLog("[i] See injection_log.txt for detailed diagnostics.\r\n");
@@ -767,11 +770,16 @@ void MainWindow::OnUpdateTimer()
 
         /* Update statistics labels */
         wchar_t buf[128];
-        swprintf_s(buf, L"Hooks: %u", stats.hookedFunctions);
+        swprintf_s(buf, L"Hooks: %u | Funcs: %u | Mods: %u | Vars: %u",
+                    stats.hookedFunctions,
+                    stats.functionCount,
+                    stats.moduleCount,
+                    stats.variableCount);
         SetWindowTextW(m_hStaticHooks, buf);
 
-        swprintf_s(buf, L"Total Calls: %llu",
-                    static_cast<unsigned long long>(stats.totalCalls));
+        swprintf_s(buf, L"Total Calls: %llu | Changed Vars: %u",
+                    static_cast<unsigned long long>(stats.totalCalls),
+                    stats.changedVariables);
         SetWindowTextW(m_hStaticCalls, buf);
 
         swprintf_s(buf, L"Dropped: %u", stats.droppedRecords);
@@ -783,8 +791,10 @@ void MainWindow::OnUpdateTimer()
                 ? (LPARAM)L" DLL: Connected"
                 : (LPARAM)L" DLL: Waiting...");
 
-        swprintf_s(buf, L" Uptime: %llu s",
-                    static_cast<unsigned long long>(stats.uptimeMs / 1000));
+        swprintf_s(buf, L" Uptime: %llu s | Modules: %u | Vars: %u",
+                    static_cast<unsigned long long>(stats.uptimeMs / 1000),
+                    stats.moduleCount,
+                    stats.variableCount);
         SendMessageW(m_hStatusBar, SB_SETTEXTW, 2, (LPARAM)buf);
 
         /* Update ListView */
