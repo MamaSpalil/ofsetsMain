@@ -653,17 +653,18 @@ void MainWindow::OnInjectDLL()
 
     AppendLog("[*] Injecting DLL into PID %d...\r\n", m_targetPid);
 
-    bool ok = false;
+    std::string errorMsg;
     if (m_onInject) {
-        ok = m_onInject(m_targetPid, m_dllPath);
+        errorMsg = m_onInject(m_targetPid, m_dllPath);
     }
 
-    if (ok) {
+    if (errorMsg.empty()) {
         AppendLog("[+] DLL injected successfully!\r\n");
         SendMessageW(m_hStatusBar, SB_SETTEXTW, 1,
                       (LPARAM)L" DLL: Injected");
     } else {
-        AppendLog("[-] Injection failed.\r\n");
+        AppendLog("[-] Injection failed: %s\r\n", errorMsg.c_str());
+        AppendLog("[i] See injection_log.txt for detailed diagnostics.\r\n");
     }
 }
 
