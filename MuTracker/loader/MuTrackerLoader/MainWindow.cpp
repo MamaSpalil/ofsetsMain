@@ -480,14 +480,14 @@ void MainWindow::CreateControls()
     int bbX = x + (cw - 3 * bbW - 20) / 2;
 
     m_hBtnExport = CreateWindowExW(0, L"BUTTON",
-        L"\x1F4BE Export CSV",
+        L"\xD83D\xDCBE Export CSV",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         bbX, y, bbW, CONTROL_HEIGHT + 4,
         m_hWnd, (HMENU)(UINT_PTR)IDC_BTN_EXPORT, m_hInstance, nullptr);
     SendMessageW(m_hBtnExport, WM_SETFONT, (WPARAM)m_hFont, TRUE);
 
     m_hBtnClear = CreateWindowExW(0, L"BUTTON",
-        L"\x1F5D1 Clear",
+        L"\xD83D\xDDD1 Clear",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         bbX + bbW + 10, y, bbW, CONTROL_HEIGHT + 4,
         m_hWnd, (HMENU)(UINT_PTR)IDC_BTN_CLEAR, m_hInstance, nullptr);
