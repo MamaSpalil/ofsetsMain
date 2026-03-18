@@ -19,6 +19,7 @@
  */
 
 #include <windows.h>
+#include <shellapi.h>
 #include <stdio.h>
 #include <string.h>
 #include <conio.h>
@@ -151,10 +152,22 @@ static BYTE* MapPEImage(BYTE* fileBuffer, DWORD fileSize)
 
     memset(image, 0, sizeOfImage);
 
-    /* Копируем заголовки PE */
-    if (sizeOfHeaders > fileSize)
-        sizeOfHeaders = fileSize;
-    memcpy(image, fileBuffer, sizeOfHeaders);
+    /* Копируем заголовки PE.
+     * Некоторые упакованные PE (ASProtect и др.) могут иметь SizeOfHeaders
+     * меньше реального объёма заголовков. Вычисляем минимальный размер,
+     * включающий DOS-заголовок, NT-заголовки и все заголовки секций. */
+    {
+        DWORD headerEndOffset = (DWORD)dosHeader->e_lfanew
+                                + sizeof(IMAGE_NT_HEADERS)
+                                + numSections * sizeof(IMAGE_SECTION_HEADER);
+        DWORD copySize = (sizeOfHeaders > headerEndOffset)
+                         ? sizeOfHeaders : headerEndOffset;
+        if (copySize > fileSize)
+            copySize = fileSize;
+        if (copySize > sizeOfImage)
+            copySize = sizeOfImage;
+        memcpy(image, fileBuffer, copySize);
+    }
 
     /* Копируем секции на их виртуальные позиции */
     sections = (IMAGE_SECTION_HEADER*)(
@@ -169,10 +182,14 @@ static BYTE* MapPEImage(BYTE* fileBuffer, DWORD fileSize)
         /* Проверка границ */
         if (rawOffset == 0 || rawSize == 0)
             continue;
+        if (rawOffset >= fileSize)
+            continue;
         if (rawOffset + rawSize > fileSize)
             rawSize = fileSize - rawOffset;
-        if (virtualAddr + rawSize > sizeOfImage)
+        if (virtualAddr >= sizeOfImage)
             continue;
+        if (virtualAddr + rawSize > sizeOfImage)
+            rawSize = sizeOfImage - virtualAddr;
 
         memcpy(image + virtualAddr, fileBuffer + rawOffset, rawSize);
     }
@@ -197,19 +214,40 @@ static BOOL LaunchMainExe(const char* exePath,
     si.cb = sizeof(si);
     memset(&pi, 0, sizeof(pi));
 
-    if (!CreateProcessA(exePath, NULL, NULL, NULL, FALSE,
+    if (CreateProcessA(exePath, NULL, NULL, NULL, FALSE,
                         0, NULL, NULL, &si, &pi))
     {
-        return FALSE;
+        /* Возвращаем информацию для мониторинга */
+        *pProcessId     = pi.dwProcessId;
+        *pProcessHandle = pi.hProcess;
+
+        /* Закрываем хэндл потока — не нужен для мониторинга */
+        CloseHandle(pi.hThread);
+        return TRUE;
     }
 
-    /* Возвращаем информацию для мониторинга */
-    *pProcessId     = pi.dwProcessId;
-    *pProcessHandle = pi.hProcess;
+    /* Если CreateProcess вернул ERROR_ELEVATION_REQUIRED (740),
+     * повторяем запуск через ShellExecuteEx с verb "runas"
+     * для запроса повышения прав (UAC) */
+    if (GetLastError() == ERROR_ELEVATION_REQUIRED)
+    {
+        SHELLEXECUTEINFOA sei;
+        memset(&sei, 0, sizeof(sei));
+        sei.cbSize = sizeof(sei);
+        sei.fMask  = SEE_MASK_NOCLOSEPROCESS;
+        sei.lpVerb = "runas";
+        sei.lpFile = exePath;
+        sei.nShow  = SW_SHOWNORMAL;
 
-    /* Закрываем хэндл потока — не нужен для мониторинга */
-    CloseHandle(pi.hThread);
-    return TRUE;
+        if (ShellExecuteExA(&sei))
+        {
+            *pProcessHandle = sei.hProcess;
+            *pProcessId     = GetProcessId(sei.hProcess);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 /*
