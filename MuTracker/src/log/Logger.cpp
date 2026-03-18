@@ -222,16 +222,21 @@ void Logger::LogCall(uintptr_t address, uintptr_t offset,
                        static_cast<unsigned long long>(callCount));
 
     /* Append arguments if provided */
-    if (args && argCount > 0 && pos < static_cast<int>(sizeof(buffer)) - 32) {
-        pos += snprintf(buffer + pos, sizeof(buffer) - pos, " | args: [");
-        for (uint8_t i = 0; i < argCount; ++i) {
+    if (args && argCount > 0 && pos >= 0 &&
+        static_cast<size_t>(pos) < sizeof(buffer) - 32) {
+        int written = snprintf(buffer + pos, sizeof(buffer) - pos, " | args: [");
+        if (written > 0) pos += (static_cast<size_t>(pos + written) < sizeof(buffer)) ? written : 0;
+        for (uint8_t i = 0; i < argCount && static_cast<size_t>(pos) < sizeof(buffer) - 16; ++i) {
             if (i > 0) {
-                pos += snprintf(buffer + pos, sizeof(buffer) - pos, ", ");
+                written = snprintf(buffer + pos, sizeof(buffer) - pos, ", ");
+                if (written > 0 && static_cast<size_t>(pos + written) < sizeof(buffer)) pos += written;
             }
-            pos += snprintf(buffer + pos, sizeof(buffer) - pos,
-                            "0x%X", static_cast<uint32_t>(args[i]));
+            written = snprintf(buffer + pos, sizeof(buffer) - pos,
+                               "0x%X", static_cast<uint32_t>(args[i]));
+            if (written > 0 && static_cast<size_t>(pos + written) < sizeof(buffer)) pos += written;
         }
-        pos += snprintf(buffer + pos, sizeof(buffer) - pos, "]");
+        written = snprintf(buffer + pos, sizeof(buffer) - pos, "]");
+        if (written > 0 && static_cast<size_t>(pos + written) < sizeof(buffer)) pos += written;
     }
 
     /* Add newline */

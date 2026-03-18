@@ -175,8 +175,13 @@ std::string DisasmEngine::Format(const Instruction& instr)
 
     /* Format raw bytes */
     for (uint8_t i = 0; i < instr.length && i < 15; ++i) {
-        hexPos += snprintf(hexBuf + hexPos, sizeof(hexBuf) - hexPos,
-                           "%02X ", instr.bytes[i]);
+        int written = snprintf(hexBuf + hexPos, sizeof(hexBuf) - hexPos,
+                               "%02X ", instr.bytes[i]);
+        if (written > 0 && hexPos + written < sizeof(hexBuf)) {
+            hexPos += written;
+        } else {
+            break;
+        }
     }
 
     /* Pad hex to 30 chars for alignment */
