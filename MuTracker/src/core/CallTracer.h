@@ -75,6 +75,22 @@ struct TrackedFunction {
           firstSeen(other.firstSeen), lastSeen(other.lastSeen),
           hookId(other.hookId), callsPerSecond(other.callsPerSecond),
           isNew(other.isNew) {}
+
+    TrackedFunction& operator=(const TrackedFunction& other) {
+        if (this != &other) {
+            address = other.address;
+            offset = other.offset;
+            name = other.name;
+            moduleName = other.moduleName;
+            totalCalls.store(other.totalCalls.load());
+            firstSeen = other.firstSeen;
+            lastSeen = other.lastSeen;
+            hookId = other.hookId;
+            callsPerSecond = other.callsPerSecond;
+            isNew = other.isNew;
+        }
+        return *this;
+    }
 };
 
 /* Filter specification */

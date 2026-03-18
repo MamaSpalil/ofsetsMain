@@ -7,6 +7,7 @@
 #include "MemoryUtils.h"
 #include <cstring>
 #include <cstdio>
+#include <cinttypes>
 #include <algorithm>
 #include <fstream>
 #include <sstream>

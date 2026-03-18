@@ -40,6 +40,7 @@ if(MSVC)
         WIN32
         _WINDOWS
         _CRT_SECURE_NO_WARNINGS
+        NOMINMAX
         UNICODE
         _UNICODE
     )
