@@ -247,8 +247,12 @@ int main(int argc, char* argv[])
     printf("\n  Your choice (Vash vybor): ");
 
     userChoice = getchar();
-    /* Очистка буфера ввода */
-    while (getchar() != '\n');
+    /* Очистка буфера ввода до конца строки */
+    if (userChoice != '\n' && userChoice != EOF)
+    {
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
 
     /* ================================================================
      * Чтение и маппинг main.exe
