@@ -330,6 +330,7 @@ int main(int argc, char* argv[])
     printf("  ============================================================\n");
     printf("  MuOffsetLogger v2.0 - MU Online main.exe Offset Analyzer\n");
     printf("  Standalone EXE version\n");
+    printf("  Starting offset database: 0 (zero base)\n");
     printf("  ============================================================\n");
     printf("\n");
 
@@ -530,6 +531,11 @@ int main(int argc, char* argv[])
             GetPathInExeDir(OSTORE_DB_FILENAME, dbPath, MAX_PATH);
             OffsetStore_Init(dbPath);
 
+            /* === СТАРТОВАЯ БАЗА = 0 === */
+            /* Сбрасываем базу офсетов и хранилище в ноль */
+            OffsetDB_Reset();
+            OffsetStore_Reset();
+
             Logger_Write(COLOR_HEADER,
                 "\n  MuOffsetLogger v2.0 - MU Online main.exe"
                 " Offset Analyzer\n");
@@ -541,6 +547,11 @@ int main(int argc, char* argv[])
             Logger_Write(COLOR_INFO,
                 "  File size: %u bytes (0x%08X)\n\n",
                 fileSize, fileSize);
+            Logger_Write(COLOR_HEADER,
+                "  Starting offset database: 0 (zero base)\n");
+            Logger_Write(COLOR_INFO,
+                "  Database will be populated from main.exe"
+                " after PE analysis.\n\n");
 
             /* ЭТАП 1: Анализ PE-структуры */
             Logger_WriteHeader(
@@ -591,13 +602,30 @@ int main(int argc, char* argv[])
                 }
             }
 
-            /* ЭТАП 2: База известных офсетов */
+            /* ЭТАП 2: Заполнение базы офсетов из main.exe
+             * Стартовая база = 0, заполняется сканированием PE */
             Logger_WriteHeader(
-                "STAGE 2: KNOWN OFFSETS DATABASE"
-                " (BAZA IZVESTNYH OFSETOV)");
+                "STAGE 2: POPULATE OFFSET DATABASE FROM main.exe"
+                " (ZAPOLNENIE BAZY IZ main.exe)");
+
+            /* Показать стартовое состояние (должно быть 0) */
             OffsetDB_LogAllOffsets((DWORD_PTR)peInfo2.ImageBase);
 
-            /* Записать все известные офсеты в базу данных */
+            /* Сканировать PE-образ и заполнить базу */
+            {
+                DWORD populated;
+                populated = OffsetDB_PopulateFromScan(
+                    imageBuffer, peInfo2.ImageBase,
+                    peInfo2.SizeOfImage);
+                Logger_Write(COLOR_HEADER,
+                    "\n  Populated %u offsets from main.exe"
+                    " into active database.\n", populated);
+            }
+
+            /* Показать заполненную базу */
+            OffsetDB_LogAllOffsets((DWORD_PTR)peInfo2.ImageBase);
+
+            /* Записать все обнаруженные офсеты в OffsetStore */
             {
                 DWORD count = 0;
                 const OFFSET_ENTRY* allOffsets
@@ -675,14 +703,20 @@ int main(int argc, char* argv[])
                 "  ======================================"
                 "====================\n");
             Logger_Write(COLOR_HEADER,
-                "  CONTINUOUS MONITORING - Tracking main.exe"
+                "  REAL-TIME MONITORING - Scanning main.exe"
                 " (PID=%u)\n", processId);
+            Logger_Write(COLOR_HEADER,
+                "  Real-time search and scanning of all"
+                " offsets, functions, variables, modules\n");
             Logger_Write(COLOR_HEADER,
                 "  Tracking ALL game actions: server,"
                 " login, character, inventory,\n");
             Logger_Write(COLOR_HEADER,
                 "  chat, teleport, combat, monsters,"
                 " players, keyboard, mouse\n");
+            Logger_Write(COLOR_HEADER,
+                "  All discovered data -> program output"
+                " + log file: %s\n", LOG_FILENAME);
             Logger_Write(COLOR_HEADER,
                 "  All offsets saved to database:"
                 " %s\n", OSTORE_DB_FILENAME);
@@ -835,6 +869,11 @@ int main(int argc, char* argv[])
             GetPathInExeDir(OSTORE_DB_FILENAME, dbPath, MAX_PATH);
             OffsetStore_Init(dbPath);
 
+            /* === СТАРТОВАЯ БАЗА = 0 === */
+            /* Сбрасываем базу офсетов и хранилище в ноль */
+            OffsetDB_Reset();
+            OffsetStore_Reset();
+
             Logger_Write(COLOR_HEADER,
                 "\n  MuOffsetLogger v2.0 - MU Online main.exe"
                 " Offset Analyzer\n");
@@ -844,6 +883,11 @@ int main(int argc, char* argv[])
                 "  File: %s\n", exePath);
             Logger_Write(COLOR_INFO,
                 "  File size: %u bytes (0x%08X)\n\n", fileSize, fileSize);
+            Logger_Write(COLOR_HEADER,
+                "  Starting offset database: 0 (zero base)\n");
+            Logger_Write(COLOR_INFO,
+                "  Database will be populated from main.exe"
+                " after PE analysis.\n\n");
 
             /* ЭТАП 1: Анализ PE-структуры */
             Logger_WriteHeader(
@@ -868,13 +912,30 @@ int main(int argc, char* argv[])
             PEAnalyzer_LogSections(&peInfo);
             PEAnalyzer_LogImports(&peInfo);
 
-            /* ЭТАП 2: База известных офсетов */
+            /* ЭТАП 2: Заполнение базы офсетов из main.exe
+             * Стартовая база = 0, заполняется сканированием PE */
             Logger_WriteHeader(
-                "STAGE 2: KNOWN OFFSETS DATABASE"
-                " (BAZA IZVESTNYH OFSETOV)");
+                "STAGE 2: POPULATE OFFSET DATABASE FROM main.exe"
+                " (ZAPOLNENIE BAZY IZ main.exe)");
+
+            /* Показать стартовое состояние (должно быть 0) */
             OffsetDB_LogAllOffsets((DWORD_PTR)peInfo.ImageBase);
 
-            /* Записать все известные офсеты в базу данных */
+            /* Сканировать PE-образ и заполнить базу */
+            {
+                DWORD populated;
+                populated = OffsetDB_PopulateFromScan(
+                    imageBuffer, peInfo.ImageBase,
+                    peInfo.SizeOfImage);
+                Logger_Write(COLOR_HEADER,
+                    "\n  Populated %u offsets from main.exe"
+                    " into active database.\n", populated);
+            }
+
+            /* Показать заполненную базу */
+            OffsetDB_LogAllOffsets((DWORD_PTR)peInfo.ImageBase);
+
+            /* Записать все обнаруженные офсеты в OffsetStore */
             {
                 DWORD knownOffsetCount = 0;
                 const OFFSET_ENTRY* knownOffsets
@@ -953,14 +1014,20 @@ int main(int argc, char* argv[])
                     "  ======================================"
                     "====================\n");
                 Logger_Write(COLOR_HEADER,
-                    "  MONITORING MODE - Tracking main.exe"
+                    "  REAL-TIME MONITORING - Scanning main.exe"
                     " (PID=%u)\n", processId);
+                Logger_Write(COLOR_HEADER,
+                    "  Real-time search and scanning of all"
+                    " offsets, functions, variables, modules\n");
                 Logger_Write(COLOR_HEADER,
                     "  Tracking ALL game actions: server,"
                     " login, character, inventory,\n");
                 Logger_Write(COLOR_HEADER,
                     "  chat, teleport, combat, monsters,"
                     " players, keyboard, mouse\n");
+                Logger_Write(COLOR_HEADER,
+                    "  All discovered data -> program output"
+                    " + log file: %s\n", LOG_FILENAME);
                 Logger_Write(COLOR_HEADER,
                     "  All offsets saved to database:"
                     " %s\n", OSTORE_DB_FILENAME);

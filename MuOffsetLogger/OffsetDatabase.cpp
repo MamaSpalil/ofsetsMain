@@ -2,8 +2,9 @@
  * OffsetDatabase.cpp
  * MuOffsetLogger - Система логирования офсетов main.exe MU Online
  *
- * База данных известных офсетов main.exe MU Online.
- * Данные получены из дизассемблирования и анализа PE-файла.
+ * Стартовая база данных = 0 (пустая).
+ * Заполняется из main.exe после анализа PE-файла.
+ * Справочные офсеты используются для сопоставления при сканировании.
  * Совместимость: Visual Studio 2010 (v100), Windows 10 x86/x64
  */
 
@@ -11,14 +12,53 @@
 #include "Logger.h"
 #include <string.h>
 
+/* ===========================================================================
+ * АКТИВНАЯ БАЗА ДАННЫХ ОФСЕТОВ (стартовое значение = 0)
+ *
+ * Заполняется динамически из main.exe после успешного анализа PE.
+ * =========================================================================== */
+
+/* Статическое хранилище для строковых полей активных записей */
+#define ACTIVE_STR_POOL_SIZE   (256 * 1024)  /* 256 KB для строк */
+
+static char   g_strPool[ACTIVE_STR_POOL_SIZE];
+static DWORD  g_strPoolUsed = 0;
+
+/* Активная база данных - стартовое значение = 0 записей */
+static OFFSET_ENTRY g_ActiveDatabase[OFFSETDB_MAX_ACTIVE];
+static DWORD        g_ActiveDatabaseCount = 0;
+
+/*
+ * Выделить строку из пула (копирование в постоянное хранилище)
+ */
+static const char* PoolString(const char* src)
+{
+    DWORD len;
+    char* dst;
+
+    if (src == NULL || src[0] == '\0')
+        return "";
+
+    len = (DWORD)strlen(src) + 1;
+    if (g_strPoolUsed + len > ACTIVE_STR_POOL_SIZE)
+        return src;  /* Пул переполнен — вернуть исходный указатель */
+
+    dst = &g_strPool[g_strPoolUsed];
+    memcpy(dst, src, len);
+    g_strPoolUsed += len;
+    return dst;
+}
+
 /*
  * ===========================================================================
- *  БАЗА ДАННЫХ ОФСЕТОВ main.exe MU Online
+ *  СПРАВОЧНАЯ (REFERENCE) БАЗА ОФСЕТОВ main.exe MU Online
  *  ImageBase: 0x00400000
+ *  Используется для сопоставления при сканировании PE-образа.
+ *  НЕ является стартовой базой — стартовая база = 0.
  *  Формат: { VA, FileOffset, Type, Category, Name, Description }
  * ===========================================================================
  */
-static const OFFSET_ENTRY g_OffsetDatabase[] =
+static const OFFSET_ENTRY g_ReferenceDatabase[] =
 {
     /* ====================================================================
      * ФУНКЦИИ АВТОРИЗАЦИИ И ВХОДА В ИГРУ (LOGIN/AUTH)
@@ -875,9 +915,9 @@ static const OFFSET_ENTRY g_OffsetDatabase[] =
       "'Logo\\Login_Back02.jpg' - login screen background 2" }
 };
 
-/* Количество офсетов в базе */
-static const DWORD g_OffsetDatabaseCount =
-    sizeof(g_OffsetDatabase) / sizeof(g_OffsetDatabase[0]);
+/* Количество справочных офсетов */
+static const DWORD g_ReferenceDatabaseCount =
+    sizeof(g_ReferenceDatabase) / sizeof(g_ReferenceDatabase[0]);
 
 /*
  * Получить тип офсета как строку
@@ -899,12 +939,114 @@ static const char* GetOffsetTypeName(OFFSET_TYPE type)
     }
 }
 
+void OffsetDB_Reset(void)
+{
+    g_ActiveDatabaseCount = 0;
+    memset(g_ActiveDatabase, 0, sizeof(g_ActiveDatabase));
+    g_strPoolUsed = 0;
+    memset(g_strPool, 0, sizeof(g_strPool));
+
+    Logger_Write(COLOR_INFO,
+        "  [OffsetDB] Database reset to zero (0 offsets).\n");
+    Logger_Write(COLOR_INFO,
+        "  [OffsetDB] Starting base = 0. Will populate from main.exe.\n");
+}
+
 const OFFSET_ENTRY* OffsetDB_GetAllOffsets(DWORD* pCount)
 {
     if (pCount != NULL)
-        *pCount = g_OffsetDatabaseCount;
+        *pCount = g_ActiveDatabaseCount;
 
-    return g_OffsetDatabase;
+    return g_ActiveDatabase;
+}
+
+const OFFSET_ENTRY* OffsetDB_GetReferenceOffsets(DWORD* pCount)
+{
+    if (pCount != NULL)
+        *pCount = g_ReferenceDatabaseCount;
+
+    return g_ReferenceDatabase;
+}
+
+BOOL OffsetDB_AddEntry(DWORD va, DWORD fileOffset, OFFSET_TYPE type,
+                       const char* category, const char* name,
+                       const char* description)
+{
+    DWORD i;
+    OFFSET_ENTRY* entry;
+
+    if (g_ActiveDatabaseCount >= OFFSETDB_MAX_ACTIVE)
+        return FALSE;
+
+    /* Проверка на дубликат по VA */
+    for (i = 0; i < g_ActiveDatabaseCount; i++)
+    {
+        if (g_ActiveDatabase[i].VA == va)
+            return FALSE;
+    }
+
+    entry = &g_ActiveDatabase[g_ActiveDatabaseCount];
+    entry->VA          = va;
+    entry->FileOffset  = fileOffset;
+    entry->Type        = type;
+    entry->Category    = PoolString(category);
+    entry->Name        = PoolString(name);
+    entry->Description = PoolString(description);
+
+    g_ActiveDatabaseCount++;
+    return TRUE;
+}
+
+DWORD OffsetDB_PopulateFromScan(const BYTE* imageBuffer,
+                                DWORD imageBase, DWORD imageSize)
+{
+    DWORD i;
+    DWORD added = 0;
+    DWORD verified = 0;
+
+    if (imageBuffer == NULL || imageSize == 0)
+        return 0;
+
+    Logger_Write(COLOR_INFO,
+        "  [OffsetDB] Scanning main.exe PE image (base=0x%08X, size=0x%08X)\n",
+        imageBase, imageSize);
+    Logger_Write(COLOR_INFO,
+        "  [OffsetDB] Matching %u reference offsets against PE data...\n",
+        g_ReferenceDatabaseCount);
+
+    for (i = 0; i < g_ReferenceDatabaseCount; i++)
+    {
+        const OFFSET_ENTRY* ref = &g_ReferenceDatabase[i];
+        DWORD rva;
+
+        /* Вычислить RVA из VA (VA = ImageBase + RVA) */
+        if (ref->VA < imageBase)
+            continue;
+
+        rva = ref->VA - imageBase;
+
+        /* Проверить, что RVA попадает в границы образа */
+        if (rva >= imageSize)
+            continue;
+
+        verified++;
+
+        /* Добавить подтверждённый офсет в активную базу */
+        if (OffsetDB_AddEntry(ref->VA, ref->FileOffset, ref->Type,
+                              ref->Category, ref->Name, ref->Description))
+        {
+            added++;
+        }
+    }
+
+    Logger_Write(COLOR_OFFSET,
+        "  [OffsetDB] Scan complete: %u verified, %u added to active database\n",
+        verified, added);
+    Logger_Write(COLOR_OFFSET,
+        "  [OffsetDB] Active database now contains %u offsets\n",
+        g_ActiveDatabaseCount);
+
+    return added;
 }
 
 void OffsetDB_LogAllOffsets(DWORD_PTR baseAddress)
@@ -912,19 +1054,31 @@ void OffsetDB_LogAllOffsets(DWORD_PTR baseAddress)
     DWORD i;
     const char* lastCategory = "";
 
-    Logger_WriteHeader("KNOWN GAME OFFSETS DATABASE (BAZA DANNYH OFSETOV)");
+    Logger_WriteHeader(
+        "OFFSET DATABASE STATUS (SOSTOYANIE BAZY OFSETOV)");
 
     Logger_Write(COLOR_INFO,
         "  ImageBase: 0x%08X (expected: 0x00400000)\n", (DWORD)baseAddress);
     Logger_Write(COLOR_INFO,
-        "  Total known offsets: %u\n\n", g_OffsetDatabaseCount);
+        "  Active offsets in database: %u\n", g_ActiveDatabaseCount);
+    Logger_Write(COLOR_INFO,
+        "  Reference offsets available: %u\n\n", g_ReferenceDatabaseCount);
+
+    if (g_ActiveDatabaseCount == 0)
+    {
+        Logger_Write(COLOR_WARN,
+            "  Database is empty (starting base = 0).\n");
+        Logger_Write(COLOR_WARN,
+            "  Offsets will be populated from main.exe after PE scan.\n");
+        return;
+    }
 
     Logger_Write(COLOR_INFO,
         "  Format: VA  (File: FileOffset)  [Type]  Name -- Description\n");
 
-    for (i = 0; i < g_OffsetDatabaseCount; i++)
+    for (i = 0; i < g_ActiveDatabaseCount; i++)
     {
-        const OFFSET_ENTRY* entry = &g_OffsetDatabase[i];
+        const OFFSET_ENTRY* entry = &g_ActiveDatabase[i];
 
         /* Разделитель при смене категории */
         if (strcmp(lastCategory, entry->Category) != 0)
