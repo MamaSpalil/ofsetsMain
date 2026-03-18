@@ -800,7 +800,8 @@ void MainWindow::UpdateListView()
     int newCount = static_cast<int>(entries.size());
 
     /* If count changed significantly, rebuild */
-    if (abs(newCount - currentCount) > 10) {
+    int diff = newCount - currentCount;
+    if (diff > 10 || diff < -10) {
         ListView_DeleteAllItems(m_hListView);
         currentCount = 0;
     }
@@ -993,7 +994,7 @@ void MainWindow::AppendLog(const char* format, ...)
     char buf[1024];
     va_list args;
     va_start(args, format);
-    vsnprintf(buf, sizeof(buf) - 1, format, args);
+    vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
     buf[sizeof(buf) - 1] = '\0';
 

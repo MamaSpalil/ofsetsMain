@@ -106,12 +106,23 @@ static void TrackerThread(LPVOID param)
                                      0, 0, MUTRACKER_SHMEM_SIZE);
         if (pView) {
             g_pSharedHeader = static_cast<SharedMemHeader*>(pView);
-            memset(g_pSharedHeader, 0, sizeof(SharedMemHeader));
-            g_pSharedHeader->magic      = 0x4D555452; /* "MUTR" */
-            g_pSharedHeader->version    = MUTRACKER_VERSION;
-            g_pSharedHeader->bufferSize = MUTRACKER_SHMEM_SIZE;
-            g_pSharedHeader->injectedPid = GetCurrentProcessId();
-            g_pSharedHeader->dllReady   = true;
+            /* Zero only the header fields, not the entire large structure */
+            g_pSharedHeader->magic        = 0x4D555452; /* "MUTR" */
+            g_pSharedHeader->version      = MUTRACKER_VERSION;
+            g_pSharedHeader->writeIndex   = 0;
+            g_pSharedHeader->readIndex    = 0;
+            g_pSharedHeader->bufferSize   = MUTRACKER_SHMEM_SIZE;
+            g_pSharedHeader->injectedPid  = GetCurrentProcessId();
+            g_pSharedHeader->dllReady     = true;
+            g_pSharedHeader->tracingEnabled = false;
+            g_pSharedHeader->totalRecords = 0;
+            g_pSharedHeader->droppedRecords = 0;
+            g_pSharedHeader->functionCount = 0;
+            g_pSharedHeader->moduleCount  = 0;
+            g_pSharedHeader->activeHookCount = 0;
+            g_pSharedHeader->totalCalls   = 0;
+            g_pSharedHeader->uptimeMs     = 0;
+            g_pSharedHeader->statusText[0] = '\0';
             MULOG_INFO("SharedMemory IPC initialized (4 MB)");
         } else {
             MULOG_WARN("Failed to map shared memory view (error: %d)",

@@ -114,7 +114,7 @@ bool TraceViewer::Update()
 
     /* Copy status text safely */
     char buf[256];
-    memcpy(buf, (const char*)m_pHeader->statusText, sizeof(buf) - 1);
+    strncpy(buf, (const char*)m_pHeader->statusText, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
     m_stats.statusText = buf;
 
@@ -139,12 +139,12 @@ bool TraceViewer::Update()
 
         /* Safe string copy */
         char nameBuf[128];
-        memcpy(nameBuf, src.name, sizeof(nameBuf) - 1);
+        strncpy(nameBuf, src.name, sizeof(nameBuf) - 1);
         nameBuf[sizeof(nameBuf) - 1] = '\0';
         entry.name = nameBuf;
 
         char modBuf[64];
-        memcpy(modBuf, src.moduleName, sizeof(modBuf) - 1);
+        strncpy(modBuf, src.moduleName, sizeof(modBuf) - 1);
         modBuf[sizeof(modBuf) - 1] = '\0';
         entry.moduleName = modBuf;
 
