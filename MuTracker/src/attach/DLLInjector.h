@@ -2,6 +2,7 @@
  * DLLInjector.h - DLL Injection into Remote Process
  *
  * Injects a DLL into a target process using CreateRemoteThread + LoadLibrary.
+ * All injection attempts are logged to a text file with detailed diagnostics.
  */
 
 #ifndef MUTRACKER_DLL_INJECTOR_H
@@ -9,6 +10,8 @@
 
 #include <cstdint>
 #include <string>
+#include <fstream>
+#include <mutex>
 
 namespace MuTracker {
 
@@ -30,6 +33,14 @@ class DLLInjector {
 public:
     DLLInjector();
     ~DLLInjector();
+
+    /*
+     * Set the path for the injection log file.
+     * All injection steps and errors will be logged to this file.
+     *
+     * @param logFilePath   Path to the log file (e.g., "injection_log.txt")
+     */
+    void SetLogFile(const std::string& logFilePath);
 
     /*
      * Inject a DLL into a remote process.
@@ -66,6 +77,19 @@ private:
 
     /* Internal: Get module handle in remote process */
     uintptr_t GetRemoteModuleHandle(uint32_t pid, const char* moduleName);
+
+    /* Internal: Enable SeDebugPrivilege for the current process */
+    bool EnableDebugPrivilege();
+
+    /* Internal: Write a timestamped message to the injection log file */
+    void LogInject(const char* fmt, ...);
+
+    /* Internal: Get current timestamp string */
+    std::string GetTimestamp() const;
+
+    /* Log file */
+    std::ofstream   m_logFile;
+    std::mutex      m_logMutex;
 };
 
 } /* namespace MuTracker */

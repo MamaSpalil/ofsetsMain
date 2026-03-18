@@ -86,7 +86,8 @@ public:
     void AppendLog(const char* format, ...);
 
     /* Set injection callbacks */
-    using InjectCallback = std::function<bool(DWORD pid, const std::wstring& dllPath)>;
+    /* InjectCallback returns an error message string: empty on success, non-empty on failure */
+    using InjectCallback = std::function<std::string(DWORD pid, const std::wstring& dllPath)>;
     using EjectCallback  = std::function<bool(DWORD pid)>;
     using FindCallback   = std::function<DWORD(const char* procName)>;
 

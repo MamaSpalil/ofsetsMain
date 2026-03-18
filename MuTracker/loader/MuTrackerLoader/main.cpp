@@ -53,7 +53,7 @@ static DWORD FindProcessCallback(const char* procName)
 /*  Callback: Inject DLL                                               */
 /* ================================================================== */
 
-static bool InjectCallback(DWORD pid, const std::wstring& dllPath)
+static std::string InjectCallback(DWORD pid, const std::wstring& dllPath)
 {
     /* Convert wide path to narrow for the injector */
     char narrowPath[MAX_PATH];
@@ -61,7 +61,10 @@ static bool InjectCallback(DWORD pid, const std::wstring& dllPath)
                          narrowPath, MAX_PATH, nullptr, nullptr);
 
     auto result = g_injector.Inject(pid, narrowPath);
-    return result.success;
+    if (result.success) {
+        return "";  /* empty = success */
+    }
+    return result.errorMessage;
 }
 
 /* ================================================================== */
@@ -93,6 +96,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/,
         Config::CreateDefault("config.json");
         g_config.Load("config.json");
     }
+
+    /* Initialize injection log file */
+    g_injector.SetLogFile("injection_log.txt");
+    MULOG_INFO("Injection log file: injection_log.txt");
 
     /* Create and show the main window */
     MainWindow mainWindow;
