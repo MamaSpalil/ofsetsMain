@@ -1,16 +1,22 @@
 /*
  * MuTrackerDLL - Injectable DLL for MuOnline Process Tracing
  *
- * This DLL is injected into the main.exe process and demonstrates:
- *   1. Finding patterns (55 8B EC = function prologue) in main.exe
- *   2. Installing inline hooks with trampolines
- *   3. Logging addresses, offsets, and call counts to console
- *   4. Clean unhooking on DLL unload
+ * This DLL is injected into the main.exe process and:
+ *   1. Creates SharedMemory for IPC with the Loader GUI
+ *   2. Finds patterns (55 8B EC = function prologue) in main.exe
+ *   3. Installs inline hooks with trampolines
+ *   4. Publishes trace data to SharedMemory for real-time display
+ *   5. Clean unhooking on DLL unload
  *
- * Compile: MSVC 2022, x86 (32-bit), no external dependencies
+ * Compile: MSVC 2019+ (v142), C++17, x86/x64
  */
 
 #ifdef _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define _CRT_SECURE_NO_WARNINGS
+#include <Windows.h>
 
 #include "../src/core/MemoryUtils.h"
 #include "../src/core/PatternScanner.h"
@@ -19,9 +25,10 @@
 #include "../src/log/Logger.h"
 #include "../src/config/Config.h"
 #include "../src/attach/ProcessAttacher.h"
+#include "../Shared/SharedStructs.h"
 
-#include <windows.h>
 #include <cstdio>
+#include <cstring>
 #include <atomic>
 #include <thread>
 #include <chrono>
@@ -39,6 +46,10 @@ static CallTracer       g_tracer;
 static Config           g_config;
 static std::atomic<bool> g_running(false);
 static HMODULE          g_hModule = nullptr;
+
+/* SharedMemory IPC */
+static HANDLE           g_hSharedMem = nullptr;
+static SharedMemHeader* g_pSharedHeader = nullptr;
 
 /* ================================================================== */
 /*  Generic Detour Function                                            */
@@ -81,6 +92,35 @@ static void TrackerThread(LPVOID param)
     log.LogHeader("MuTracker - MuOnline Process Tracker");
 
     MULOG_INFO("MuTracker DLL loaded in process %d", GetCurrentProcessId());
+
+    /* ============================================================== */
+    /*  Initialize SharedMemory IPC for Loader GUI                     */
+    /* ============================================================== */
+
+    g_hSharedMem = CreateFileMappingW(
+        INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,
+        0, MUTRACKER_SHMEM_SIZE, MUTRACKER_SHMEM_NAME);
+
+    if (g_hSharedMem) {
+        void* pView = MapViewOfFile(g_hSharedMem, FILE_MAP_ALL_ACCESS,
+                                     0, 0, MUTRACKER_SHMEM_SIZE);
+        if (pView) {
+            g_pSharedHeader = static_cast<SharedMemHeader*>(pView);
+            memset(g_pSharedHeader, 0, sizeof(SharedMemHeader));
+            g_pSharedHeader->magic      = 0x4D555452; /* "MUTR" */
+            g_pSharedHeader->version    = MUTRACKER_VERSION;
+            g_pSharedHeader->bufferSize = MUTRACKER_SHMEM_SIZE;
+            g_pSharedHeader->injectedPid = GetCurrentProcessId();
+            g_pSharedHeader->dllReady   = true;
+            MULOG_INFO("SharedMemory IPC initialized (4 MB)");
+        } else {
+            MULOG_WARN("Failed to map shared memory view (error: %d)",
+                        GetLastError());
+        }
+    } else {
+        MULOG_WARN("Failed to create shared memory (error: %d)",
+                    GetLastError());
+    }
 
     /* Load configuration */
     bool configLoaded = g_config.Load("config.json");
@@ -170,7 +210,34 @@ static void TrackerThread(LPVOID param)
                g_scanner.GetCacheMisses());
 
     /* ============================================================== */
-    /*  Step 2: Demonstrate inline hooking                             */
+    /*  Step 2: Publish discovered functions to SharedMemory           */
+    /* ============================================================== */
+
+    if (g_pSharedHeader && !prologues.empty()) {
+        uint32_t count = 0;
+        for (size_t i = 0; i < prologues.size() &&
+             count < MUTRACKER_MAX_FUNCTIONS; ++i) {
+            auto& entry = g_pSharedHeader->functions[count];
+            entry.address    = prologues[i].address;
+            entry.offset     = prologues[i].offset;
+            entry.totalCalls = 0;
+            entry.callsPerSecond = 0;
+            entry.lastThreadId   = 0;
+            entry.isHooked       = false;
+
+            /* Generate name: sub_XXXXXXXX */
+            sprintf_s(entry.name, sizeof(entry.name),
+                       "sub_%08X", static_cast<uint32_t>(prologues[i].offset));
+            sprintf_s(entry.moduleName, sizeof(entry.moduleName),
+                       "main.exe");
+            count++;
+        }
+        g_pSharedHeader->functionCount = count;
+        MULOG_INFO("Published %u functions to SharedMemory", count);
+    }
+
+    /* ============================================================== */
+    /*  Step 3: Demonstrate inline hooking                             */
     /*  (Only hook first prologue as demonstration)                    */
     /* ============================================================== */
 
@@ -190,18 +257,32 @@ static void TrackerThread(LPVOID param)
          * with matching calling convention. This is a demonstration. */
         MULOG_INFO("Hook engine ready. Active hooks: %zu",
                    g_hookEngine.GetActiveHookCount());
+
+        if (g_pSharedHeader) {
+            g_pSharedHeader->activeHookCount =
+                static_cast<uint32_t>(g_hookEngine.GetActiveHookCount());
+        }
     }
 
     /* ============================================================== */
-    /*  Step 3: Monitoring loop                                        */
+    /*  Step 4: Monitoring loop                                        */
     /* ============================================================== */
 
     log.LogHeader("Real-Time Monitoring");
     MULOG_INFO("Monitoring started. DLL will unload on process exit.");
     MULOG_INFO("Check MuTracker.log for full output.");
 
+    if (g_pSharedHeader) {
+        g_pSharedHeader->tracingEnabled = true;
+        sprintf_s(g_pSharedHeader->statusText,
+                   sizeof(g_pSharedHeader->statusText),
+                   "Monitoring active");
+    }
+
     /* Run monitoring loop */
     uint32_t updateCounter = 0;
+    auto startTime = std::chrono::steady_clock::now();
+
     while (g_running) {
         /* Update tracer stats every second */
         if (updateCounter % 10 == 0) {
@@ -216,6 +297,19 @@ static void TrackerThread(LPVOID param)
                             stats.avgCallsPerSec,
                             stats.elapsedSeconds);
             }
+
+            /* Publish stats to SharedMemory for GUI display */
+            if (g_pSharedHeader) {
+                g_pSharedHeader->totalCalls    = stats.totalCalls;
+                g_pSharedHeader->activeHookCount =
+                    static_cast<uint32_t>(g_hookEngine.GetActiveHookCount());
+
+                auto elapsed = std::chrono::steady_clock::now() - startTime;
+                g_pSharedHeader->uptimeMs =
+                    static_cast<uint64_t>(
+                        std::chrono::duration_cast<std::chrono::milliseconds>(
+                            elapsed).count());
+            }
         }
 
         updateCounter++;
@@ -223,7 +317,7 @@ static void TrackerThread(LPVOID param)
     }
 
     /* ============================================================== */
-    /*  Step 4: Clean shutdown - remove all hooks                      */
+    /*  Step 5: Clean shutdown - remove all hooks                      */
     /* ============================================================== */
 
     log.LogHeader("Shutdown");
@@ -231,6 +325,15 @@ static void TrackerThread(LPVOID param)
 
     g_hookEngine.RemoveAllHooks();
     MULOG_INFO("All hooks removed cleanly");
+
+    /* Mark SharedMemory as shutting down */
+    if (g_pSharedHeader) {
+        g_pSharedHeader->dllReady = false;
+        g_pSharedHeader->tracingEnabled = false;
+        sprintf_s(g_pSharedHeader->statusText,
+                   sizeof(g_pSharedHeader->statusText),
+                   "DLL unloaded");
+    }
 
     /* Export trace data */
     g_tracer.Export("trace_output.log", "log");
@@ -242,6 +345,16 @@ static void TrackerThread(LPVOID param)
     g_tracer.Shutdown();
     g_hookEngine.Shutdown();
     g_memory.Shutdown();
+
+    /* Clean up SharedMemory */
+    if (g_pSharedHeader) {
+        UnmapViewOfFile(g_pSharedHeader);
+        g_pSharedHeader = nullptr;
+    }
+    if (g_hSharedMem) {
+        CloseHandle(g_hSharedMem);
+        g_hSharedMem = nullptr;
+    }
 
     MULOG_INFO("MuTracker shutdown complete");
     log.Shutdown();
