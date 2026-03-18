@@ -14,7 +14,7 @@ namespace MuTracker {
 
 /* Injection method */
 enum class InjectionMethod {
-    LoadLibrary,        /* CreateRemoteThread + LoadLibraryA */
+    LoadLib,            /* CreateRemoteThread + LoadLibraryA */
     ManualMap           /* Manual PE mapping (advanced, for anti-cheat bypass) */
 };
 
@@ -40,7 +40,7 @@ public:
      * @return          Injection result
      */
     InjectionResult Inject(uint32_t pid, const std::string& dllPath,
-                            InjectionMethod method = InjectionMethod::LoadLibrary);
+                            InjectionMethod method = InjectionMethod::LoadLib);
 
     /*
      * Eject (unload) a previously injected DLL.

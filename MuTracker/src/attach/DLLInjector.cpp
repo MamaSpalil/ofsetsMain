@@ -25,7 +25,7 @@ InjectionResult DLLInjector::Inject(uint32_t pid, const std::string& dllPath,
                                       InjectionMethod method)
 {
     switch (method) {
-    case InjectionMethod::LoadLibrary:
+    case InjectionMethod::LoadLib:
         return InjectLoadLibrary(pid, dllPath);
     case InjectionMethod::ManualMap:
         /* Not implemented in first step */
