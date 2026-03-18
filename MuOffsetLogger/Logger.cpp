@@ -23,10 +23,7 @@ BOOL Logger_Init(const char* logFilePath)
     if (g_Initialized)
         return TRUE;
 
-    /* Создание консольного окна */
-    AllocConsole();
-    SetConsoleTitleA("MuOffsetLogger - MU Online main.exe Offset Analyzer");
-
+    /* Получение хэндла консоли (для EXE консоль уже существует) */
     g_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     if (g_hConsole == INVALID_HANDLE_VALUE)
         return FALSE;
@@ -48,9 +45,6 @@ BOOL Logger_Init(const char* logFilePath)
         windowSize.Bottom = 50;
         SetConsoleWindowInfo(g_hConsole, TRUE, &windowSize);
     }
-
-    /* Перенаправление stdout в консоль */
-    freopen("CONOUT$", "w", stdout);
 
     /* Открытие файла для записи */
     g_LogFile = fopen(logFilePath, "w");
@@ -106,7 +100,6 @@ void Logger_Shutdown(void)
         g_LogFile = NULL;
     }
 
-    FreeConsole();
     g_Initialized = FALSE;
 }
 
