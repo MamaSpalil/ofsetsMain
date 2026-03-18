@@ -833,7 +833,7 @@ int main(int argc, char* argv[])
 
             /* Инициализация базы данных офсетов */
             GetPathInExeDir(OSTORE_DB_FILENAME, dbPath, MAX_PATH);
-            OffsetStore_Init(dbPath3);
+            OffsetStore_Init(dbPath);
 
             Logger_Write(COLOR_HEADER,
                 "\n  MuOffsetLogger v2.0 - MU Online main.exe"
