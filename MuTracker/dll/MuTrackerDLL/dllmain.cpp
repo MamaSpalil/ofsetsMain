@@ -357,8 +357,11 @@ static void TrackerThread(LPVOID param)
             /*
              * Sample variables from .data section at regular intervals.
              * Track up to MUTRACKER_MAX_VARIABLES entries.
+             * Names are auto-generated as var_XXXXXXXX (hex offset from
+             * module base) since no symbol information is available.
              */
-            size_t stride = dataSize / MUTRACKER_MAX_VARIABLES;
+            size_t maxVars = MUTRACKER_MAX_VARIABLES;
+            size_t stride = (maxVars > 0) ? (dataSize / maxVars) : dataSize;
             if (stride < sizeof(uint32_t)) stride = sizeof(uint32_t);
 
             for (size_t off = 0;
@@ -507,7 +510,7 @@ static void TrackerThread(LPVOID param)
             auto currentModules = g_memory.EnumModules();
             uint32_t knownCount = g_pSharedHeader->moduleCount;
 
-            if (currentModules.size() != prevModuleCount) {
+            if (currentModules.size() != static_cast<size_t>(prevModuleCount)) {
                 MULOG_INFO("[MODULE_CHANGE] Module count changed: %zu -> %zu",
                            static_cast<size_t>(prevModuleCount),
                            currentModules.size());
