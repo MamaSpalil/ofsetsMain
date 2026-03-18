@@ -150,6 +150,7 @@ target_link_libraries(MuTrackerDLL PRIVATE
 
 target_include_directories(MuTrackerDLL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shared
 )
 
 # Set DLL output name
@@ -160,21 +161,44 @@ set_target_properties(MuTrackerDLL PROPERTIES
 )
 
 # ==========================================================
-# MuTrackerLoader - External Launcher
+# MuTrackerLoader - External GUI Launcher
 # ==========================================================
 
-add_executable(MuTrackerLoader
+# GUI source files
+set(GUI_SOURCES
+    loader/MuTrackerLoader/MainWindow.cpp
+    loader/MuTrackerLoader/TraceViewer.cpp
+)
+set(GUI_HEADERS
+    loader/MuTrackerLoader/MainWindow.h
+    loader/MuTrackerLoader/TraceViewer.h
+    loader/MuTrackerLoader/resource.h
+)
+set(SHARED_HEADERS
+    Shared/SharedStructs.h
+    Shared/IPC_Protocol.h
+)
+
+add_executable(MuTrackerLoader WIN32
     loader/MuTrackerLoader/main.cpp
+    ${GUI_SOURCES}
+    ${GUI_HEADERS}
+    ${SHARED_HEADERS}
     ${ATTACH_SOURCES}
     ${ATTACH_HEADERS}
 )
 
 target_link_libraries(MuTrackerLoader PRIVATE
     MuTrackerLib
+    comctl32
+    uxtheme
+    dwmapi
+    comdlg32
 )
 
 target_include_directories(MuTrackerLoader PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Shared
 )
 
 set_target_properties(MuTrackerLoader PROPERTIES
@@ -182,10 +206,10 @@ set_target_properties(MuTrackerLoader PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# Console subsystem for Loader
+# Windows GUI subsystem for Loader
 if(MSVC)
     set_target_properties(MuTrackerLoader PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:CONSOLE"
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:wWinMainCRTStartup"
     )
 endif()
 
@@ -220,3 +244,5 @@ source_group("Disasm"   FILES ${DISASM_SOURCES} ${DISASM_HEADERS})
 source_group("Attach"   FILES ${ATTACH_SOURCES} ${ATTACH_HEADERS})
 source_group("Log"      FILES ${LOG_SOURCES} ${LOG_HEADERS})
 source_group("Config"   FILES ${CONFIG_SOURCES} ${CONFIG_HEADERS})
+source_group("GUI"      FILES ${GUI_SOURCES} ${GUI_HEADERS})
+source_group("Shared"   FILES ${SHARED_HEADERS})
