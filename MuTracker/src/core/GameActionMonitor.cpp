@@ -126,7 +126,7 @@ const char* GameActionMonitor::GetKeyName(uint32_t vkCode) {
     if (vkCode < 256 && VK_KEY_NAMES[vkCode] != nullptr) {
         return VK_KEY_NAMES[vkCode];
     }
-    static char buf[16];
+    static thread_local char buf[16];
     sprintf_s(buf, sizeof(buf), "0x%02X", vkCode);
     return buf;
 }
@@ -191,7 +191,7 @@ const char* GameActionMonitor::GetMapName(uint32_t mapId) {
     if (mapId < static_cast<uint32_t>(MAP_NAME_COUNT)) {
         return MAP_NAMES[mapId];
     }
-    static char buf[32];
+    static thread_local char buf[32];
     sprintf_s(buf, sizeof(buf), "Map_%u", mapId);
     return buf;
 }
@@ -809,7 +809,7 @@ void GameActionMonitor::DetectChanges()
     QueryPerformanceCounter(&qpc);
 
     /* --- HP Changed --- */
-    if (m_currState.hp != m_prevState.hp && m_prevState.hp != 0) {
+    if (m_currState.hp != m_prevState.hp && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::HPChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -831,7 +831,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- MP Changed --- */
-    if (m_currState.mp != m_prevState.mp && m_prevState.mp != 0) {
+    if (m_currState.mp != m_prevState.mp && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::MPChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -855,7 +855,7 @@ void GameActionMonitor::DetectChanges()
     /* --- Level Up --- */
     if (m_currState.level != m_prevState.level &&
         m_currState.level > m_prevState.level &&
-        m_prevState.level > 0) {
+        m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::LevelUp;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -872,7 +872,7 @@ void GameActionMonitor::DetectChanges()
     /* --- Experience Gained --- */
     if (m_currState.exp != m_prevState.exp &&
         m_currState.exp > m_prevState.exp &&
-        m_prevState.exp > 0) {
+        m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::ExpGained;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -886,7 +886,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- Zen Changed --- */
-    if (m_currState.zen != m_prevState.zen && m_prevState.zen > 0) {
+    if (m_currState.zen != m_prevState.zen && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::ZenChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -909,7 +909,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- Strength Changed --- */
-    if (m_currState.str != m_prevState.str && m_prevState.str > 0) {
+    if (m_currState.str != m_prevState.str && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::StrChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -923,7 +923,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- Agility Changed --- */
-    if (m_currState.agi != m_prevState.agi && m_prevState.agi > 0) {
+    if (m_currState.agi != m_prevState.agi && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::AgiChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -937,7 +937,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- Vitality Changed --- */
-    if (m_currState.vit != m_prevState.vit && m_prevState.vit > 0) {
+    if (m_currState.vit != m_prevState.vit && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::VitChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -951,7 +951,7 @@ void GameActionMonitor::DetectChanges()
     }
 
     /* --- Energy Changed --- */
-    if (m_currState.ene != m_prevState.ene && m_prevState.ene > 0) {
+    if (m_currState.ene != m_prevState.ene && m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::EneChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -966,7 +966,7 @@ void GameActionMonitor::DetectChanges()
 
     /* --- Kill Count Changed (Player Kill) --- */
     if (m_currState.killCount > m_prevState.killCount &&
-        m_prevState.killCount > 0) {
+        m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::PlayerKill;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -993,7 +993,7 @@ void GameActionMonitor::DetectChanges()
 
     /* --- Death Count Changed --- */
     if (m_currState.deathCount > m_prevState.deathCount &&
-        m_prevState.deathCount > 0) {
+        m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::PlayerDeath;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
@@ -1007,7 +1007,7 @@ void GameActionMonitor::DetectChanges()
 
     /* --- Map Changed --- */
     if (m_currState.currentMapId != m_prevState.currentMapId &&
-        m_prevState.currentMapId != 0) {
+        m_prevState.initialized) {
         memset(&event, 0, sizeof(event));
         event.type = GameActionType::MapChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
