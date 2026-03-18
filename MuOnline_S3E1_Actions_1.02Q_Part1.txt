@@ -1,0 +1,2006 @@
+========================================================================
+  MuOnline Season 3 Episode 1 — Client Version 1.02.19 (1.02Q)
+  FULL ACTION / EVENT LIST FOR OFFSET & FUNCTION TRACKING
+  Target: main.exe (MuOnline Client Process)
+========================================================================
+
+FORMAT:
+  [ACTION/EVENT], searching for offset: offset found, searching for function:
+  function found, searching for variable: variable found, searching for module:
+  module found.
+
+NOTE: All actions are listed in execution order starting from process launch.
+  Variables marked %s = string, %d = integer, %f = float.
+
+========================================================================
+  SECTION 1 — PROCESS INITIALIZATION
+========================================================================
+
+[1.001] Launched main.exe (process created, PE headers loaded into memory),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.002] CRT/runtime initialized (static constructors executed, heap allocated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.003] WinMain() entry point reached,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.004] Loaded module: d3d8.dll (Direct3D 8 initialization),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.005] Loaded module: dinput8.dll (DirectInput 8 initialization),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.006] Loaded module: dsound.dll (DirectSound initialization),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.007] Loaded module: winmm.dll (Windows Multimedia),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.008] Loaded module: ws2_32.dll (Winsock 2 network layer),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.009] WSAStartup() called — Winsock initialized (version 2.2),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.010] Read configuration file: main.ini / setup.ini (server IP, port, settings),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.011] Window class registered (RegisterClassEx — "MuOnline"),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.012] Application window created (CreateWindowEx — hWnd assigned),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[1.013] Window shown and focused (ShowWindow / SetForegroundWindow),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 2 — DIRECT3D 8 / RENDERING INITIALIZATION
+========================================================================
+
+[2.001] IDirect3D8 object created (Direct3DCreate8),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.002] Adapter capabilities enumerated (GetAdapterDisplayMode / GetDeviceCaps),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.003] IDirect3DDevice8 created (CreateDevice — HAL or REF device),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.004] Render states initialized (Z-buffer, alpha blend, fog, lighting),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.005] Vertex and index buffers allocated (CreateVertexBuffer / CreateIndexBuffer),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.006] Texture manager initialized (CreateTexture for UI and scene textures),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.007] Shader / FVF vertex format set (SetVertexShader),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.008] Camera / view matrix initialized (projection and world matrix set),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.009] Back buffer and depth-stencil surface created,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[2.010] Frame render loop started (BeginScene / EndScene / Present cycle),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 3 — DIRECTINPUT / AUDIO INITIALIZATION
+========================================================================
+
+[3.001] DirectInput8 object created (DirectInput8Create),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.002] Keyboard device created and acquired (IDirectInputDevice8 — keyboard),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.003] Mouse device created and acquired (IDirectInputDevice8 — mouse),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.004] DirectSound object created (DirectSoundCreate8),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.005] Sound cooperative level set (SetCooperativeLevel — DSSCL_PRIORITY),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.006] Primary sound buffer created (CreateSoundBuffer — primary),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[3.007] Background music loaded (BGM file — .mp3 / .ogg streamed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 4 — ASSET LOADING
+========================================================================
+
+[4.001] Data files mounted: Data\ directory scanned (*.bmd, *.ozb, *.ozt, *.ozj),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.002] Map terrain data loaded: ATT\ (attribute maps — walkable/blocked tiles),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.003] Encrypted data file opened (*.bmd decrypted via XOR key),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.004] Item definition table loaded (Item.bmd — ItemIndex, ItemName, ItemSlot,
+  RequiredStats, DamageMin, DamageMax, Defense, etc.),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.005] Monster definition table loaded (Monster.bmd — MonsterIndex, MonsterName,
+  HP, MP, Exp, Defense, AttackSpeed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.006] Skill definition table loaded (Skill.bmd — SkillIndex, SkillName,
+  ManaCost, Damage, Range, SkillType),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.007] Map texture atlas loaded (*.ozj — JPEG compressed terrain textures),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.008] UI texture atlas loaded (Interface\*.ozj — buttons, windows, icons),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.009] Character model loaded (*.bmd mesh — bone hierarchy, vertices, UV),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.010] Animation frames loaded (*.ozb — bone animation keyframes),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.011] Effect textures loaded (Effect\*.ozj — particle and spell textures),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[4.012] Sound effects loaded (Sound\*.wav / *.mp3 — attack, footstep, UI click),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 5 — NETWORK / SERVER CONNECTION
+========================================================================
+
+[5.001] TCP socket created (socket — AF_INET, SOCK_STREAM, IPPROTO_TCP),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.002] Connecting to game server: IP=%s PORT=%d (connect called),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.003] Connection established — TCP handshake completed (connect returned 0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.004] Handshake packet received from server (C1/C2 packet header — opcode 0xF4),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.005] Encryption key received (XOR / 3DES session key from server),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.006] Outgoing packet encrypted and sent (send — encrypted payload),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.007] Incoming packet received and decrypted (recv — decrypted payload),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.008] Packet parse loop running (ProcessPacket — switch on opcode byte),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.009] Server disconnected — socket closed (closesocket — connection lost),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[5.010] Reconnect attempt initiated after connection loss,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 6 — LOGIN SCREEN
+========================================================================
+
+[6.001] Login screen rendered (State_Login — background image, input boxes drawn),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.002] User clicked Account name input field (focus set — cursor blink started),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.003] User typed account name character (WM_CHAR — AccountName[] appended),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.004] User clicked Password input field (focus set — masked input ***),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.005] User typed password character (WM_CHAR — Password[] appended, displayed as *),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.006] User pressed Backspace in input field (last character removed from buffer),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.007] User clicked "OK" / pressed Enter to submit login,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.008] Login request packet sent to server (opcode 0xF1 01 — AccountID + Password),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.009] Login SUCCESS packet received from server (opcode 0xF1 00 — result code 0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.010] Login FAILED packet received — wrong password or account banned
+  (opcode 0xF1 00 — result code != 0, error message displayed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.011] Account blocked/banned notification shown (ErrorMessage = %s displayed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[6.012] User clicked "Exit" button on login screen (WM_CLOSE sent — process exit),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 7 — CHARACTER SELECTION SCREEN
+========================================================================
+
+[7.001] Character list received from server (opcode 0xF3 00 — CharacterList packet),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.002] Character selection screen rendered (up to 5 character slots displayed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.003] User hovered over character slot %d (character name + class shown in tooltip),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.004] User clicked character slot %d to select character (CharacterIndex = %d set),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.005] User clicked "Start" / double-clicked character — enter game request sent
+  (opcode 0xF3 01 — CharacterName = %s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.006] User clicked "Create Character" button (creation screen opened),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.007] User typed new character name (CharName[] input, max 10 chars),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.008] User selected character class: Dark Wizard (ClassType = 0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.009] User selected character class: Dark Knight (ClassType = 1),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.010] User selected character class: Fairy Elf (ClassType = 2),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.011] User selected character class: Magic Gladiator (ClassType = 3 — unlocked at level 220),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.012] User selected character class: Dark Lord (ClassType = 4 — unlocked at level 250),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.013] Character creation request sent to server (opcode 0xF3 02 — Name + Class),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.014] Character creation SUCCESS — new character added to slot list,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.015] Character creation FAILED — name already taken or invalid characters
+  (error string displayed on screen),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.016] User clicked "Delete Character" button (confirmation dialog shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.017] User confirmed character deletion — delete request sent
+  (opcode 0xF3 03 — CharacterName + SecurityCode),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[7.018] Character deletion SUCCESS — slot cleared in character list,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 8 — GAME WORLD ENTRY & MAP LOADING
+========================================================================
+
+[8.001] Character enter game response received (opcode 0xF3 03 — position, map ID),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.002] Map %d loaded: %s (terrain vertices, height map, ATT data initialized),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.003] Player spawn position set: X=%d Y=%d Map=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.004] Character stats received from server: Level=%d HP=%d MaxHP=%d
+  MP=%d MaxMP=%d SD=%d MaxSD=%d AG=%d MaxAG=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.005] Character base stats received: Strength=%d Dexterity=%d Vitality=%d
+  Energy=%d Command=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.006] Character Zen (gold) amount received: Zen=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.007] Character Experience received: Exp=%d NextLevelExp=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.008] Free stat points received: StatPoints=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.009] Free skill points received: SkillPoints=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.010] Equipment data received: all equipped item slots populated
+  (Helm, Armor, Gloves, Pants, Boots, Weapon, Shield, Wings, Pet),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.011] Inventory data received: inventory grid populated
+  (ItemIndex, ItemLevel, ItemOption, ItemLuck, ItemSkill, ItemExcOption),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.012] Skill list received: equipped skills array populated (SkillIndex[N]),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.013] Other players in range received (opcode 0x11 — ViewportAdd player list),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.014] Monsters in range received (opcode 0x11 — ViewportAdd monster list),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.015] Items on ground received (opcode 0x10 — ItemDrop list in view range),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.016] NPCs in range received (opcode 0x11 — NPC object list),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[8.017] Game world fully loaded — HUD rendered (HP/MP/SD/AG bars, minimap, chat),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 9 — CHARACTER MOVEMENT
+========================================================================
+
+[9.001] Player left-clicked on ground tile at X=%d Y=%d (move command issued),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.002] Path calculated from current position to target X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.003] Move packet sent to server (opcode 0xD7 — X, Y, Direction),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.004] Player walk animation started (AnimationIndex = WALK, speed = %f),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.005] Player run animation started (AnimationIndex = RUN — when speed > threshold),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.006] Player reached destination — idle animation (AnimationIndex = IDLE),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.007] Player position updated on server acknowledgment: X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.008] Player blocked by terrain (ATT flag = blocked — movement rejected),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.009] Player entered teleport zone / warp tile (warp trigger activated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.010] Player changed direction (Direction = %d updated without moving),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.011] Camera position updated (follows player at fixed offset — camera matrix recalculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[9.012] Player movement speed applied (SpeedFactor = %f — modified by AGI / equipment),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 10 — COMBAT: ATTACKING
+========================================================================
+
+[10.001] Player left-clicked on monster ObjectIndex=%d to attack,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.002] Attack range check: distance to target = %d (within melee range? YES/NO),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.003] Basic attack packet sent (opcode 0x11 — AttackTarget, Direction),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.004] Attack animation played (AnimationIndex = ATTACK_%d — weapon-specific),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.005] Hit result received from server: Damage=%d dealt to monster ObjectIndex=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.006] Damage number rendered above monster head: "%d" (DamageFont rendered),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.007] Monster HP reduced: MonsterHP=%d (HP bar updated over monster),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.008] Attack missed (Damage=0 — "Miss" text displayed, miss sound played),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.009] Critical hit landed (Damage=%d — red color, critical sound),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.010] Excellent hit landed (Damage=%d — gold color, excellent sound),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.011] Player shield (SD) blocked part of incoming damage (SDBlock = %d absorbed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.012] Player took damage: HP reduced by %d (DamageReceived=%d, CurrentHP=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.013] Player SD reduced by %d (CurrentSD=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.014] Player AG (Stamina) consumed by %d for skill use (CurrentAG=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.015] Monster killed — death animation played (ObjectIndex=%d, MonsterID=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.016] Monster removed from viewport after death (ObjectIndex=%d deleted from object list),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.017] Combo attack activated (ComboTrigger — BK skill sequence active),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.018] Auto-attack mode active (player holding LMB — continuous attack loop),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[10.019] Player attack speed tick: AttackSpeed=%d (attacks per second = %f),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 11 — COMBAT: SKILLS
+========================================================================
+
+[11.001] Player pressed skill hotkey slot 1 (SkillIndex=%d activated from hotbar slot 0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.002] Player pressed skill hotkey slot 2 (SkillIndex=%d activated from hotbar slot 1),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.003] Player pressed skill hotkey slot 3 (SkillIndex=%d activated from hotbar slot 2),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.004] Player pressed skill hotkey slot 4 (SkillIndex=%d activated from hotbar slot 3),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.005] Player pressed skill hotkey slot 5 (SkillIndex=%d activated from hotbar slot 4),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.006] Player pressed skill hotkey slot 6 (SkillIndex=%d activated from hotbar slot 5),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.007] Player pressed skill hotkey slot 7 (SkillIndex=%d activated from hotbar slot 6),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.008] Player pressed skill hotkey slot 8 (SkillIndex=%d activated from hotbar slot 7),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.009] Skill mana cost deducted: MP reduced by %d (SkillManaCost=%d, CurrentMP=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.010] Skill AG cost deducted: AG reduced by %d (CurrentAG=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.011] Skill cooldown started: SkillIndex=%d CooldownTime=%dms,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.012] Skill packet sent to server (opcode 0x19 — SkillIndex, TargetObject, Direction),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.013] Skill effect rendered: particle system spawned at X=%f Y=%f Z=%f,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.014] Skill sound played: SoundIndex=%d (skill-specific audio),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Dark Knight Skills --
+
+[11.015] Skill used: Slash (SkillIndex=0 — BK melee single target),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.016] Skill used: Twisting Slash (SkillIndex=1 — BK area spin attack),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.017] Skill used: Death Stab (SkillIndex=3 — BK piercing thrust),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.018] Skill used: Greater Fortitude (SkillIndex=7 — BK HP recovery buff),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.019] Skill used: Combo (ComboSkillIndex — BK: Slash+Twisting+Death sequence),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Dark Wizard Skills --
+
+[11.020] Skill used: Meteorite (SkillIndex=8 — DW bolt),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.021] Skill used: Lightning (SkillIndex=9 — DW chain lightning),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.022] Skill used: Ice Arrow (SkillIndex=16 — DW freeze projectile),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.023] Skill used: Fire Ball (SkillIndex=18 — DW single fire orb),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.024] Skill used: Greater Damage (SkillIndex=22 — DW power buff),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.025] Skill used: Teleport (SkillIndex=23 — DW blink to cursor position),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.026] Skill used: Soul Barrier (SkillIndex=24 — DW SD regeneration shield),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.027] Skill used: Energy Ball (SkillIndex=25 — DW/SM energy bolt),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Fairy Elf Skills --
+
+[11.028] Skill used: Heal (SkillIndex=2 — ELF single target HP restore),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.029] Skill used: Greater Defense (SkillIndex=4 — ELF defense buff),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.030] Skill used: Triple Shot (SkillIndex=11 — ELF 3-arrow burst),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.031] Skill used: Summon Monster (SkillIndex=30 — ELF pet summon scroll used),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.032] Skill used: Ice Arrow (SkillIndex=16 — ELF freezing arrow),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.033] Skill used: Penetration Arrow (SkillIndex=46 — ELF piercing shot),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Magic Gladiator Skills --
+
+[11.034] Skill used: Fire Slash (SkillIndex=48 — MG hybrid fire melee),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.035] Skill used: Gigantic Storm (SkillIndex=49 — MG tornado area),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Dark Lord Skills --
+
+[11.036] Skill used: Fireburst (SkillIndex=50 — DL ground-target explosion),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.037] Skill used: Chaotic Diseier (SkillIndex=51 — DL multi-target dark),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.038] Skill used: Lightning Storm (SkillIndex=52 — DL storm field),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.039] Skill used: Summon (SkillIndex=53 — DL summons party members to location),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+  -- Aura / Passive Skills --
+
+[11.040] Aura skill activated (toggle ON): SkillIndex=%d (passive effect started),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.041] Aura skill deactivated (toggle OFF): SkillIndex=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.042] Skill not available: insufficient MP (CurrentMP=%d < Required=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.043] Skill not available: insufficient AG (CurrentAG=%d < Required=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[11.044] Skill not available: level requirement not met (CharLevel=%d < Required=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 12 — CHARACTER STATISTICS & LEVELING
+========================================================================
+
+[12.001] Experience gained: +%d EXP (MonsterID=%d killed by PlayerName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.002] Experience bar updated: CurrentExp=%d / NextLevelExp=%d (%f%% full),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.003] Master experience gained: +%d MasterExp (post level 400 EXP track),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.004] Level up! CharLevel = %d (LevelUp packet received, stats recalculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.005] Level up effect played (golden aura particle effect + sound),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.006] StatPoints increased by 5 on level up (FreeStatPoints += 5),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.007] SkillPoints increased by 1 on level up (FreeSkillPoints += 1),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.008] Player opened Character Window (key C pressed — CharWindow visible = true),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.009] Player added 1 stat point to Strength (Strength += 1, FreePoints -= 1,
+  request sent opcode 0xF3 06 — StatType=0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.010] Player added 1 stat point to Agility (Agility += 1, FreePoints -= 1,
+  request sent opcode 0xF3 06 — StatType=1),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.011] Player added 1 stat point to Vitality (Vitality += 1, FreePoints -= 1,
+  request sent opcode 0xF3 06 — StatType=2),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.012] Player added 1 stat point to Energy (Energy += 1, FreePoints -= 1,
+  request sent opcode 0xF3 06 — StatType=3),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.013] Player added 1 stat point to Command (Command += 1, FreePoints -= 1,
+  request sent opcode 0xF3 06 — StatType=4, DL only),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.014] MaxHP recalculated after stat change (MaxHP = Base + Vitality * Factor),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.015] MaxMP recalculated after stat change (MaxMP = Base + Energy * Factor),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.016] MaxSD recalculated after equipment / stat change (MaxSD = ItemSD + SkillBonus),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.017] MaxAG recalculated (MaxAG = Base + Agility * Factor + Energy * Factor),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.018] Player HP regeneration tick: HP += %d (regen interval = %dms),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.019] Player MP regeneration tick: MP += %d (regen interval = %dms),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.020] Player SD regeneration tick (Soul Barrier active): SD += %d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.021] Player AG regeneration tick: AG += %d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.022] Player died (HP reached 0 — death packet received, death animation played),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.023] Player resurrection prompt shown ("Press OK to respawn at safe zone"),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.024] Player respawned at safe zone (RespawnPos X=%d Y=%d Map=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.025] Durability loss on death: item durability reduced for equipped items,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.026] Player reached level 400 — Master Level system unlocked,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.027] Master Skill Tree opened (key U — MasterSkillWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[12.028] Master Skill Point added to skill node (MasterSkillIndex=%d,
+  MasterLevel=%d, request sent to server),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 13 — INVENTORY & ITEMS
+========================================================================
+
+[13.001] Player opened Inventory window (key I or V pressed — InventoryWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.002] Player closed Inventory window (InventoryWindow hidden),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.003] Player left-clicked item in inventory (ItemSlot=%d — drag started),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.004] Player dragged item to new inventory slot (ItemFrom=%d ItemTo=%d,
+  move request sent opcode 0x16),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.005] Item move SUCCESS — inventory grid updated (slot positions swapped),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.006] Item move FAILED — destination slot occupied or out of bounds,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.007] Player double-clicked item to equip (ItemIndex=%d equipped to Slot=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.008] Item equipped: Slot=%d ItemName=%s Level=%d Option=%d (stats recalculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.009] Item unequipped from slot=%d (dragged back to inventory or right-click),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.010] Item requirement check failed (Level too low or Stat insufficient — red item glow),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.011] Player right-clicked equipped item (unequip / use context menu shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.012] Player pressed F1 — Use HP Potion (ItemSlot=%d, HPRestore=%d applied),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.013] Player pressed F2 — Use Mana Potion (ItemSlot=%d, MPRestore=%d applied),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.014] Player pressed F3 — Use SD / Shield Potion (ItemSlot=%d, SDRestore=%d applied),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.015] Player pressed F4 — Use Bless Potion / Buff Scroll (ItemSlot=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.016] Potion use packet sent to server (opcode 0x26 — SlotIndex, PotionType),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.017] HP Potion cooldown started (GlobalPotionCooldown = %dms),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.018] Held ALT key — item names on ground shown (GroundItemNames visible = true),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.019] Player pressed Space / left-clicked item on ground — pick up item
+  (PickupRequest opcode 0x22 — ItemObjectIndex=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.020] Item pickup SUCCESS: %d Zen picked up (Zen amount added to wallet),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.021] Item pickup SUCCESS: ItemName=%s (item added to inventory slot=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.022] Item pickup FAILED — inventory full (no free slot available),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.023] Item pickup FAILED — item owned by another player (pickup protection timer active),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.024] Player dropped item on ground (Shift+Click or drag outside inventory,
+  DropRequest opcode 0x23 — ItemSlot=%d X=%d Y=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.025] Drop confirmation dialog shown ("Do you want to drop %s?"),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.026] Item dropped: ItemName=%s appeared on ground at X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.027] Player destroyed item (Ctrl+Click — permanent delete),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.028] Item tooltip shown on mouse hover (ItemName, Level, Stats, Options, Durability),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.029] Item durability depleted (Durability=%d — item broken, no longer usable),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.030] Auto-pickup of Zen active (AltZ held — all nearby Zen picked up),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.031] Inventory expanded: Extended inventory slot unlocked (9th row visible),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[13.032] Item glow / option flag updated: Exc=%d Luck=%d Skill=%d Option=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 14 — SKILL WINDOW & ASSIGNMENT
+========================================================================
+
+[14.001] Player opened Skill Window (key S pressed — SkillWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.002] Player closed Skill Window (SkillWindow hidden),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.003] Skill available for learning (SkillIndex=%d — level requirement met),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.004] Skill learned: SkillIndex=%d (SkillPoint -= 1, skill added to skill list),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.005] Skill leveled up: SkillIndex=%d Level=%d (SkillPoint -= 1, damage increased),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.006] Player dragged skill to hotbar slot %d (SkillIndex=%d assigned to slot %d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.007] Player dragged item to hotbar slot %d (ItemIndex=%d assigned for quick use),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[14.008] Hotbar slot %d cleared (right-click on slot — skill/item removed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 15 — MAP & MINIMAP
+========================================================================
+
+[15.001] Player pressed M — Map window opened (MapWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.002] Map window closed (key M or Escape pressed — MapWindow hidden),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.003] Player clicked on map location (MapX=%d MapY=%d — move target set),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.004] Minimap dot updated (player position dot X=%d Y=%d refreshed on minimap),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.005] Party member position dot shown on minimap (PartyMemberIndex=%d X=%d Y=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.006] MapList (warp/gate list) shown — player clicked NPC gate or used /move,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[15.007] Player selected destination map from MapList: MapName=%s MapID=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 16 — CHAT SYSTEM
+========================================================================
+
+[16.001] Player pressed Enter — chat input box activated (ChatInput focused),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.002] Player typed character in chat input (ChatBuffer appended, char=%c),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.003] Player pressed Enter to send chat message (ChatType=Normal — broadcast to nearby),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.004] Normal chat message sent (opcode 0x00 — Message=%s, displayed above head),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.005] Whisper sent: /w %s %s (TargetName=%s, Message=%s, opcode 0x00 type=Whisper),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.006] Whisper received from %s: Message=%s (chat log appended — pink color),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.007] Global/Post message sent: /post %s (global broadcast — requires Jewel of Chaos),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.008] Guild chat sent: /g %s (message to all guild members only),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.009] Alliance chat sent: /a %s (message to all guild alliance members),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.010] Party chat sent: /p %s (message to party members only),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.011] Chat message received from other player (PlayerName=%s, Message=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.012] Chat log scrolled up (mouse wheel up on chat panel),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.013] Chat log scrolled down (mouse wheel down on chat panel),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.014] System message received and displayed in chat (yellow text — server notification),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.015] Player blocked via /block %s (BlockedList updated, messages filtered),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[16.016] Player command /add %s executed (friend add request sent),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 17 — NPC INTERACTION & SHOP
+========================================================================
+
+[17.001] Player double-clicked NPC (NPCObjectIndex=%d — NPC dialog opened),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.002] NPC shop window opened (ItemShopWindow shown — buy/sell tabs),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.003] Player browsed shop BUY tab (ShopItems list displayed — up to 40 items),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.004] Player clicked "Buy" on shop item: ItemIndex=%d Price=%d Zen,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.005] Buy request sent to server (opcode 0x32 — SlotIndex, ItemIndex, ItemClass),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.006] Buy SUCCESS: ItemName=%s added to inventory, Zen -= %d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.007] Buy FAILED: insufficient Zen (CurrentZen=%d < ItemPrice=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.008] Player browsed shop SELL tab (PlayerInventory shown for selling),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.009] Player clicked item in inventory to sell: ItemSlot=%d SellValue=%d Zen,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.010] Sell request sent to server (opcode 0x33 — SlotIndex),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.011] Sell SUCCESS: ItemName=%s sold, Zen += %d (CurrentZen=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.012] Sell FAILED: item is equipped or quest item (cannot sell),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.013] Player opened Repair NPC (Blacksmith / Guardian NPC dialog — repair tab),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.014] Player requested item repair: ItemSlot=%d RepairCost=%d Zen,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.015] Repair SUCCESS: ItemDurability restored to max, Zen -= %d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.016] Player opened Chaos Machine (Goblin NPC — Yossef dialog),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.017] Player opened Personal Vault / Storage NPC (StorageWindow shown — 8×7 grid),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.018] Item transferred from inventory to storage (StorageSlot=%d,
+  MoveRequest opcode 0x79),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.019] Item transferred from storage to inventory (InventorySlot=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.020] Personal Shop opened by player: /shop "%s" (PersonalStore shown to others),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.021] Player browsed another player's Personal Shop (PersonalShop opened — ItemList shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[17.022] Player bought item from Personal Shop: ItemName=%s Price=%d Zen,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 18 — CHAOS MACHINE (ITEM COMBINATION)
+========================================================================
+
+[18.001] Chaos Machine window opened (ChaosWindow shown — combination slot grid),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.002] Item placed in Chaos slot (ItemSlot=%d placed into ChaosGrid[%d]),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.003] Item removed from Chaos slot (item returned to inventory),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.004] Player clicked "Combine" button — combination request sent
+  (opcode 0x86 — CombinationType, all slot items listed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.005] Combination SUCCESS: ResultItem=%s created (success rate check passed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.006] Combination FAILED: all input items consumed (success rate check failed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.007] Wing creation attempt: Level 1 Wings (requires Chaos + items + Zen),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.008] Wing creation attempt: Level 2 Wings (requires Feather + items + Zen),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.009] Dinorant creation attempt (Chaos + Horn of Uniria x10),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.010] Item upgrade: +X (regular upgrade attempt — success depends on level),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.011] Item upgrade SUCCESS: ItemLevel increased to +%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.012] Item upgrade FAILED: ItemLevel +%d item destroyed (level >= 7 fail risk),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.013] Jewel of Bless used on item (ItemLevel += 1, safe upgrade, no failure risk),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.014] Jewel of Soul used on item (lucky roll for +option added),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.015] Jewel of Life used on item (additional option added to existing item),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.016] Jewel of Harmony used on item (Harmony option added/changed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.017] 10 Jewels of Bless combined into 1 Jewel Bundle (stack combine),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[18.018] 1 Jewel Bundle split back into 10 individual jewels,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 19 — SOCIAL: PARTY SYSTEM
+========================================================================
+
+[19.001] Player opened Party window (key O pressed — PartyWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.002] Player sent party invite: /invite %s (PartyInvite opcode 0x40 — TargetName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.003] Party invite received from %s (InviteDialog shown — Accept/Decline),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.004] Player accepted party invite (opcode 0x40 — AcceptFlag=1, party formed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.005] Player declined party invite (opcode 0x40 — AcceptFlag=0),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.006] Party member HP/MP bar updated in party window (MemberIndex=%d HP=%d MP=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.007] Party member moved to new map (MemberIndex=%d joined different map),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.008] Player left party: /leave (PartyLeave opcode 0x42),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.009] Player kicked from party: /kick %s (PartyKick opcode 0x43 — leader only),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.010] Party disbanded (leader left or kicked all — all members removed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[19.011] EXP shared with party (PartyExpShare — split between members in range),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 20 — SOCIAL: GUILD SYSTEM
+========================================================================
+
+[20.001] Player opened Guild window (key G pressed — GuildWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.002] Guild created: /gcreate %s (GuildCreate opcode — GuildName=%s,
+  requires level 200 + Zen + Symbol of Kundun),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.003] Guild invite sent: /ginvite %s (GuildInvite opcode — TargetName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.004] Guild invite received from %s (GuildInviteDialog shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.005] Player accepted guild invite (joined GuildName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.006] Player declined guild invite,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.007] Player left guild: /gleave,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.008] Player kicked from guild: /gkick %s (master only),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.009] Guild master transferred: /gmaster %s (ownership moved to TargetName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.010] Guild alliance proposed: /alliance %s (AllianceRequest — TargetGuild=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.011] Guild war declared: /rivalryguild %s (GuildWar — TargetGuild=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[20.012] Guild mark / logo rendered on guild members' backs (GuildMark texture drawn),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 21 — SOCIAL: FRIENDS & TRADE
+========================================================================
+
+[21.001] Player opened Friends list (key F pressed — FriendsWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.002] Friend added: /add %s (FriendAdd opcode — TargetName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.003] Friend online notification: %s is now online (FriendOnline packet received),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.004] Friend offline notification: %s went offline,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.005] Player right-clicked another player — context menu shown
+  (Trade / Party / Guild / Whisper / Block options),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.006] Trade request sent to player %s (TradeRequest opcode 0x36),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.007] Trade request received from %s (TradeDialog shown — Accept/Decline),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.008] Trade window opened (TradeWindow shown — two grids: own + partner),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.009] Player placed item in trade slot (TradeSlot=%d ItemIndex=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.010] Player set Zen amount in trade: TradeZen=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.011] Both players confirmed trade (TradeConfirm — both clicked OK),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.012] Trade completed: items and Zen exchanged successfully,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[21.013] Trade cancelled by one player (TradeCancel — window closed, items returned),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 22 — PvP & PK SYSTEM
+========================================================================
+
+[22.001] Player attacked another player (Ctrl+LMB on player — PKMode activated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.002] PK warning counter increased (PKCount += 1, player status changed to Hero/Murderer),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.003] Player status changed to "Hero" (PKCount < threshold — golden name),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.004] Player status changed to "Murderer" (PKCount >= threshold — red name, item drop on death),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.005] Player killed by another player (CharName=%s killed by PlayerName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.006] Player killed another player: %s (CharName=%s CHAR_NAME killed — PKCount recalculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.007] Item dropped on death due to PK status (Murderer — random item dropped at corpse),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.008] Duel request sent: /duel %s (DuelRequest opcode — TargetName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.009] Duel accepted — duel started (DuelActive=true, no item drop rules applied),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[22.010] Duel ended — winner: %s (DuelResult packet received),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 23 — EVENTS & SPECIAL ZONES
+========================================================================
+
+[23.001] Blood Castle Scroll used (BloodCastleEntry request sent — scroll consumed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.002] Blood Castle event started — map transition to BC map (Map=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.003] Blood Castle gate broken (StatueHP=0 — boss phase triggered),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.004] Blood Castle completed (ArchangelWeapon delivered — reward distributed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.005] Devil Square Scroll used (DevilSquareEntry request sent — scroll consumed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.006] Devil Square event started (DSMap=%d, timer=%dsec — waves of monsters),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.007] Devil Square wave %d completed (WaveNumber=%d, remaining time=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.008] Devil Square score updated: Score=%d (kills * points calculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.009] Devil Square reward received: Zen=%d ItemDrop=%s,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.010] Chaos Castle Invisible Cloak used (ChaosCastleEntry request sent),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.011] Chaos Castle event started (Battle Royale — last player standing wins),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.012] Chaos Castle platform tile destroyed (TileIndex=%d removed — shrinks arena),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.013] Chaos Castle player eliminated (fell off platform or died — out of event),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.014] Chaos Castle winner: %s (last player alive — reward granted),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.015] Castle Siege registration opened (CSRegWindow shown — siege schedule active),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.016] Castle Siege started (CSBattleActive=true — attacking/defending guilds confirmed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.017] Castle Siege crown captured (CrownObject interacted — owning guild changed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.018] Castle Siege ended — new Castle Lord: GuildName=%s,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.019] Illusion Temple event entered (IT entry via NPC),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[23.020] Kanturu event wave started (Kanturu map — boss summon phase),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 24 — PETS & MOUNTS
+========================================================================
+
+[24.001] Pet window opened (key P pressed — PetWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.002] Dinorant mount summoned (Dinorant item used — pet mounted, flight enabled),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.003] Player mounted on Dinorant — movement speed increased,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.004] Player dismounted Dinorant (pet item put back to inventory),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.005] Dark Horse summoned (DL pet — Dark Horse item used),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.006] Dark Horse EXP gained (PetEXP += %d — pet leveled combat),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.007] Dark Raven summoned (DL pet bird — attacks enemies autonomously),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.008] Fenrir mount summoned (Horn of Fenrir item equipped — Fenrir mount active),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.009] Pet HP reduced (PetHP=%d — pet took damage while active),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[24.010] Pet died (PetHP=0 — pet returned to item state, pet item durability reduced),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 25 — WARP / MAP CHANGE
+========================================================================
+
+[25.001] Player interacted with Gate/Warp NPC (GateNPC dialog — MapList shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.002] Player selected warp destination: MapName=%s MapID=%d (WarpRequest sent,
+  Zen cost deducted — ZenCost=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.003] Warp to Lorencia (MapID=0) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.004] Warp to Dungeon (MapID=1) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.005] Warp to Devias (MapID=2) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.006] Warp to Noria (MapID=3) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.007] Warp to Lost Tower (MapID=4) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.008] Warp to Atlans (MapID=7) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.009] Warp to Tarkan (MapID=8) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.010] Warp to Aida (MapID=33) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.011] Warp to Kanturu (MapID=37) initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.012] Map change packet received (opcode 0x1C — NewMapID=%d, X=%d, Y=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.013] Current map data cleared (viewport objects removed — monster/player list purged),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.014] New map terrain loaded (Map=%d height map and ATT recalculated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[25.015] Player spawned at new map position: X=%d Y=%d Map=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 26 — BOSS ENCOUNTERS
+========================================================================
+
+[26.001] Boss monster spawned in range: BossName=%s ObjectIndex=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[26.002] Dark Lord boss: Medusa appeared (special spawn notification shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[26.003] Boss: Kundun (Kalima 7) engaged (boss AI active — summons, aura),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[26.004] Boss: Selupan (Raklion) appeared (area boss in Kanturu),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[26.005] Boss killed: BossName=%s died at X=%d Y=%d (boss death animation + loot drop),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[26.006] Boss loot dropped: ItemName=%s dropped at X=%d Y=%d (rare item spawn),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 27 — HUD & UI ELEMENTS
+========================================================================
+
+[27.001] HP bar value updated on HUD (HPBar fill% = CurrentHP/MaxHP * 100),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.002] MP bar value updated on HUD (MPBar fill% = CurrentMP/MaxMP * 100),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.003] SD bar value updated on HUD (SDBar fill% = CurrentSD/MaxSD * 100),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.004] AG (Stamina) bar value updated on HUD (AGBar fill% = CurrentAG/MaxAG * 100),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.005] EXP bar value updated on HUD (EXPBar fill% = CurrentEXP/NextLevelEXP * 100),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.006] Zen counter updated on HUD display: Zen=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.007] Hotbar slot visual updated (cooldown overlay drawn on slot %d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.008] Player name tag rendered above character head (PlayerName=%s, color by status),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.009] Guild name tag rendered under player name (GuildName=%s),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.010] FPS counter updated (if debug overlay enabled — FPS=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.011] Escape key pressed — main menu overlay shown (Return/Options/Exit buttons),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.012] Player opened Options/Settings (key N — OptionsWindow shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.013] Graphics quality setting changed (Resolution / TextureQuality updated),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.014] Sound volume changed (BGMVolume=%d SFXVolume=%d — slider adjusted),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.015] BGM toggled OFF (key F10 — music muted),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.016] Sound effects toggled OFF (key F9 — SFX muted),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.017] HUD visibility toggled (key Tab — all UI elements hidden/shown),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.018] Screenshot taken (Print Screen — bitmap saved to Screenshot\ folder),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.019] Fullscreen / windowed mode toggled (key F11 — window resized),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[27.020] Error/notice popup shown (MessageBox — connection lost / server msg),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 28 — VIEWPORT / OBJECT MANAGEMENT
+========================================================================
+
+[28.001] Object added to viewport: Player ObjectIndex=%d Name=%s X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.002] Object added to viewport: Monster ObjectIndex=%d MonsterID=%d X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.003] Object added to viewport: NPC ObjectIndex=%d NpcID=%d X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.004] Object removed from viewport (ObjectIndex=%d left view range or died),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.005] Object position updated: ObjectIndex=%d moved to X=%d Y=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.006] Object animation state changed: ObjectIndex=%d AnimState=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.007] Particle effect spawned at world position X=%f Y=%f Z=%f
+  (EffectType=%d — hit spark, skill trail, death burst),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.008] Dynamic light added to scene (LightColor=%x Radius=%f at X=%f Y=%f Z=%f),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.009] Terrain object (tree/rock/building) rendered (ObjectID=%d visible in frustum),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[28.010] Alpha transparency applied to objects between camera and player (occluder fade),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 29 — QUEST SYSTEM (S3E1 QUESTS)
+========================================================================
+
+[29.001] Quest available indicator shown (NPC has quest — exclamation mark over NPC),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.002] Quest accepted from NPC (QuestIndex=%d — objectives set, timer started if timed),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.003] Quest objective updated: KillCount=%d / Required=%d (monster kill counted),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.004] Quest item collected: ItemName=%s for QuestIndex=%d,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.005] Quest completed — return to NPC (QuestComplete flag set),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.006] Quest reward received: EXP=%d Zen=%d ItemReward=%s,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[29.007] Quest failed / abandoned (QuestAbandon — objectives reset),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 30 — KALIMA / DARK PORTAL
+========================================================================
+
+[30.001] Rena's Scroll used (Kalima Gate opened — KalimaEntry X=%d Y=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[30.002] Kalima 1 entered (MapID=24 — Lost Fragment of Rena required),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[30.003] Kalima boss Kundun encountered (KalimaLevel=%d, BossHP=%d),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[30.004] Kalima portal destroyed by monsters (portal countdown expired — kicked out),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  SECTION 31 — GAME EXIT
+========================================================================
+
+[31.001] Player pressed Escape — exit dialog shown (ExitDialog: Return/Options/Exit),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.002] Player clicked "Return to Character Select" (logout request sent,
+  opcode 0xF3 — CharacterSelect transition),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.003] Player typed /quit — logout to character selection screen,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.004] Player typed /shutdown — full client close initiated,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.005] Player clicked "Exit Game" — WM_CLOSE posted to window,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.006] Game state saved to server (position, stats flushed before disconnect),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.007] Socket disconnected (closesocket — TCP FIN sent to server),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.008] DirectSound released (IDirectSound8::Release called),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.009] DirectInput released (IDirectInput8::Release called),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.010] Direct3DDevice released (IDirect3DDevice8::Release called),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.011] IDirect3D8 object released (IDirect3D8::Release called),
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.012] WSACleanup() called — Winsock shut down,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+[31.013] Process terminated — ExitProcess(0) or WinMain() returned,
+  searching for offset: offset found, searching for function: function found,
+  searching for variable: variable found, searching for module: module found.
+
+========================================================================
+  END OF ACTION LIST
+  Total entries: ~310 actions
+  MuOnline Client Version: 1.02.19 (1.02Q) | Season 3 Episode 1
+========================================================================

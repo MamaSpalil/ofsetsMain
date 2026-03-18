@@ -448,6 +448,24 @@ static void TrackerThread(LPVOID param)
         MULOG_INFO("Monitoring ALL game actions: keyboard, HP, MP, Level, "
                    "Zen, kills, map changes, UI, combat...");
 
+        /* Load action definitions from reference files:
+         *   MuOnline_S3E1_Actions_1.02Q_Part1.txt
+         *   MuOnline_S3E1_Actions_1.02Q_Part2.txt
+         * These files contain the complete list of ALL game actions
+         * for MuOnline Season 3 Episode 1 (v1.02Q).
+         */
+        size_t actionDefCount = g_gameMonitor.LoadActionDefinitions(
+            "MuOnline_S3E1_Actions_1.02Q_Part1.txt",
+            "MuOnline_S3E1_Actions_1.02Q_Part2.txt");
+        MULOG_INFO("Action definitions loaded from reference files: %zu",
+                   actionDefCount);
+
+        if (actionDefCount == 0) {
+            MULOG_WARN("No action definitions loaded. "
+                       "Ensure MuOnline_S3E1_Actions_1.02Q_Part1.txt and "
+                       "MuOnline_S3E1_Actions_1.02Q_Part2.txt are present.");
+        }
+
         if (g_pSharedHeader) {
             strncpy(g_pSharedHeader->dbFilePath, "MuTrackerDB.csv",
                     sizeof(g_pSharedHeader->dbFilePath) - 1);
@@ -473,8 +491,12 @@ static void TrackerThread(LPVOID param)
                g_pSharedHeader ? g_pSharedHeader->functionCount : 0,
                g_pSharedHeader ? g_pSharedHeader->moduleCount : 0,
                g_pSharedHeader ? g_pSharedHeader->variableCount : 0);
+    MULOG_INFO("Action definitions loaded: %zu",
+               g_gameMonitor.GetActionDefinitionCount());
     MULOG_INFO("All game actions are being recorded to MuTracker.log");
     MULOG_INFO("Database MuTrackerDB.csv is rewritten after each launch");
+    MULOG_INFO("Foreground check: offset search pauses when main.exe "
+               "window is not active (minimized or switched away)");
 
     if (g_pSharedHeader) {
         g_pSharedHeader->tracingEnabled = true;
@@ -489,6 +511,35 @@ static void TrackerThread(LPVOID param)
     auto startTime = std::chrono::steady_clock::now();
 
     while (g_running) {
+        /*
+         * Foreground window check for the monitoring loop.
+         * When main.exe window is minimized or not in focus,
+         * ALL offset searching is paused until the player
+         * returns to the game window.
+         * GameActionMonitor.Update() and CheckKeyboard() also
+         * perform this check internally.
+         */
+        bool gameIsActive = g_gameMonitor.IsGameWindowActive();
+
+        if (!gameIsActive) {
+            /* Game window is not active — pause offset search */
+            if (g_pSharedHeader) {
+                sprintf_s(g_pSharedHeader->statusText,
+                           sizeof(g_pSharedHeader->statusText),
+                           "PAUSED - main.exe window not in foreground");
+            }
+            updateCounter++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            continue;
+        }
+
+        /* Game is active — update status */
+        if (g_pSharedHeader) {
+            sprintf_s(g_pSharedHeader->statusText,
+                       sizeof(g_pSharedHeader->statusText),
+                       "Monitoring active - tracking ALL game actions");
+        }
+
         /* === Every 100ms: Game Action Monitor update === */
         /* Polls game state, detects changes, logs events */
         g_gameMonitor.Update();
