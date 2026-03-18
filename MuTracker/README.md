@@ -156,7 +156,7 @@ MuTrackerLoader.exe предоставляет красивый тёмный GUI
 cd MuTracker
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A Win32
+cmake .. -G "Visual Studio 16 2019" -A Win32
 
 # Сборка Release
 cmake --build . --config Release
@@ -170,7 +170,7 @@ cmake --build . --config Release
 ### Сборка из командной строки MSVC
 
 ```bash
-# Открыть Developer Command Prompt for VS 2022 (x86)
+# Открыть Developer Command Prompt for VS 2019 (x86)
 cd MuTracker
 mkdir build && cd build
 cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
