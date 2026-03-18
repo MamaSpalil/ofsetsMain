@@ -528,8 +528,8 @@ static DWORD DetectAndLogChanges(void)
     /* --- Логин/пароль --- */
     if (g_gmCurrent.LoginFieldLen != g_gmPrevious.LoginFieldLen)
     {
-        LogGameEvent("LOGIN", OFFSET_LOGIN_ID_LEN,
-            "LoginIDLen", NULL,
+        LogGameEvent("LOGIN", OFFSET_LOGIN_ID,
+            "LoginID", NULL,
             "Login field input: length %u -> %u",
             g_gmPrevious.LoginFieldLen, g_gmCurrent.LoginFieldLen);
         events++;
@@ -701,7 +701,7 @@ static DWORD DetectAndLogChanges(void)
                     if (isNew)
                     {
                         LogGameEvent("PLAYERS", pVA,
-                            "PlayerListBase", NULL,
+                            "PlayerEntry", NULL,
                             "  New player nearby: \"%s\" HP:%u/%u Pos:(%u,%u)",
                             g_gmCurrent.NearbyPlayers[i].Name,
                             g_gmCurrent.NearbyPlayers[i].HP,
@@ -748,7 +748,7 @@ static DWORD DetectAndLogChanges(void)
                     if (isNew)
                     {
                         LogGameEvent("MONSTERS", mVA,
-                            "MonsterListBase", NULL,
+                            "MonsterEntry", NULL,
                             "  New monster: \"%s\" HP:%u/%u Pos:(%u,%u)",
                             g_gmCurrent.NearbyMonsters[i].Name,
                             g_gmCurrent.NearbyMonsters[i].HP,
