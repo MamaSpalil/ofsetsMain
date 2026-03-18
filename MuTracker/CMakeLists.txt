@@ -25,10 +25,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 
-# Force 32-bit build (MuOnline main.exe is x86)
+# Note: MuOnline main.exe is x86. For injection use -A Win32.
+# x64 builds are supported for the Loader and standalone analysis.
 if(MSVC)
     if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
-        message(WARNING "MuTracker targets x86 (32-bit). Use -A Win32 for MSVC.")
+        message(STATUS "Building for x64. Note: DLL injection into x86 main.exe requires Win32 (-A Win32) build.")
     endif()
 endif()
 

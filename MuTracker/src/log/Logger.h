@@ -157,10 +157,10 @@ private:
     void ResetConsoleColor();
 
     /* Internal: write to console with color */
-    void WriteConsole(LogColor color, const char* text);
+    void WriteToConsole(LogColor color, const char* text);
 
     /* Internal: write to file */
-    void WriteFile(const char* text);
+    void WriteToFile(const char* text);
 };
 
 /* Convenience macros */

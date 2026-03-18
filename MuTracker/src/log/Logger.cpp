@@ -110,9 +110,9 @@ void Logger::Log(LogLevel level, const char* fmt, ...)
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_consoleOutput) {
-        WriteConsole(color, fullMsg);
+        WriteToConsole(color, fullMsg);
     }
-    WriteFile(fullMsg);
+    WriteToFile(fullMsg);
 }
 
 void Logger::LogColored(LogColor color, const char* fmt, ...)
@@ -135,9 +135,9 @@ void Logger::LogColored(LogColor color, const char* fmt, ...)
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_consoleOutput) {
-        WriteConsole(color, buffer);
+        WriteToConsole(color, buffer);
     }
-    WriteFile(buffer);
+    WriteToFile(buffer);
 }
 
 void Logger::LogHeader(const char* title)
@@ -154,19 +154,19 @@ void Logger::LogHeader(const char* title)
     memset(line, '=', 64);
     line[64] = '\n';
     line[65] = '\0';
-    WriteConsole(LogColor::Yellow, line);
-    WriteFile(line);
+    WriteToConsole(LogColor::Yellow, line);
+    WriteToFile(line);
 
     /* Title with padding */
     char titleLine[256];
     snprintf(titleLine, sizeof(titleLine), "%*s %s %*s\n",
              (int)padLen, "", title, (int)padLen, "");
-    WriteConsole(LogColor::Yellow, titleLine);
-    WriteFile(titleLine);
+    WriteToConsole(LogColor::Yellow, titleLine);
+    WriteToFile(titleLine);
 
     /* Bottom separator */
-    WriteConsole(LogColor::Yellow, line);
-    WriteFile(line);
+    WriteToConsole(LogColor::Yellow, line);
+    WriteToFile(line);
 }
 
 void Logger::LogOffset(uintptr_t va, uintptr_t offset,
@@ -197,8 +197,8 @@ void Logger::LogOffset(uintptr_t va, uintptr_t offset,
     else if (strcmp(type, "IAT") == 0) color = LogColor::Magenta;
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    WriteConsole(color, buffer);
-    WriteFile(buffer);
+    WriteToConsole(color, buffer);
+    WriteToFile(buffer);
 }
 
 void Logger::LogCall(uintptr_t address, uintptr_t offset,
@@ -246,8 +246,8 @@ void Logger::LogCall(uintptr_t address, uintptr_t offset,
     }
 
     std::lock_guard<std::mutex> lock(m_mutex);
-    WriteConsole(LogColor::Green, buffer);
-    WriteFile(buffer);
+    WriteToConsole(LogColor::Green, buffer);
+    WriteToFile(buffer);
 }
 
 /* ------------------------------------------------------------------ */
@@ -317,7 +317,7 @@ void Logger::ResetConsoleColor()
     SetConsoleColor(LogColor::Default);
 }
 
-void Logger::WriteConsole(LogColor color, const char* text)
+void Logger::WriteToConsole(LogColor color, const char* text)
 {
 #ifdef _WIN32
     SetConsoleColor(color);
@@ -330,7 +330,7 @@ void Logger::WriteConsole(LogColor color, const char* text)
 #endif
 }
 
-void Logger::WriteFile(const char* text)
+void Logger::WriteToFile(const char* text)
 {
     if (m_logFile.is_open()) {
         m_logFile << text;
