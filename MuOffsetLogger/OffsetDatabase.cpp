@@ -605,7 +605,274 @@ static const OFFSET_ENTRY g_OffsetDatabase[] =
      * ==================================================================== */
     { 0x0917C200, 0x0041DA00, OT_FUNCTION, "EntryPoint",
       "EntryPoint_Main",
-      "main.exe entry point in .LibHook section (ASProtect wrapped)" }
+      "main.exe entry point in .LibHook section (ASProtect wrapped)" },
+
+    /* ====================================================================
+     * ИГРОВЫЕ СЦЕНЫ И СОСТОЯНИЯ (GAME STATE)
+     * ==================================================================== */
+    { 0x007B5500, 0x003B3B00, OT_VARIABLE, "GameState",
+      "GameScene",
+      "Current game scene (DWORD: 0=Unknown,1=Logo,2=Login,3=ServerSel,"
+      "4=CharSel,5=Playing,6=Loading)" },
+
+    { 0x007B5504, 0x003B3B04, OT_VARIABLE, "GameState",
+      "GameTick",
+      "Game tick counter (DWORD)" },
+
+    /* ====================================================================
+     * ВЫБОР СЕРВЕРА (SERVER SELECTION)
+     * ==================================================================== */
+    { 0x007B5510, 0x003B3B10, OT_VARIABLE, "Server/Selection",
+      "ServerGroup",
+      "Selected server group index (DWORD)" },
+
+    { 0x007B5514, 0x003B3B14, OT_VARIABLE, "Server/Selection",
+      "ServerIndex",
+      "Selected server index within group (DWORD)" },
+
+    { 0x007B5518, 0x003B3B18, OT_DATA, "Server/Selection",
+      "ServerName",
+      "Current server name (char[32])" },
+
+    { 0x007B5538, 0x003B3B38, OT_VARIABLE, "Server/Selection",
+      "ServerConnected",
+      "Server connection flag (BYTE: 0=disconnected, 1=connected)" },
+
+    { 0x007B5539, 0x003B3B39, OT_VARIABLE, "Server/Selection",
+      "ServerListReceived",
+      "Server list received flag (BYTE: 0/1)" },
+
+    { 0x007E8E6C, 0x003E6C6C, OT_STRING, "Server/Selection",
+      "Str_ServerGroupSelected",
+      "'> Server group selected - %d' - server group debug string" },
+
+    { 0x007E8E8C, 0x003E6C8C, OT_STRING, "Server/Selection",
+      "Str_ServerSelected",
+      "'> Server selected - %s-%d : %d-%d' - server selection debug" },
+
+    /* ====================================================================
+     * ВХОД В СИСТЕМУ (LOGIN/PASSWORD INPUT)
+     * ==================================================================== */
+    { 0x007B5540, 0x003B3B40, OT_DATA, "Login/Input",
+      "LoginID",
+      "Account ID input field (char[14])" },
+
+    { 0x007B554E, 0x003B3B4E, OT_VARIABLE, "Login/Input",
+      "LoginIDLen",
+      "Login field input length (BYTE)" },
+
+    { 0x007B554F, 0x003B3B4F, OT_VARIABLE, "Login/Input",
+      "LoginPWLen",
+      "Password field input length (BYTE, value only)" },
+
+    { 0x007B5550, 0x003B3B50, OT_VARIABLE, "Login/Input",
+      "LoginState",
+      "Authorization state machine (DWORD)" },
+
+    { 0x007B5554, 0x003B3B54, OT_VARIABLE, "Login/Input",
+      "LoginResult",
+      "Login result code (BYTE: 0=success, 1+=error)" },
+
+    { 0x007E8740, 0x003E6540, OT_STRING, "Login/Input",
+      "Str_LoginSceneInit",
+      "'> Login Scene init success.' - login screen loaded" },
+
+    { 0x007E8D84, 0x003E6B84, OT_STRING, "Login/Input",
+      "Str_LoginRequest",
+      "'> Login Request.' - login request sent to server" },
+
+    /* ====================================================================
+     * ВЫБОР ПЕРСОНАЖА (CHARACTER SELECT)
+     * ==================================================================== */
+    { 0x007B5560, 0x003B3B60, OT_VARIABLE, "Character/Select",
+      "CharCount",
+      "Number of characters on account (DWORD)" },
+
+    { 0x007B5564, 0x003B3B64, OT_VARIABLE, "Character/Select",
+      "CharSelected",
+      "Selected character slot index (DWORD)" },
+
+    /* ====================================================================
+     * ДАННЫЕ ПЕРСОНАЖА (CHARACTER DATA)
+     * ==================================================================== */
+    { 0x007B5570, 0x003B3B70, OT_DATA, "Character/Data",
+      "CharName",
+      "Active character name (char[11])" },
+
+    { 0x007B5580, 0x003B3B80, OT_VARIABLE, "Character/Data",
+      "CharLevel",
+      "Character level (DWORD)" },
+
+    { 0x007B5584, 0x003B3B84, OT_VARIABLE, "Character/Data",
+      "CharClass",
+      "Character class ID (BYTE: 0x00=DW,0x20=DK,0x40=Elf,0x60=MG,0x80=DL)" },
+
+    { 0x007B5588, 0x003B3B88, OT_VARIABLE, "Character/Data",
+      "CharHP",
+      "Character current HP (DWORD)" },
+
+    { 0x007B558C, 0x003B3B8C, OT_VARIABLE, "Character/Data",
+      "CharMaxHP",
+      "Character maximum HP (DWORD)" },
+
+    { 0x007B5590, 0x003B3B90, OT_VARIABLE, "Character/Data",
+      "CharMP",
+      "Character current MP (DWORD)" },
+
+    { 0x007B5594, 0x003B3B94, OT_VARIABLE, "Character/Data",
+      "CharMaxMP",
+      "Character maximum MP (DWORD)" },
+
+    { 0x007B5598, 0x003B3B98, OT_VARIABLE, "Character/Data",
+      "CharExp",
+      "Character experience points (DWORD)" },
+
+    { 0x007B55A0, 0x003B3BA0, OT_VARIABLE, "Character/Data",
+      "CharPosX",
+      "Character X position on map (DWORD)" },
+
+    { 0x007B55A4, 0x003B3BA4, OT_VARIABLE, "Character/Data",
+      "CharPosY",
+      "Character Y position on map (DWORD)" },
+
+    { 0x007B55A8, 0x003B3BA8, OT_VARIABLE, "Character/Data",
+      "CharMapId",
+      "Current map ID (BYTE: 0=Lorencia,1=Dungeon,2=Devias,...)" },
+
+    /* ====================================================================
+     * ИНВЕНТАРЬ (INVENTORY)
+     * ==================================================================== */
+    { 0x007B5600, 0x003B3C00, OT_DATA, "Inventory",
+      "InventoryBase",
+      "Inventory item array start (ITEM_STRUCT[64], 8 bytes each)" },
+
+    { 0x007B5800, 0x003B3E00, OT_VARIABLE, "Inventory",
+      "InventoryCount",
+      "Number of items in inventory (DWORD)" },
+
+    { 0x007E9100, 0x003E6F00, OT_STRING, "Inventory",
+      "Str_OpenPersonalShop",
+      "'@ OpenPersonalShop : SendRequestInventory' - shop/inventory" },
+
+    /* ====================================================================
+     * БЛИЖАЙШИЕ ИГРОКИ (NEARBY PLAYERS)
+     * ==================================================================== */
+    { 0x007B5810, 0x003B3E10, OT_DATA, "Players/Nearby",
+      "PlayerListBase",
+      "Nearby players array start (ENTITY[40], 64 bytes each)" },
+
+    { 0x007B5C00, 0x003B4200, OT_VARIABLE, "Players/Nearby",
+      "PlayerListCount",
+      "Number of nearby players (DWORD)" },
+
+    /* ====================================================================
+     * БЛИЖАЙШИЕ МОНСТРЫ (NEARBY MONSTERS)
+     * ==================================================================== */
+    { 0x007B5C10, 0x003B4210, OT_DATA, "Monsters/Nearby",
+      "MonsterListBase",
+      "Nearby monsters array (ENTITY[40]: Id,Name,HP,MaxHP,PosX,PosY)" },
+
+    { 0x007B6400, 0x003B4A00, OT_VARIABLE, "Monsters/Nearby",
+      "MonsterListCount",
+      "Number of nearby monsters (DWORD)" },
+
+    /* ====================================================================
+     * ЧАТ (CHAT MESSAGES)
+     * ==================================================================== */
+    { 0x007B6410, 0x003B4A10, OT_DATA, "Chat",
+      "ChatLastLine",
+      "Last received chat message (char[128])" },
+
+    { 0x007B6490, 0x003B4A90, OT_VARIABLE, "Chat",
+      "ChatLineCount",
+      "Total chat messages counter (DWORD)" },
+
+    /* ====================================================================
+     * БОЙ И УРОН (COMBAT/DAMAGE)
+     * ==================================================================== */
+    { 0x007B64A0, 0x003B4AA0, OT_VARIABLE, "Combat/Damage",
+      "LastDamageDealt",
+      "Last damage dealt to target (DWORD)" },
+
+    { 0x007B64A4, 0x003B4AA4, OT_VARIABLE, "Combat/Damage",
+      "LastDamageReceived",
+      "Last damage received from enemy (DWORD)" },
+
+    { 0x007B64A8, 0x003B4AA8, OT_VARIABLE, "Combat/Damage",
+      "TotalDamageDealt",
+      "Total damage dealt this session (DWORD)" },
+
+    { 0x007B64AC, 0x003B4AAC, OT_VARIABLE, "Combat/Damage",
+      "TotalDamageReceived",
+      "Total damage received this session (DWORD)" },
+
+    { 0x007B64B0, 0x003B4AB0, OT_VARIABLE, "Combat/Damage",
+      "MonstersKilled",
+      "Monsters killed counter (DWORD)" },
+
+    /* ====================================================================
+     * ТЕЛЕПОРТАЦИЯ (TELEPORTATION)
+     * ==================================================================== */
+    { 0x007B64C0, 0x003B4AC0, OT_VARIABLE, "Teleport",
+      "TeleportMap",
+      "Teleport destination map ID (BYTE)" },
+
+    { 0x007B64C4, 0x003B4AC4, OT_VARIABLE, "Teleport",
+      "TeleportX",
+      "Teleport destination X coordinate (DWORD)" },
+
+    { 0x007B64C8, 0x003B4AC8, OT_VARIABLE, "Teleport",
+      "TeleportY",
+      "Teleport destination Y coordinate (DWORD)" },
+
+    /* ====================================================================
+     * ВВОД: КЛАВИАТУРА И МЫШЬ (KEYBOARD/MOUSE INPUT)
+     * ==================================================================== */
+    { 0x007B6500, 0x003B4B00, OT_DATA, "Input/Keyboard",
+      "KeyStates",
+      "Keyboard virtual key state array (BYTE[256])" },
+
+    { 0x007B6600, 0x003B4C00, OT_VARIABLE, "Input/Mouse",
+      "MouseX",
+      "Mouse cursor X position (DWORD)" },
+
+    { 0x007B6604, 0x003B4C04, OT_VARIABLE, "Input/Mouse",
+      "MouseY",
+      "Mouse cursor Y position (DWORD)" },
+
+    { 0x007B6608, 0x003B4C08, OT_VARIABLE, "Input/Mouse",
+      "MouseButtons",
+      "Mouse button state (BYTE: bit0=Left, bit1=Right, bit2=Middle)" },
+
+    /* ====================================================================
+     * ЗВУКИ СОБЫТИЙ (GAME EVENT SOUNDS) - связанные функции
+     * ==================================================================== */
+    { 0x007E4FC0, 0x003E2DC0, OT_STRING, "GameEvents/Sound",
+      "Str_LevelUpSound",
+      "'Data\\Sound\\pLevelUp.wav' - level up sound trigger" },
+
+    { 0x007DBCB0, 0x003D9AB0, OT_STRING, "GameEvents/Sound",
+      "Str_MonsterDieSound",
+      "'Data\\Sound\\mIceMonsterDie.wav' - monster death sound" },
+
+    /* ====================================================================
+     * СЕТЕВЫЕ СТРОКИ - ПОДКЛЮЧЕНИЕ К СЕРВЕРУ
+     * ==================================================================== */
+    { 0x007E85B8, 0x003E63B8, OT_STRING, "Network/Connection",
+      "Str_JoinAnotherServer",
+      "'> Menu - Join another server.' - server change action" },
+
+    { 0x007E76BE, 0x003E54BE, OT_STRING, "UI/Interface",
+      "Str_InventoryPanel",
+      "'Interface\\InventoryPanel.tga' - inventory panel texture" },
+
+    { 0x007E556C, 0x003E336C, OT_STRING, "UI/Interface",
+      "Str_LoginBack01",
+      "'Logo\\Login_Back01.jpg' - login screen background 1" },
+
+    { 0x007E5584, 0x003E3384, OT_STRING, "UI/Interface",
+      "Str_LoginBack02",
+      "'Logo\\Login_Back02.jpg' - login screen background 2" }
 };
 
 /* Количество офсетов в базе */
