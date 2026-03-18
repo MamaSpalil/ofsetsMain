@@ -174,9 +174,15 @@ static void ReadString(DWORD va, char* buffer, SIZE_T maxLen)
 }
 
 /*
- * Логирование игрового события
+ * Логирование игрового события с офсетом, именем переменной и функции
+ * category  - категория события ("SERVER", "LOGIN", ...)
+ * va        - виртуальный адрес (офсет) связанной переменной/функции
+ * varName   - имя переменной за которую отвечает офсет (или NULL)
+ * funcName  - имя функции за которую отвечает офсет (или NULL)
+ * format    - описание события (printf-формат)
  */
 static void LogGameEvent(const char* category, DWORD va,
+                         const char* varName, const char* funcName,
                          const char* format, ...)
 {
     char    details[512];
@@ -196,10 +202,22 @@ static void LogGameEvent(const char* category, DWORD va,
     Logger_Write(COLOR_HEADER,
         " [GAME:%s]", category);
 
+    /* Вывод офсета и имён переменных/функций за которые отвечает офсет */
     if (va != 0)
     {
         Logger_Write(COLOR_FUNCTION,
-            " (VA:0x%08X)", va);
+            " [0x%08X", va);
+        if (varName != NULL && varName[0] != '\0')
+        {
+            Logger_Write(COLOR_VARIABLE,
+                " var:%s", varName);
+        }
+        if (funcName != NULL && funcName[0] != '\0')
+        {
+            Logger_Write(COLOR_IMPORT,
+                " func:%s", funcName);
+        }
+        Logger_Write(COLOR_FUNCTION, "]");
     }
 
     Logger_Write(COLOR_DEFAULT,
@@ -453,10 +471,10 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.Scene != g_gmPrevious.Scene)
     {
         LogGameEvent("SCENE", OFFSET_GAME_SCENE,
-            "Scene changed: %s -> %s (offset: GameScene VA:0x%08X)",
+            "GameScene", NULL,
+            "Scene changed: %s -> %s",
             GameMonitor_GetSceneName(g_gmPrevious.Scene),
-            GameMonitor_GetSceneName(g_gmCurrent.Scene),
-            OFFSET_GAME_SCENE);
+            GameMonitor_GetSceneName(g_gmCurrent.Scene));
         events++;
         g_gmTotalSceneChanges++;
 
@@ -464,15 +482,15 @@ static DWORD DetectAndLogChanges(void)
         if (g_gmCurrent.Scene == SCENE_LOGIN)
         {
             LogGameEvent("SCENE", VA_FUNC_LOGIN_SCENE_INIT,
-                "Login screen active (func: LoginSceneInit VA:0x%08X)",
-                VA_FUNC_LOGIN_SCENE_INIT);
+                NULL, "LoginSceneInit",
+                "Login screen active");
             events++;
         }
         if (g_gmCurrent.Scene == SCENE_SERVER_SELECT)
         {
             LogGameEvent("SCENE", VA_FUNC_RECV_SERVERLIST,
-                "Server selection screen (func: RecvServerList VA:0x%08X)",
-                VA_FUNC_RECV_SERVERLIST);
+                NULL, "RecvServerList",
+                "Server selection screen");
             events++;
         }
     }
@@ -481,9 +499,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.ServerGroup != g_gmPrevious.ServerGroup)
     {
         LogGameEvent("SERVER", OFFSET_SERVER_GROUP,
-            "Server group changed: %u -> %u (var: ServerGroup VA:0x%08X)",
-            g_gmPrevious.ServerGroup, g_gmCurrent.ServerGroup,
-            OFFSET_SERVER_GROUP);
+            "ServerGroup", "ServerGroupSelected",
+            "Server group changed: %u -> %u",
+            g_gmPrevious.ServerGroup, g_gmCurrent.ServerGroup);
         events++;
         g_gmTotalServerChanges++;
     }
@@ -491,9 +509,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.ServerIndex != g_gmPrevious.ServerIndex)
     {
         LogGameEvent("SERVER", OFFSET_SERVER_INDEX,
-            "Server selected: index %u -> %u (var: ServerIndex VA:0x%08X)",
-            g_gmPrevious.ServerIndex, g_gmCurrent.ServerIndex,
-            OFFSET_SERVER_INDEX);
+            "ServerIndex", "ServerSelected",
+            "Server selected: index %u -> %u",
+            g_gmPrevious.ServerIndex, g_gmCurrent.ServerIndex);
         events++;
     }
 
@@ -501,8 +519,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.ServerName[0] != '\0')
     {
         LogGameEvent("SERVER", OFFSET_SERVER_NAME,
-            "Server name: \"%s\" (var: ServerName VA:0x%08X)",
-            g_gmCurrent.ServerName, OFFSET_SERVER_NAME);
+            "ServerName", NULL,
+            "Server name: \"%s\"",
+            g_gmCurrent.ServerName);
         events++;
     }
 
@@ -510,9 +529,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.LoginFieldLen != g_gmPrevious.LoginFieldLen)
     {
         LogGameEvent("LOGIN", OFFSET_LOGIN_ID,
-            "Login field input: length %u -> %u (var: LoginID VA:0x%08X)",
-            g_gmPrevious.LoginFieldLen, g_gmCurrent.LoginFieldLen,
-            OFFSET_LOGIN_ID);
+            "LoginID", NULL,
+            "Login field input: length %u -> %u",
+            g_gmPrevious.LoginFieldLen, g_gmCurrent.LoginFieldLen);
         events++;
     }
 
@@ -520,8 +539,9 @@ static DWORD DetectAndLogChanges(void)
         && strcmp(g_gmCurrent.LoginField, g_gmPrevious.LoginField) != 0)
     {
         LogGameEvent("LOGIN", OFFSET_LOGIN_ID,
-            "Login ID changed: \"%s\" (var: LoginID VA:0x%08X, len=%u)",
-            g_gmCurrent.LoginField, OFFSET_LOGIN_ID,
+            "LoginID", "LoginRequest",
+            "Login ID changed: \"%s\" (len=%u)",
+            g_gmCurrent.LoginField,
             g_gmCurrent.LoginFieldLen);
         events++;
     }
@@ -530,18 +550,18 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.CharacterCount != g_gmPrevious.CharacterCount)
     {
         LogGameEvent("CHARACTER", OFFSET_CHAR_COUNT,
-            "Character count: %u -> %u (var: CharCount VA:0x%08X)",
-            g_gmPrevious.CharacterCount, g_gmCurrent.CharacterCount,
-            OFFSET_CHAR_COUNT);
+            "CharCount", NULL,
+            "Character count: %u -> %u",
+            g_gmPrevious.CharacterCount, g_gmCurrent.CharacterCount);
         events++;
     }
 
     if (g_gmCurrent.SelectedCharIndex != g_gmPrevious.SelectedCharIndex)
     {
         LogGameEvent("CHARACTER", OFFSET_CHAR_SELECTED,
-            "Character selected: slot %u -> %u (var: CharSelected VA:0x%08X)",
-            g_gmPrevious.SelectedCharIndex, g_gmCurrent.SelectedCharIndex,
-            OFFSET_CHAR_SELECTED);
+            "CharSelected", NULL,
+            "Character selected: slot %u -> %u",
+            g_gmPrevious.SelectedCharIndex, g_gmCurrent.SelectedCharIndex);
         events++;
     }
 
@@ -549,11 +569,11 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.Character.Name[0] != '\0')
     {
         LogGameEvent("CHARACTER", OFFSET_CHAR_NAME,
-            "Character: \"%s\" Class: %s Level: %u (var: CharName VA:0x%08X)",
+            "CharName", NULL,
+            "Character: \"%s\" Class: %s Level: %u",
             g_gmCurrent.Character.Name,
             GetClassName(g_gmCurrent.Character.Class),
-            g_gmCurrent.Character.Level,
-            OFFSET_CHAR_NAME);
+            g_gmCurrent.Character.Level);
         events++;
     }
 
@@ -562,9 +582,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.Character.Level > 0)
     {
         LogGameEvent("LEVEL", OFFSET_CHAR_LEVEL,
-            "LEVEL UP! %u -> %u (var: CharLevel VA:0x%08X, func: LevelUpSound VA:0x%08X)",
-            g_gmPrevious.Character.Level, g_gmCurrent.Character.Level,
-            OFFSET_CHAR_LEVEL, VA_FUNC_LEVEL_UP_SOUND);
+            "CharLevel", "LevelUpSound",
+            "LEVEL UP! %u -> %u",
+            g_gmPrevious.Character.Level, g_gmCurrent.Character.Level);
         events++;
         g_gmTotalLevelUps++;
     }
@@ -576,19 +596,20 @@ static DWORD DetectAndLogChanges(void)
         if (g_gmCurrent.Character.HP < g_gmPrevious.Character.HP)
         {
             LogGameEvent("COMBAT", OFFSET_CHAR_HP,
-                "HP decreased: %u -> %u (-%u) (var: CharHP VA:0x%08X, MaxHP VA:0x%08X)",
+                "CharHP", NULL,
+                "HP decreased: %u -> %u (-%u) (MaxHP:%u)",
                 g_gmPrevious.Character.HP, g_gmCurrent.Character.HP,
                 g_gmPrevious.Character.HP - g_gmCurrent.Character.HP,
-                OFFSET_CHAR_HP, OFFSET_CHAR_MAX_HP);
+                g_gmCurrent.Character.MaxHP);
             events++;
         }
         else
         {
             LogGameEvent("COMBAT", OFFSET_CHAR_HP,
-                "HP recovered: %u -> %u (+%u) (var: CharHP VA:0x%08X)",
+                "CharHP", NULL,
+                "HP recovered: %u -> %u (+%u)",
                 g_gmPrevious.Character.HP, g_gmCurrent.Character.HP,
-                g_gmCurrent.Character.HP - g_gmPrevious.Character.HP,
-                OFFSET_CHAR_HP);
+                g_gmCurrent.Character.HP - g_gmPrevious.Character.HP);
             events++;
         }
     }
@@ -598,9 +619,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmPrevious.Character.MP > 0)
     {
         LogGameEvent("COMBAT", OFFSET_CHAR_MP,
-            "MP changed: %u -> %u (var: CharMP VA:0x%08X)",
-            g_gmPrevious.Character.MP, g_gmCurrent.Character.MP,
-            OFFSET_CHAR_MP);
+            "CharMP", NULL,
+            "MP changed: %u -> %u",
+            g_gmPrevious.Character.MP, g_gmCurrent.Character.MP);
         events++;
     }
 
@@ -609,9 +630,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.LastDamageDealt > 0)
     {
         LogGameEvent("DAMAGE", OFFSET_LAST_DAMAGE_DEALT,
-            "Damage dealt: %u (total: %u) (var: DamageDealt VA:0x%08X)",
-            g_gmCurrent.LastDamageDealt, g_gmCurrent.TotalDamageDealt,
-            OFFSET_LAST_DAMAGE_DEALT);
+            "LastDamageDealt", NULL,
+            "Damage dealt: %u (total: %u)",
+            g_gmCurrent.LastDamageDealt, g_gmCurrent.TotalDamageDealt);
         events++;
     }
 
@@ -620,9 +641,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.LastDamageReceived > 0)
     {
         LogGameEvent("DAMAGE", OFFSET_LAST_DAMAGE_RECV,
-            "Damage received: %u (total: %u) (var: DamageRecv VA:0x%08X)",
-            g_gmCurrent.LastDamageReceived, g_gmCurrent.TotalDamageReceived,
-            OFFSET_LAST_DAMAGE_RECV);
+            "LastDamageRecv", NULL,
+            "Damage received: %u (total: %u)",
+            g_gmCurrent.LastDamageReceived, g_gmCurrent.TotalDamageReceived);
         events++;
     }
 
@@ -631,8 +652,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.MonstersKilled > g_gmPrevious.MonstersKilled)
     {
         LogGameEvent("KILL", OFFSET_MONSTERS_KILLED,
-            "Monster killed! Total kills: %u (var: MonstersKilled VA:0x%08X)",
-            g_gmCurrent.MonstersKilled, OFFSET_MONSTERS_KILLED);
+            "MonstersKilled", "MonsterDieSound",
+            "Monster killed! Total kills: %u",
+            g_gmCurrent.MonstersKilled);
         events++;
     }
 
@@ -640,9 +662,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.InventoryItemCount != g_gmPrevious.InventoryItemCount)
     {
         LogGameEvent("INVENTORY", OFFSET_INVENTORY_COUNT,
-            "Inventory changed: %u -> %u items (var: InvCount VA:0x%08X, base VA:0x%08X)",
-            g_gmPrevious.InventoryItemCount, g_gmCurrent.InventoryItemCount,
-            OFFSET_INVENTORY_COUNT, OFFSET_INVENTORY_BASE);
+            "InventoryCount", "OpenPersonalShop",
+            "Inventory changed: %u -> %u items",
+            g_gmPrevious.InventoryItemCount, g_gmCurrent.InventoryItemCount);
         events++;
     }
 
@@ -650,9 +672,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.NearbyPlayerCount != g_gmPrevious.NearbyPlayerCount)
     {
         LogGameEvent("PLAYERS", OFFSET_PLAYER_LIST_COUNT,
-            "Nearby players: %u -> %u (var: PlayerCount VA:0x%08X, list VA:0x%08X)",
-            g_gmPrevious.NearbyPlayerCount, g_gmCurrent.NearbyPlayerCount,
-            OFFSET_PLAYER_LIST_COUNT, OFFSET_PLAYER_LIST_BASE);
+            "PlayerListCount", NULL,
+            "Nearby players: %u -> %u",
+            g_gmPrevious.NearbyPlayerCount, g_gmCurrent.NearbyPlayerCount);
         events++;
 
         /* Логируем новых игроков */
@@ -679,6 +701,7 @@ static DWORD DetectAndLogChanges(void)
                     if (isNew)
                     {
                         LogGameEvent("PLAYERS", pVA,
+                            "PlayerEntry", NULL,
                             "  New player nearby: \"%s\" HP:%u/%u Pos:(%u,%u)",
                             g_gmCurrent.NearbyPlayers[i].Name,
                             g_gmCurrent.NearbyPlayers[i].HP,
@@ -696,9 +719,9 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.NearbyMonsterCount != g_gmPrevious.NearbyMonsterCount)
     {
         LogGameEvent("MONSTERS", OFFSET_MONSTER_LIST_COUNT,
-            "Nearby monsters: %u -> %u (var: MonsterCount VA:0x%08X, list VA:0x%08X)",
-            g_gmPrevious.NearbyMonsterCount, g_gmCurrent.NearbyMonsterCount,
-            OFFSET_MONSTER_LIST_COUNT, OFFSET_MONSTER_LIST_BASE);
+            "MonsterListCount", NULL,
+            "Nearby monsters: %u -> %u",
+            g_gmPrevious.NearbyMonsterCount, g_gmCurrent.NearbyMonsterCount);
         events++;
 
         /* Логируем новых монстров */
@@ -725,6 +748,7 @@ static DWORD DetectAndLogChanges(void)
                     if (isNew)
                     {
                         LogGameEvent("MONSTERS", mVA,
+                            "MonsterEntry", NULL,
                             "  New monster: \"%s\" HP:%u/%u Pos:(%u,%u)",
                             g_gmCurrent.NearbyMonsters[i].Name,
                             g_gmCurrent.NearbyMonsters[i].HP,
@@ -747,11 +771,11 @@ static DWORD DetectAndLogChanges(void)
         {
             DWORD mVA = OFFSET_MONSTER_LIST_BASE + i * MONSTER_STRUCT_SIZE + 36;
             LogGameEvent("MONSTER_HP", mVA,
-                "Monster \"%s\" HP: %u -> %u (var: MonsterHP VA:0x%08X)",
+                "MonsterHP", NULL,
+                "Monster \"%s\" HP: %u -> %u",
                 g_gmCurrent.NearbyMonsters[i].Name,
                 g_gmPrevious.NearbyMonsters[i].HP,
-                g_gmCurrent.NearbyMonsters[i].HP,
-                mVA);
+                g_gmCurrent.NearbyMonsters[i].HP);
             events++;
         }
     }
@@ -761,8 +785,9 @@ static DWORD DetectAndLogChanges(void)
         && g_gmCurrent.LastChatLine[0] != '\0')
     {
         LogGameEvent("CHAT", OFFSET_CHAT_LAST_LINE,
-            "Chat message: \"%s\" (var: ChatLine VA:0x%08X, count=%u)",
-            g_gmCurrent.LastChatLine, OFFSET_CHAT_LAST_LINE,
+            "ChatLastLine", NULL,
+            "Chat message: \"%s\" (count=%u)",
+            g_gmCurrent.LastChatLine,
             g_gmCurrent.ChatLineCount);
         events++;
         g_gmTotalChatMessages++;
@@ -774,12 +799,12 @@ static DWORD DetectAndLogChanges(void)
             || g_gmPrevious.Character.PosY > 0))
     {
         LogGameEvent("TELEPORT", OFFSET_CHAR_MAP_ID,
-            "Teleport! Map: %s(%u) -> %s(%u) (var: MapId VA:0x%08X)",
+            "CharMapId", NULL,
+            "Teleport! Map: %s(%u) -> %s(%u)",
             GetMapName(g_gmPrevious.Character.MapId),
             g_gmPrevious.Character.MapId,
             GetMapName(g_gmCurrent.Character.MapId),
-            g_gmCurrent.Character.MapId,
-            OFFSET_CHAR_MAP_ID);
+            g_gmCurrent.Character.MapId);
         events++;
         g_gmTotalTeleports++;
     }
@@ -789,10 +814,10 @@ static DWORD DetectAndLogChanges(void)
         if (g_gmCurrent.LastTeleportX != 0 || g_gmCurrent.LastTeleportY != 0)
         {
             LogGameEvent("TELEPORT", OFFSET_TELEPORT_X,
-                "Teleport position: (%u, %u) Map:%s (var: TeleportXY VA:0x%08X)",
+                "TeleportX", NULL,
+                "Teleport position: (%u, %u) Map:%s",
                 g_gmCurrent.LastTeleportX, g_gmCurrent.LastTeleportY,
-                GetMapName(g_gmCurrent.LastTeleportMap),
-                OFFSET_TELEPORT_X);
+                GetMapName(g_gmCurrent.LastTeleportMap));
             events++;
             g_gmTotalTeleports++;
         }
@@ -810,10 +835,10 @@ static DWORD DetectAndLogChanges(void)
                 || g_gmCurrent.Character.PosY > 0))
         {
             LogGameEvent("MOVE", OFFSET_CHAR_POS_X,
-                "Character moved: (%u,%u) -> (%u,%u) (var: PosX VA:0x%08X, PosY VA:0x%08X)",
+                "CharPosX", NULL,
+                "Character moved: (%u,%u) -> (%u,%u)",
                 g_gmPrevious.Character.PosX, g_gmPrevious.Character.PosY,
-                g_gmCurrent.Character.PosX, g_gmCurrent.Character.PosY,
-                OFFSET_CHAR_POS_X, OFFSET_CHAR_POS_Y);
+                g_gmCurrent.Character.PosX, g_gmCurrent.Character.PosY);
             events++;
         }
     }
@@ -873,8 +898,9 @@ static DWORD DetectAndLogChanges(void)
                     }
 
                     LogGameEvent("KEY", keyVA,
-                        "Key pressed: VK=0x%02X (%s) (var: KeyStates[%u] VA:0x%08X)",
-                        i, keyName, i, keyVA);
+                        "KeyStates", NULL,
+                        "Key pressed: VK=0x%02X (%s)",
+                        i, keyName);
                     events++;
                     keyEvents++;
                     g_gmTotalKeyPresses++;
@@ -892,10 +918,10 @@ static DWORD DetectAndLogChanges(void)
         if (btnName != NULL)
         {
             LogGameEvent("MOUSE", OFFSET_MOUSE_BUTTONS,
-                "Mouse %s click at (%u, %u) (var: MouseBtn VA:0x%08X, MouseXY VA:0x%08X)",
+                "MouseButtons", NULL,
+                "Mouse %s click at (%u, %u)",
                 btnName,
-                g_gmCurrent.MouseX, g_gmCurrent.MouseY,
-                OFFSET_MOUSE_BUTTONS, OFFSET_MOUSE_X);
+                g_gmCurrent.MouseX, g_gmCurrent.MouseY);
             events++;
             g_gmTotalMouseClicks++;
         }
@@ -912,10 +938,10 @@ static DWORD DetectAndLogChanges(void)
             && (g_gmCurrent.MouseX > 0 || g_gmCurrent.MouseY > 0))
         {
             LogGameEvent("MOUSE", OFFSET_MOUSE_X,
-                "Mouse moved: (%u,%u) -> (%u,%u) (var: MouseX VA:0x%08X)",
+                "MouseX", NULL,
+                "Mouse moved: (%u,%u) -> (%u,%u)",
                 g_gmPrevious.MouseX, g_gmPrevious.MouseY,
-                g_gmCurrent.MouseX, g_gmCurrent.MouseY,
-                OFFSET_MOUSE_X);
+                g_gmCurrent.MouseX, g_gmCurrent.MouseY);
             events++;
         }
     }
@@ -930,9 +956,9 @@ static DWORD DetectAndLogChanges(void)
         if (g_gmCurrent.Character.Experience > g_gmPrevious.Character.Experience)
         {
             LogGameEvent("EXP", OFFSET_CHAR_EXP,
-                "Experience gained: +%u (total: %u) (var: CharExp VA:0x%08X)",
-                expGain, g_gmCurrent.Character.Experience,
-                OFFSET_CHAR_EXP);
+                "CharExp", NULL,
+                "Experience gained: +%u (total: %u)",
+                expGain, g_gmCurrent.Character.Experience);
             events++;
         }
     }
@@ -1145,12 +1171,14 @@ BOOL GameMonitor_Init(HANDLE hProcess, DWORD processId)
     memcpy(&g_gmPrevious, &g_gmCurrent, sizeof(GAME_STATE_SNAPSHOT));
 
     LogGameEvent("INIT", 0,
+        NULL, NULL,
         "Game monitoring started. Initial scene: %s",
         GameMonitor_GetSceneName(g_gmCurrent.Scene));
 
     if (g_gmCurrent.Character.Name[0] != '\0')
     {
         LogGameEvent("INIT", OFFSET_CHAR_NAME,
+            "CharName", NULL,
             "Character: \"%s\" Level:%u Class:%s HP:%u/%u MP:%u/%u Map:%s",
             g_gmCurrent.Character.Name,
             g_gmCurrent.Character.Level,
