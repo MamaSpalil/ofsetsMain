@@ -63,6 +63,21 @@ void FuncScanner_ScanStringRefs(const PE_FILE_INFO* pInfo,
  */
 void FuncScanner_LogStringRefs(void);
 
+/*
+ * Автоматическая классификация обнаруженных функций:
+ * анализ вызовов импортов и строковых ссылок внутри каждой функции
+ * для автоматического определения назначения (версионно-независимо).
+ * pInfo       - информация о PE-файле (для доступа к IAT)
+ * baseAddress - базовый адрес образа в памяти
+ */
+void FuncScanner_AutoClassify(const PE_FILE_INFO* pInfo,
+                              BYTE* baseAddress);
+
+/*
+ * Логирует результаты автоклассификации
+ */
+void FuncScanner_LogAutoClassified(void);
+
 #ifdef __cplusplus
 }
 #endif
