@@ -370,7 +370,11 @@ static void ReadGameState(GAME_STATE_SNAPSHOT* snap)
     {
         DWORD itemBase = OFFSET_INVENTORY_BASE + i * ITEM_STRUCT_SIZE;
         snap->Inventory[i].Slot          = ReadByte(itemBase + 0);
-        snap->Inventory[i].ItemId        = (WORD)ReadDword(itemBase + 1);
+        {
+            WORD itemId = 0;
+            ReadMem(itemBase + 1, &itemId, sizeof(WORD));
+            snap->Inventory[i].ItemId = itemId;
+        }
         snap->Inventory[i].Level         = ReadByte(itemBase + 3);
         snap->Inventory[i].Durability    = ReadByte(itemBase + 5);
         snap->Inventory[i].MaxDurability = ReadByte(itemBase + 6);
@@ -766,7 +770,8 @@ static DWORD DetectAndLogChanges(void)
 
     /* --- Телепортация --- */
     if (g_gmCurrent.Character.MapId != g_gmPrevious.Character.MapId
-        && g_gmPrevious.Character.MapId != 0)
+        && (g_gmPrevious.Character.PosX > 0
+            || g_gmPrevious.Character.PosY > 0))
     {
         LogGameEvent("TELEPORT", OFFSET_CHAR_MAP_ID,
             "Teleport! Map: %s(%u) -> %s(%u) (var: MapId VA:0x%08X)",
@@ -800,7 +805,9 @@ static DWORD DetectAndLogChanges(void)
         if (dx < 0) dx = -dx;
         if (dy < 0) dy = -dy;
 
-        if ((dx > 5 || dy > 5) && g_gmCurrent.Character.PosX > 0)
+        if ((dx > 5 || dy > 5)
+            && (g_gmCurrent.Character.PosX > 0
+                || g_gmCurrent.Character.PosY > 0))
         {
             LogGameEvent("MOVE", OFFSET_CHAR_POS_X,
                 "Character moved: (%u,%u) -> (%u,%u) (var: PosX VA:0x%08X, PosY VA:0x%08X)",
@@ -901,7 +908,8 @@ static DWORD DetectAndLogChanges(void)
         if (mdx < 0) mdx = -mdx;
         if (mdy < 0) mdy = -mdy;
 
-        if ((mdx > 50 || mdy > 50) && g_gmCurrent.MouseX > 0)
+        if ((mdx > 50 || mdy > 50)
+            && (g_gmCurrent.MouseX > 0 || g_gmCurrent.MouseY > 0))
         {
             LogGameEvent("MOUSE", OFFSET_MOUSE_X,
                 "Mouse moved: (%u,%u) -> (%u,%u) (var: MouseX VA:0x%08X)",

@@ -28,7 +28,6 @@
 #define MAX_NEARBY_PLAYERS   40
 #define MAX_NEARBY_MONSTERS  40
 #define MAX_INVENTORY_SLOTS  64
-#define MAX_CHAT_LINES        8
 #define MAX_GAME_NAME_LEN    32
 
 /* Текущая сцена/экран игры */
