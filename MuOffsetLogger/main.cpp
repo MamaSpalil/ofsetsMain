@@ -158,7 +158,9 @@ static BYTE* MapPEImage(BYTE* fileBuffer, DWORD fileSize)
      * включающий DOS-заголовок, NT-заголовки и все заголовки секций. */
     {
         DWORD headerEndOffset = (DWORD)dosHeader->e_lfanew
-                                + sizeof(IMAGE_NT_HEADERS)
+                                + sizeof(DWORD)
+                                + sizeof(IMAGE_FILE_HEADER)
+                                + ntHeaders->FileHeader.SizeOfOptionalHeader
                                 + numSections * sizeof(IMAGE_SECTION_HEADER);
         DWORD copySize = (sizeOfHeaders > headerEndOffset)
                          ? sizeOfHeaders : headerEndOffset;
@@ -171,7 +173,9 @@ static BYTE* MapPEImage(BYTE* fileBuffer, DWORD fileSize)
 
     /* Копируем секции на их виртуальные позиции */
     sections = (IMAGE_SECTION_HEADER*)(
-        fileBuffer + dosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS));
+        fileBuffer + dosHeader->e_lfanew + sizeof(DWORD)
+        + sizeof(IMAGE_FILE_HEADER)
+        + ntHeaders->FileHeader.SizeOfOptionalHeader);
 
     for (i = 0; i < numSections; i++)
     {
@@ -241,8 +245,14 @@ static BOOL LaunchMainExe(const char* exePath,
 
         if (ShellExecuteExA(&sei))
         {
+            DWORD pid = GetProcessId(sei.hProcess);
+            if (pid == 0)
+            {
+                CloseHandle(sei.hProcess);
+                return FALSE;
+            }
             *pProcessHandle = sei.hProcess;
-            *pProcessId     = GetProcessId(sei.hProcess);
+            *pProcessId     = pid;
             return TRUE;
         }
     }
