@@ -105,6 +105,26 @@ struct TrackedVariableEntry {
 };
 
 /* ================================================================== */
+/*  Game Action Event (for game action monitoring)                     */
+/* ================================================================== */
+
+#define MUTRACKER_MAX_GAME_EVENTS 256
+
+struct GameActionEventEntry {
+    uint32_t    actionType;             /* GameActionType enum value    */
+    uint64_t    timestamp;              /* QPC value                    */
+    char        description[256];       /* Human-readable (Russian)     */
+    uintptr_t   offset;                 /* Found offset                 */
+    char        functionName[128];      /* Found function name          */
+    char        variableName[128];      /* Found variable name          */
+    char        moduleName[64];         /* Found module name            */
+    bool        offsetFound;
+    bool        functionFound;
+    bool        variableFound;
+    bool        moduleFound;
+};
+
+/* ================================================================== */
 /*  Shared Memory Header (beginning of the mapped region)              */
 /* ================================================================== */
 
@@ -132,11 +152,18 @@ struct SharedMemHeader {
     volatile uint32_t   variableCount;
     TrackedVariableEntry variables[MUTRACKER_MAX_VARIABLES];
 
+    /* Game action events (circular buffer for recent events) */
+    volatile uint32_t   gameEventCount;
+    volatile uint32_t   gameEventWriteIdx;
+    GameActionEventEntry gameEvents[MUTRACKER_MAX_GAME_EVENTS];
+
     /* Status info */
     volatile uint32_t   activeHookCount;
     volatile uint64_t   totalCalls;
+    volatile uint64_t   totalGameActions;   /* Total game actions tracked */
     volatile uint64_t   uptimeMs;           /* DLL uptime in ms         */
     char                statusText[256];    /* Status message           */
+    char                dbFilePath[256];    /* Database file path        */
 };
 
 #pragma pack(pop)

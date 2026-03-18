@@ -49,6 +49,24 @@ struct TraceViewStats {
     uint32_t    variableCount;
     uint32_t    functionCount;
     uint32_t    changedVariables;
+    uint64_t    totalGameActions;
+    uint32_t    recentGameEvents;
+    std::string dbFilePath;
+};
+
+/* Game Action Event (for display) */
+struct GameActionViewEntry {
+    uint32_t    actionType;
+    uint64_t    timestamp;
+    std::string description;
+    uintptr_t   offset;
+    std::string functionName;
+    std::string variableName;
+    std::string moduleName;
+    bool        offsetFound;
+    bool        functionFound;
+    bool        variableFound;
+    bool        moduleFound;
 };
 
 /* ================================================================== */
@@ -72,6 +90,9 @@ public:
     std::vector<TraceViewEntry> GetEntries() const;
     TraceViewStats GetStats() const;
 
+    /* Get recent game action events */
+    std::vector<GameActionViewEntry> GetGameEvents() const;
+
     /* Export to CSV file */
     bool ExportCSV(const std::wstring& filePath) const;
 
@@ -84,6 +105,7 @@ private:
     bool                m_connected;
 
     std::vector<TraceViewEntry> m_entries;
+    std::vector<GameActionViewEntry> m_gameEvents;
     TraceViewStats              m_stats;
     mutable std::mutex          m_mutex;
 };
