@@ -441,7 +441,7 @@ int main(int argc, char* argv[])
             BYTE* fileBuffer  = NULL;
             BYTE* imageBuffer = NULL;
             DWORD fileSize    = 0;
-            PE_FILE_INFO peInfo;
+            static PE_FILE_INFO peInfo;
             DWORD totalOffsets;
 
             if (!exeFound)
