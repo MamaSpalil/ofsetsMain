@@ -5,7 +5,7 @@
             "name": "x86-Debug",
             "displayName": "x86 Debug",
             "description": "MSVC x86 Debug configuration",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 16 2019",
             "architecture": {
                 "value": "Win32",
                 "strategy": "set"
@@ -19,7 +19,7 @@
             "name": "x86-Release",
             "displayName": "x86 Release",
             "description": "MSVC x86 Release configuration",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 16 2019",
             "architecture": {
                 "value": "Win32",
                 "strategy": "set"
@@ -33,7 +33,7 @@
             "name": "x64-Debug",
             "displayName": "x64 Debug",
             "description": "MSVC x64 Debug configuration",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 16 2019",
             "architecture": {
                 "value": "x64",
                 "strategy": "set"
@@ -47,7 +47,7 @@
             "name": "x64-Release",
             "displayName": "x64 Release",
             "description": "MSVC x64 Release configuration",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 16 2019",
             "architecture": {
                 "value": "x64",
                 "strategy": "set"

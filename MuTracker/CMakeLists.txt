@@ -8,12 +8,12 @@
 #
 # Requirements:
 #   - CMake 3.15+
-#   - MSVC 2022 or compatible (x86 target)
+#   - MSVC 2019 or compatible (x86 target)
 #   - Windows SDK
 #
 # Build:
 #   mkdir build && cd build
-#   cmake .. -G "Visual Studio 17 2022" -A Win32
+#   cmake .. -G "Visual Studio 16 2019" -A Win32
 #   cmake --build . --config Release
 # ==========================================================
 
