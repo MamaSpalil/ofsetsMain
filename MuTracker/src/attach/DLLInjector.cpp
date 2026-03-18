@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <ctime>
 #include <chrono>
-#include <sys/stat.h>
+#include <filesystem>
 
 namespace MuTracker {
 
@@ -185,21 +185,22 @@ InjectionResult DLLInjector::InjectLoadLibrary(uint32_t pid,
     /* ---- Step 1: Validate DLL file exists ---- */
     LogInject("  [Step 1] Validating DLL file exists...");
     {
-        struct _stat fileStat;
-        if (_stat(dllPath.c_str(), &fileStat) != 0) {
+        std::error_code ec;
+        if (!std::filesystem::exists(dllPath, ec)) {
             result.errorCode = ERROR_FILE_NOT_FOUND;
             result.errorMessage = "DLL file not found at path: " + dllPath;
             LogInject("  [FAIL] DLL file does not exist: %s", dllPath.c_str());
             return result;
         }
-        if ((fileStat.st_mode & _S_IFREG) == 0) {
+        if (!std::filesystem::is_regular_file(dllPath, ec)) {
             result.errorCode = ERROR_FILE_NOT_FOUND;
             result.errorMessage = "DLL path is not a regular file: " + dllPath;
             LogInject("  [FAIL] Path is not a regular file: %s", dllPath.c_str());
             return result;
         }
-        LogInject("  [OK] DLL file exists (size: %lld bytes)",
-                  static_cast<long long>(fileStat.st_size));
+        auto fileSize = std::filesystem::file_size(dllPath, ec);
+        LogInject("  [OK] DLL file exists (size: %llu bytes)",
+                  static_cast<unsigned long long>(fileSize));
     }
 
     /* ---- Step 2: Enable SeDebugPrivilege ---- */
@@ -220,11 +221,11 @@ InjectionResult DLLInjector::InjectLoadLibrary(uint32_t pid,
                                std::to_string(result.errorCode) + ")";
 
         /* Provide human-readable reason */
-        if (result.errorCode == 5) {
+        if (result.errorCode == ERROR_ACCESS_DENIED) {
             result.errorMessage += " - Access denied. Run as Administrator.";
-        } else if (result.errorCode == 87) {
+        } else if (result.errorCode == ERROR_INVALID_PARAMETER) {
             result.errorMessage += " - Invalid parameter. Process may have exited.";
-        } else if (result.errorCode == 6) {
+        } else if (result.errorCode == ERROR_INVALID_HANDLE) {
             result.errorMessage += " - Invalid handle. Process does not exist.";
         }
 
@@ -318,7 +319,7 @@ InjectionResult DLLInjector::InjectLoadLibrary(uint32_t pid,
         result.errorMessage = "Failed to create remote thread (error: " +
                                std::to_string(result.errorCode) + ")";
 
-        if (result.errorCode == 5) {
+        if (result.errorCode == ERROR_ACCESS_DENIED) {
             result.errorMessage += " - Access denied. Target may be protected or require elevation.";
         }
 
@@ -334,7 +335,7 @@ InjectionResult DLLInjector::InjectLoadLibrary(uint32_t pid,
     DWORD waitResult = WaitForSingleObject(hThread, 10000);
 
     if (waitResult == WAIT_TIMEOUT) {
-        result.errorCode = WAIT_TIMEOUT;
+        result.errorCode = 0;
         result.errorMessage = "Remote thread timed out after 10 seconds. "
                                "LoadLibraryA may be blocked or hung in the target process. "
                                "Possible causes: DLL has a long DllMain, "

@@ -57,8 +57,12 @@ static std::string InjectCallback(DWORD pid, const std::wstring& dllPath)
 {
     /* Convert wide path to narrow for the injector */
     char narrowPath[MAX_PATH];
-    WideCharToMultiByte(CP_ACP, 0, dllPath.c_str(), -1,
-                         narrowPath, MAX_PATH, nullptr, nullptr);
+    int converted = WideCharToMultiByte(CP_ACP, 0, dllPath.c_str(), -1,
+                                         narrowPath, MAX_PATH, nullptr, nullptr);
+    if (converted == 0) {
+        return "Failed to convert DLL path from wide to narrow string (error: " +
+               std::to_string(GetLastError()) + ")";
+    }
 
     auto result = g_injector.Inject(pid, narrowPath);
     if (result.success) {
