@@ -34,6 +34,17 @@ ipch/
 *.tmp
 ~$*
 
+# CMake build directories
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Cache files
+*.cache
+
 # Unpacking artifacts
 main_unpacked.exe
 main_packed_backup.exe
