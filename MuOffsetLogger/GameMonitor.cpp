@@ -127,6 +127,77 @@ static DWORD g_gmTotalServerChanges = 0;
 static DWORD g_gmTotalLevelUps      = 0;
 
 /* ============================================================
+ * Отслеживание обнаружения офсетов (discovery tracking)
+ *
+ * Каждый игровой офсет может быть "обнаружен" — то есть впервые
+ * получить ненулевое/значимое значение в процессе мониторинга.
+ * Это позволяет логировать все найденные новые офсеты из main.exe.
+ * ============================================================ */
+
+/* Идентификаторы отслеживаемых офсетов */
+typedef enum _OFFSET_DISCOVERY_ID
+{
+    DISC_GAME_SCENE = 0,
+    DISC_GAME_TICK,
+    DISC_SERVER_GROUP,
+    DISC_SERVER_INDEX,
+    DISC_SERVER_NAME,
+    DISC_SERVER_CONNECTED,
+    DISC_SERVER_LIST_RECV,
+    DISC_LOGIN_ID,
+    DISC_LOGIN_ID_LEN,
+    DISC_LOGIN_PW_LEN,
+    DISC_LOGIN_STATE,
+    DISC_LOGIN_RESULT,
+    DISC_CHAR_COUNT,
+    DISC_CHAR_SELECTED,
+    DISC_CHAR_NAME,
+    DISC_CHAR_LEVEL,
+    DISC_CHAR_CLASS,
+    DISC_CHAR_HP,
+    DISC_CHAR_MAX_HP,
+    DISC_CHAR_MP,
+    DISC_CHAR_MAX_MP,
+    DISC_CHAR_EXP,
+    DISC_CHAR_POS_X,
+    DISC_CHAR_POS_Y,
+    DISC_CHAR_MAP_ID,
+    DISC_INVENTORY_BASE,
+    DISC_INVENTORY_COUNT,
+    DISC_PLAYER_LIST_BASE,
+    DISC_PLAYER_LIST_COUNT,
+    DISC_MONSTER_LIST_BASE,
+    DISC_MONSTER_LIST_COUNT,
+    DISC_CHAT_LAST_LINE,
+    DISC_CHAT_LINE_COUNT,
+    DISC_LAST_DAMAGE_DEALT,
+    DISC_LAST_DAMAGE_RECV,
+    DISC_TOTAL_DAMAGE_DEALT,
+    DISC_TOTAL_DAMAGE_RECV,
+    DISC_MONSTERS_KILLED,
+    DISC_TELEPORT_MAP,
+    DISC_TELEPORT_X,
+    DISC_TELEPORT_Y,
+    DISC_KEY_STATES,
+    DISC_MOUSE_X,
+    DISC_MOUSE_Y,
+    DISC_MOUSE_BUTTONS,
+    DISC_COUNT  /* Общее количество */
+} OFFSET_DISCOVERY_ID;
+
+/* Запись обнаруженного офсета */
+typedef struct _OFFSET_DISC_ENTRY
+{
+    DWORD       VA;             /* Виртуальный адрес */
+    const char* Name;           /* Имя переменной */
+    const char* Category;       /* Категория */
+    BOOL        Discovered;     /* Был ли обнаружен (ненулевое значение) */
+} OFFSET_DISC_ENTRY;
+
+static OFFSET_DISC_ENTRY g_gmDiscovery[DISC_COUNT];
+static DWORD g_gmTotalDiscovered = 0;
+
+/* ============================================================
  * Внутренние функции
  * ============================================================ */
 
@@ -180,6 +251,252 @@ static void ReadString(DWORD va, char* buffer, SIZE_T maxLen)
  * varName   - имя переменной за которую отвечает офсет (или NULL)
  * funcName  - имя функции за которую отвечает офсет (или NULL)
  * format    - описание события (printf-формат)
+ */
+static void LogGameEvent(const char* category, DWORD va,
+                         const char* varName, const char* funcName,
+                         const char* format, ...);
+
+/*
+ * Инициализация таблицы обнаружения офсетов
+ */
+static void InitDiscoveryTable(void)
+{
+    DWORD i;
+    memset(g_gmDiscovery, 0, sizeof(g_gmDiscovery));
+    g_gmTotalDiscovered = 0;
+
+    g_gmDiscovery[DISC_GAME_SCENE].VA       = OFFSET_GAME_SCENE;
+    g_gmDiscovery[DISC_GAME_SCENE].Name     = "GameScene";
+    g_gmDiscovery[DISC_GAME_SCENE].Category = "Scene/State";
+
+    g_gmDiscovery[DISC_GAME_TICK].VA       = OFFSET_GAME_TICK;
+    g_gmDiscovery[DISC_GAME_TICK].Name     = "GameTick";
+    g_gmDiscovery[DISC_GAME_TICK].Category = "Scene/State";
+
+    g_gmDiscovery[DISC_SERVER_GROUP].VA       = OFFSET_SERVER_GROUP;
+    g_gmDiscovery[DISC_SERVER_GROUP].Name     = "ServerGroup";
+    g_gmDiscovery[DISC_SERVER_GROUP].Category = "Server";
+
+    g_gmDiscovery[DISC_SERVER_INDEX].VA       = OFFSET_SERVER_INDEX;
+    g_gmDiscovery[DISC_SERVER_INDEX].Name     = "ServerIndex";
+    g_gmDiscovery[DISC_SERVER_INDEX].Category = "Server";
+
+    g_gmDiscovery[DISC_SERVER_NAME].VA       = OFFSET_SERVER_NAME;
+    g_gmDiscovery[DISC_SERVER_NAME].Name     = "ServerName";
+    g_gmDiscovery[DISC_SERVER_NAME].Category = "Server";
+
+    g_gmDiscovery[DISC_SERVER_CONNECTED].VA       = OFFSET_SERVER_CONNECTED;
+    g_gmDiscovery[DISC_SERVER_CONNECTED].Name     = "ServerConnected";
+    g_gmDiscovery[DISC_SERVER_CONNECTED].Category = "Server";
+
+    g_gmDiscovery[DISC_SERVER_LIST_RECV].VA       = OFFSET_SERVER_LIST_RECV;
+    g_gmDiscovery[DISC_SERVER_LIST_RECV].Name     = "ServerListReceived";
+    g_gmDiscovery[DISC_SERVER_LIST_RECV].Category = "Server";
+
+    g_gmDiscovery[DISC_LOGIN_ID].VA       = OFFSET_LOGIN_ID;
+    g_gmDiscovery[DISC_LOGIN_ID].Name     = "LoginID";
+    g_gmDiscovery[DISC_LOGIN_ID].Category = "Login/Auth";
+
+    g_gmDiscovery[DISC_LOGIN_ID_LEN].VA       = OFFSET_LOGIN_ID_LEN;
+    g_gmDiscovery[DISC_LOGIN_ID_LEN].Name     = "LoginIDLen";
+    g_gmDiscovery[DISC_LOGIN_ID_LEN].Category = "Login/Auth";
+
+    g_gmDiscovery[DISC_LOGIN_PW_LEN].VA       = OFFSET_LOGIN_PW_LEN;
+    g_gmDiscovery[DISC_LOGIN_PW_LEN].Name     = "LoginPWLen";
+    g_gmDiscovery[DISC_LOGIN_PW_LEN].Category = "Login/Auth";
+
+    g_gmDiscovery[DISC_LOGIN_STATE].VA       = OFFSET_LOGIN_STATE;
+    g_gmDiscovery[DISC_LOGIN_STATE].Name     = "LoginState";
+    g_gmDiscovery[DISC_LOGIN_STATE].Category = "Login/Auth";
+
+    g_gmDiscovery[DISC_LOGIN_RESULT].VA       = OFFSET_LOGIN_RESULT;
+    g_gmDiscovery[DISC_LOGIN_RESULT].Name     = "LoginResult";
+    g_gmDiscovery[DISC_LOGIN_RESULT].Category = "Login/Auth";
+
+    g_gmDiscovery[DISC_CHAR_COUNT].VA       = OFFSET_CHAR_COUNT;
+    g_gmDiscovery[DISC_CHAR_COUNT].Name     = "CharCount";
+    g_gmDiscovery[DISC_CHAR_COUNT].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_SELECTED].VA       = OFFSET_CHAR_SELECTED;
+    g_gmDiscovery[DISC_CHAR_SELECTED].Name     = "CharSelected";
+    g_gmDiscovery[DISC_CHAR_SELECTED].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_NAME].VA       = OFFSET_CHAR_NAME;
+    g_gmDiscovery[DISC_CHAR_NAME].Name     = "CharName";
+    g_gmDiscovery[DISC_CHAR_NAME].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_LEVEL].VA       = OFFSET_CHAR_LEVEL;
+    g_gmDiscovery[DISC_CHAR_LEVEL].Name     = "CharLevel";
+    g_gmDiscovery[DISC_CHAR_LEVEL].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_CLASS].VA       = OFFSET_CHAR_CLASS;
+    g_gmDiscovery[DISC_CHAR_CLASS].Name     = "CharClass";
+    g_gmDiscovery[DISC_CHAR_CLASS].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_HP].VA       = OFFSET_CHAR_HP;
+    g_gmDiscovery[DISC_CHAR_HP].Name     = "CharHP";
+    g_gmDiscovery[DISC_CHAR_HP].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_MAX_HP].VA       = OFFSET_CHAR_MAX_HP;
+    g_gmDiscovery[DISC_CHAR_MAX_HP].Name     = "CharMaxHP";
+    g_gmDiscovery[DISC_CHAR_MAX_HP].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_MP].VA       = OFFSET_CHAR_MP;
+    g_gmDiscovery[DISC_CHAR_MP].Name     = "CharMP";
+    g_gmDiscovery[DISC_CHAR_MP].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_MAX_MP].VA       = OFFSET_CHAR_MAX_MP;
+    g_gmDiscovery[DISC_CHAR_MAX_MP].Name     = "CharMaxMP";
+    g_gmDiscovery[DISC_CHAR_MAX_MP].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_EXP].VA       = OFFSET_CHAR_EXP;
+    g_gmDiscovery[DISC_CHAR_EXP].Name     = "CharExp";
+    g_gmDiscovery[DISC_CHAR_EXP].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_POS_X].VA       = OFFSET_CHAR_POS_X;
+    g_gmDiscovery[DISC_CHAR_POS_X].Name     = "CharPosX";
+    g_gmDiscovery[DISC_CHAR_POS_X].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_POS_Y].VA       = OFFSET_CHAR_POS_Y;
+    g_gmDiscovery[DISC_CHAR_POS_Y].Name     = "CharPosY";
+    g_gmDiscovery[DISC_CHAR_POS_Y].Category = "Character";
+
+    g_gmDiscovery[DISC_CHAR_MAP_ID].VA       = OFFSET_CHAR_MAP_ID;
+    g_gmDiscovery[DISC_CHAR_MAP_ID].Name     = "CharMapId";
+    g_gmDiscovery[DISC_CHAR_MAP_ID].Category = "Character";
+
+    g_gmDiscovery[DISC_INVENTORY_BASE].VA       = OFFSET_INVENTORY_BASE;
+    g_gmDiscovery[DISC_INVENTORY_BASE].Name     = "InventoryBase";
+    g_gmDiscovery[DISC_INVENTORY_BASE].Category = "Inventory";
+
+    g_gmDiscovery[DISC_INVENTORY_COUNT].VA       = OFFSET_INVENTORY_COUNT;
+    g_gmDiscovery[DISC_INVENTORY_COUNT].Name     = "InventoryCount";
+    g_gmDiscovery[DISC_INVENTORY_COUNT].Category = "Inventory";
+
+    g_gmDiscovery[DISC_PLAYER_LIST_BASE].VA       = OFFSET_PLAYER_LIST_BASE;
+    g_gmDiscovery[DISC_PLAYER_LIST_BASE].Name     = "PlayerListBase";
+    g_gmDiscovery[DISC_PLAYER_LIST_BASE].Category = "Players";
+
+    g_gmDiscovery[DISC_PLAYER_LIST_COUNT].VA       = OFFSET_PLAYER_LIST_COUNT;
+    g_gmDiscovery[DISC_PLAYER_LIST_COUNT].Name     = "PlayerListCount";
+    g_gmDiscovery[DISC_PLAYER_LIST_COUNT].Category = "Players";
+
+    g_gmDiscovery[DISC_MONSTER_LIST_BASE].VA       = OFFSET_MONSTER_LIST_BASE;
+    g_gmDiscovery[DISC_MONSTER_LIST_BASE].Name     = "MonsterListBase";
+    g_gmDiscovery[DISC_MONSTER_LIST_BASE].Category = "Monsters";
+
+    g_gmDiscovery[DISC_MONSTER_LIST_COUNT].VA       = OFFSET_MONSTER_LIST_COUNT;
+    g_gmDiscovery[DISC_MONSTER_LIST_COUNT].Name     = "MonsterListCount";
+    g_gmDiscovery[DISC_MONSTER_LIST_COUNT].Category = "Monsters";
+
+    g_gmDiscovery[DISC_CHAT_LAST_LINE].VA       = OFFSET_CHAT_LAST_LINE;
+    g_gmDiscovery[DISC_CHAT_LAST_LINE].Name     = "ChatLastLine";
+    g_gmDiscovery[DISC_CHAT_LAST_LINE].Category = "Chat";
+
+    g_gmDiscovery[DISC_CHAT_LINE_COUNT].VA       = OFFSET_CHAT_LINE_COUNT;
+    g_gmDiscovery[DISC_CHAT_LINE_COUNT].Name     = "ChatLineCount";
+    g_gmDiscovery[DISC_CHAT_LINE_COUNT].Category = "Chat";
+
+    g_gmDiscovery[DISC_LAST_DAMAGE_DEALT].VA       = OFFSET_LAST_DAMAGE_DEALT;
+    g_gmDiscovery[DISC_LAST_DAMAGE_DEALT].Name     = "LastDamageDealt";
+    g_gmDiscovery[DISC_LAST_DAMAGE_DEALT].Category = "Combat";
+
+    g_gmDiscovery[DISC_LAST_DAMAGE_RECV].VA       = OFFSET_LAST_DAMAGE_RECV;
+    g_gmDiscovery[DISC_LAST_DAMAGE_RECV].Name     = "LastDamageRecv";
+    g_gmDiscovery[DISC_LAST_DAMAGE_RECV].Category = "Combat";
+
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_DEALT].VA       = OFFSET_TOTAL_DAMAGE_DEALT;
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_DEALT].Name     = "TotalDamageDealt";
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_DEALT].Category = "Combat";
+
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_RECV].VA       = OFFSET_TOTAL_DAMAGE_RECV;
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_RECV].Name     = "TotalDamageRecv";
+    g_gmDiscovery[DISC_TOTAL_DAMAGE_RECV].Category = "Combat";
+
+    g_gmDiscovery[DISC_MONSTERS_KILLED].VA       = OFFSET_MONSTERS_KILLED;
+    g_gmDiscovery[DISC_MONSTERS_KILLED].Name     = "MonstersKilled";
+    g_gmDiscovery[DISC_MONSTERS_KILLED].Category = "Combat";
+
+    g_gmDiscovery[DISC_TELEPORT_MAP].VA       = OFFSET_TELEPORT_MAP;
+    g_gmDiscovery[DISC_TELEPORT_MAP].Name     = "TeleportMap";
+    g_gmDiscovery[DISC_TELEPORT_MAP].Category = "Teleport";
+
+    g_gmDiscovery[DISC_TELEPORT_X].VA       = OFFSET_TELEPORT_X;
+    g_gmDiscovery[DISC_TELEPORT_X].Name     = "TeleportX";
+    g_gmDiscovery[DISC_TELEPORT_X].Category = "Teleport";
+
+    g_gmDiscovery[DISC_TELEPORT_Y].VA       = OFFSET_TELEPORT_Y;
+    g_gmDiscovery[DISC_TELEPORT_Y].Name     = "TeleportY";
+    g_gmDiscovery[DISC_TELEPORT_Y].Category = "Teleport";
+
+    g_gmDiscovery[DISC_KEY_STATES].VA       = OFFSET_KEY_STATES;
+    g_gmDiscovery[DISC_KEY_STATES].Name     = "KeyStates";
+    g_gmDiscovery[DISC_KEY_STATES].Category = "Input";
+
+    g_gmDiscovery[DISC_MOUSE_X].VA       = OFFSET_MOUSE_X;
+    g_gmDiscovery[DISC_MOUSE_X].Name     = "MouseX";
+    g_gmDiscovery[DISC_MOUSE_X].Category = "Input";
+
+    g_gmDiscovery[DISC_MOUSE_Y].VA       = OFFSET_MOUSE_Y;
+    g_gmDiscovery[DISC_MOUSE_Y].Name     = "MouseY";
+    g_gmDiscovery[DISC_MOUSE_Y].Category = "Input";
+
+    g_gmDiscovery[DISC_MOUSE_BUTTONS].VA       = OFFSET_MOUSE_BUTTONS;
+    g_gmDiscovery[DISC_MOUSE_BUTTONS].Name     = "MouseButtons";
+    g_gmDiscovery[DISC_MOUSE_BUTTONS].Category = "Input";
+
+    for (i = 0; i < DISC_COUNT; i++)
+        g_gmDiscovery[i].Discovered = FALSE;
+}
+
+/*
+ * Пометить офсет как обнаруженный и залогировать (если ещё не обнаружен)
+ */
+static void DiscoverOffset(OFFSET_DISCOVERY_ID id, DWORD value)
+{
+    if (id >= DISC_COUNT)
+        return;
+    if (g_gmDiscovery[id].Discovered)
+        return;
+
+    g_gmDiscovery[id].Discovered = TRUE;
+    g_gmTotalDiscovered++;
+
+    LogGameEvent("NEW_OFFSET", g_gmDiscovery[id].VA,
+        g_gmDiscovery[id].Name, NULL,
+        "Offset discovered [%s]: 0x%08X %s = %u (0x%X) [%u/%u]",
+        g_gmDiscovery[id].Category,
+        g_gmDiscovery[id].VA,
+        g_gmDiscovery[id].Name,
+        value, value,
+        g_gmTotalDiscovered, (DWORD)DISC_COUNT);
+}
+
+/*
+ * Пометить строковый офсет как обнаруженный и залогировать
+ */
+static void DiscoverOffsetStr(OFFSET_DISCOVERY_ID id, const char* value)
+{
+    if (id >= DISC_COUNT)
+        return;
+    if (g_gmDiscovery[id].Discovered)
+        return;
+
+    g_gmDiscovery[id].Discovered = TRUE;
+    g_gmTotalDiscovered++;
+
+    LogGameEvent("NEW_OFFSET", g_gmDiscovery[id].VA,
+        g_gmDiscovery[id].Name, NULL,
+        "Offset discovered [%s]: 0x%08X %s = \"%s\" [%u/%u]",
+        g_gmDiscovery[id].Category,
+        g_gmDiscovery[id].VA,
+        g_gmDiscovery[id].Name,
+        value,
+        g_gmTotalDiscovered, (DWORD)DISC_COUNT);
+}
+
+/*
+ * Реализация LogGameEvent (объявлен выше forward-декларацией)
  */
 static void LogGameEvent(const char* category, DWORD va,
                          const char* varName, const char* funcName,
@@ -353,15 +670,21 @@ static void ReadGameState(GAME_STATE_SNAPSHOT* snap)
         else
             snap->Scene = SCENE_UNKNOWN;
     }
+    snap->GameTick = ReadDword(OFFSET_GAME_TICK);
 
     /* Сервер */
-    snap->ServerGroup     = ReadDword(OFFSET_SERVER_GROUP);
-    snap->ServerIndex     = ReadDword(OFFSET_SERVER_INDEX);
+    snap->ServerGroup        = ReadDword(OFFSET_SERVER_GROUP);
+    snap->ServerIndex        = ReadDword(OFFSET_SERVER_INDEX);
     ReadString(OFFSET_SERVER_NAME, snap->ServerName, MAX_GAME_NAME_LEN);
+    snap->ServerConnected    = ReadByte(OFFSET_SERVER_CONNECTED);
+    snap->ServerListReceived = ReadByte(OFFSET_SERVER_LIST_RECV);
 
     /* Логин */
     ReadString(OFFSET_LOGIN_ID, snap->LoginField, MAX_GAME_NAME_LEN);
-    snap->LoginFieldLen = (DWORD)ReadByte(OFFSET_LOGIN_ID_LEN);
+    snap->LoginFieldLen    = (DWORD)ReadByte(OFFSET_LOGIN_ID_LEN);
+    snap->PasswordFieldLen = (DWORD)ReadByte(OFFSET_LOGIN_PW_LEN);
+    snap->LoginState       = ReadDword(OFFSET_LOGIN_STATE);
+    snap->LoginResult      = ReadByte(OFFSET_LOGIN_RESULT);
 
     /* Персонажи */
     snap->CharacterCount   = ReadDword(OFFSET_CHAR_COUNT);
@@ -525,6 +848,29 @@ static DWORD DetectAndLogChanges(void)
         events++;
     }
 
+    /* --- Флаг подключения к серверу --- */
+    if (g_gmCurrent.ServerConnected != g_gmPrevious.ServerConnected)
+    {
+        LogGameEvent("SERVER", OFFSET_SERVER_CONNECTED,
+            "ServerConnected", "ConnectServer",
+            "Server connection: %s (flag: %u -> %u)",
+            g_gmCurrent.ServerConnected ? "CONNECTED" : "DISCONNECTED",
+            (DWORD)g_gmPrevious.ServerConnected,
+            (DWORD)g_gmCurrent.ServerConnected);
+        events++;
+    }
+
+    /* --- Флаг получения списка серверов --- */
+    if (g_gmCurrent.ServerListReceived != g_gmPrevious.ServerListReceived)
+    {
+        LogGameEvent("SERVER", OFFSET_SERVER_LIST_RECV,
+            "ServerListReceived", "RecvServerList",
+            "Server list received: %u -> %u",
+            (DWORD)g_gmPrevious.ServerListReceived,
+            (DWORD)g_gmCurrent.ServerListReceived);
+        events++;
+    }
+
     /* --- Логин/пароль --- */
     if (g_gmCurrent.LoginFieldLen != g_gmPrevious.LoginFieldLen)
     {
@@ -543,6 +889,38 @@ static DWORD DetectAndLogChanges(void)
             "Login ID changed: \"%s\" (len=%u)",
             g_gmCurrent.LoginField,
             g_gmCurrent.LoginFieldLen);
+        events++;
+    }
+
+    /* --- Длина пароля --- */
+    if (g_gmCurrent.PasswordFieldLen != g_gmPrevious.PasswordFieldLen)
+    {
+        LogGameEvent("LOGIN", OFFSET_LOGIN_PW_LEN,
+            "LoginPWLen", NULL,
+            "Password field length: %u -> %u",
+            g_gmPrevious.PasswordFieldLen, g_gmCurrent.PasswordFieldLen);
+        events++;
+    }
+
+    /* --- Состояние авторизации --- */
+    if (g_gmCurrent.LoginState != g_gmPrevious.LoginState)
+    {
+        LogGameEvent("LOGIN", OFFSET_LOGIN_STATE,
+            "LoginState", "LoginRequest",
+            "Login state changed: %u -> %u",
+            g_gmPrevious.LoginState, g_gmCurrent.LoginState);
+        events++;
+    }
+
+    /* --- Результат логина --- */
+    if (g_gmCurrent.LoginResult != g_gmPrevious.LoginResult)
+    {
+        LogGameEvent("LOGIN", OFFSET_LOGIN_RESULT,
+            "LoginResult", NULL,
+            "Login result: %u -> %u (%s)",
+            (DWORD)g_gmPrevious.LoginResult,
+            (DWORD)g_gmCurrent.LoginResult,
+            g_gmCurrent.LoginResult == 0 ? "OK" : "ERROR");
         events++;
     }
 
@@ -963,6 +1341,138 @@ static DWORD DetectAndLogChanges(void)
         }
     }
 
+    /* ============================================================
+     * Обнаружение новых активных офсетов (discovery)
+     *
+     * Логируем каждый офсет при первом обнаружении ненулевого значения.
+     * Это позволяет перехватить все найденные новые офсеты из main.exe.
+     * ============================================================ */
+
+    /* Scene/State */
+    if ((DWORD)g_gmCurrent.Scene != 0)
+        DiscoverOffset(DISC_GAME_SCENE, (DWORD)g_gmCurrent.Scene);
+    if (g_gmCurrent.GameTick != 0)
+        DiscoverOffset(DISC_GAME_TICK, g_gmCurrent.GameTick);
+
+    /* Server */
+    if (g_gmCurrent.ServerGroup != 0)
+        DiscoverOffset(DISC_SERVER_GROUP, g_gmCurrent.ServerGroup);
+    if (g_gmCurrent.ServerIndex != 0)
+        DiscoverOffset(DISC_SERVER_INDEX, g_gmCurrent.ServerIndex);
+    if (g_gmCurrent.ServerName[0] != '\0')
+        DiscoverOffsetStr(DISC_SERVER_NAME, g_gmCurrent.ServerName);
+    if (g_gmCurrent.ServerConnected != 0)
+        DiscoverOffset(DISC_SERVER_CONNECTED, (DWORD)g_gmCurrent.ServerConnected);
+    if (g_gmCurrent.ServerListReceived != 0)
+        DiscoverOffset(DISC_SERVER_LIST_RECV, (DWORD)g_gmCurrent.ServerListReceived);
+
+    /* Login/Auth */
+    if (g_gmCurrent.LoginField[0] != '\0')
+        DiscoverOffsetStr(DISC_LOGIN_ID, g_gmCurrent.LoginField);
+    if (g_gmCurrent.LoginFieldLen != 0)
+        DiscoverOffset(DISC_LOGIN_ID_LEN, g_gmCurrent.LoginFieldLen);
+    if (g_gmCurrent.PasswordFieldLen != 0)
+        DiscoverOffset(DISC_LOGIN_PW_LEN, g_gmCurrent.PasswordFieldLen);
+    if (g_gmCurrent.LoginState != 0)
+        DiscoverOffset(DISC_LOGIN_STATE, g_gmCurrent.LoginState);
+    if (g_gmCurrent.LoginResult != 0)
+        DiscoverOffset(DISC_LOGIN_RESULT, (DWORD)g_gmCurrent.LoginResult);
+
+    /* Character */
+    if (g_gmCurrent.CharacterCount != 0)
+        DiscoverOffset(DISC_CHAR_COUNT, g_gmCurrent.CharacterCount);
+    if (g_gmCurrent.SelectedCharIndex != 0)
+        DiscoverOffset(DISC_CHAR_SELECTED, g_gmCurrent.SelectedCharIndex);
+    if (g_gmCurrent.Character.Name[0] != '\0')
+        DiscoverOffsetStr(DISC_CHAR_NAME, g_gmCurrent.Character.Name);
+    if (g_gmCurrent.Character.Level != 0)
+        DiscoverOffset(DISC_CHAR_LEVEL, g_gmCurrent.Character.Level);
+    if (g_gmCurrent.Character.Class != 0)
+        DiscoverOffset(DISC_CHAR_CLASS, (DWORD)g_gmCurrent.Character.Class);
+    if (g_gmCurrent.Character.HP != 0)
+        DiscoverOffset(DISC_CHAR_HP, g_gmCurrent.Character.HP);
+    if (g_gmCurrent.Character.MaxHP != 0)
+        DiscoverOffset(DISC_CHAR_MAX_HP, g_gmCurrent.Character.MaxHP);
+    if (g_gmCurrent.Character.MP != 0)
+        DiscoverOffset(DISC_CHAR_MP, g_gmCurrent.Character.MP);
+    if (g_gmCurrent.Character.MaxMP != 0)
+        DiscoverOffset(DISC_CHAR_MAX_MP, g_gmCurrent.Character.MaxMP);
+    if (g_gmCurrent.Character.Experience != 0)
+        DiscoverOffset(DISC_CHAR_EXP, g_gmCurrent.Character.Experience);
+    if (g_gmCurrent.Character.PosX != 0)
+        DiscoverOffset(DISC_CHAR_POS_X, g_gmCurrent.Character.PosX);
+    if (g_gmCurrent.Character.PosY != 0)
+        DiscoverOffset(DISC_CHAR_POS_Y, g_gmCurrent.Character.PosY);
+    if (g_gmCurrent.Character.MapId != 0)
+        DiscoverOffset(DISC_CHAR_MAP_ID, (DWORD)g_gmCurrent.Character.MapId);
+
+    /* Inventory */
+    if (g_gmCurrent.InventoryItemCount != 0)
+    {
+        DiscoverOffset(DISC_INVENTORY_COUNT, g_gmCurrent.InventoryItemCount);
+        DiscoverOffset(DISC_INVENTORY_BASE, g_gmCurrent.InventoryItemCount);
+    }
+
+    /* Players */
+    if (g_gmCurrent.NearbyPlayerCount != 0)
+    {
+        DiscoverOffset(DISC_PLAYER_LIST_COUNT, g_gmCurrent.NearbyPlayerCount);
+        DiscoverOffset(DISC_PLAYER_LIST_BASE, g_gmCurrent.NearbyPlayerCount);
+    }
+
+    /* Monsters */
+    if (g_gmCurrent.NearbyMonsterCount != 0)
+    {
+        DiscoverOffset(DISC_MONSTER_LIST_COUNT, g_gmCurrent.NearbyMonsterCount);
+        DiscoverOffset(DISC_MONSTER_LIST_BASE, g_gmCurrent.NearbyMonsterCount);
+    }
+
+    /* Chat */
+    if (g_gmCurrent.LastChatLine[0] != '\0')
+        DiscoverOffsetStr(DISC_CHAT_LAST_LINE, g_gmCurrent.LastChatLine);
+    if (g_gmCurrent.ChatLineCount != 0)
+        DiscoverOffset(DISC_CHAT_LINE_COUNT, g_gmCurrent.ChatLineCount);
+
+    /* Combat */
+    if (g_gmCurrent.LastDamageDealt != 0)
+        DiscoverOffset(DISC_LAST_DAMAGE_DEALT, g_gmCurrent.LastDamageDealt);
+    if (g_gmCurrent.LastDamageReceived != 0)
+        DiscoverOffset(DISC_LAST_DAMAGE_RECV, g_gmCurrent.LastDamageReceived);
+    if (g_gmCurrent.TotalDamageDealt != 0)
+        DiscoverOffset(DISC_TOTAL_DAMAGE_DEALT, g_gmCurrent.TotalDamageDealt);
+    if (g_gmCurrent.TotalDamageReceived != 0)
+        DiscoverOffset(DISC_TOTAL_DAMAGE_RECV, g_gmCurrent.TotalDamageReceived);
+    if (g_gmCurrent.MonstersKilled != 0)
+        DiscoverOffset(DISC_MONSTERS_KILLED, g_gmCurrent.MonstersKilled);
+
+    /* Teleport */
+    if (g_gmCurrent.LastTeleportMap != 0)
+        DiscoverOffset(DISC_TELEPORT_MAP, (DWORD)g_gmCurrent.LastTeleportMap);
+    if (g_gmCurrent.LastTeleportX != 0)
+        DiscoverOffset(DISC_TELEPORT_X, g_gmCurrent.LastTeleportX);
+    if (g_gmCurrent.LastTeleportY != 0)
+        DiscoverOffset(DISC_TELEPORT_Y, g_gmCurrent.LastTeleportY);
+
+    /* Input: keyboard */
+    {
+        BOOL anyKey = FALSE;
+        for (i = 0; i < 256 && !anyKey; i++)
+        {
+            if (g_gmCurrent.KeyStates[i] != 0)
+                anyKey = TRUE;
+        }
+        if (anyKey)
+            DiscoverOffset(DISC_KEY_STATES, 1);
+    }
+
+    /* Input: mouse */
+    if (g_gmCurrent.MouseX != 0)
+        DiscoverOffset(DISC_MOUSE_X, g_gmCurrent.MouseX);
+    if (g_gmCurrent.MouseY != 0)
+        DiscoverOffset(DISC_MOUSE_Y, g_gmCurrent.MouseY);
+    if (g_gmCurrent.MouseButtons != 0)
+        DiscoverOffset(DISC_MOUSE_BUTTONS, (DWORD)g_gmCurrent.MouseButtons);
+
     return events;
 }
 
@@ -1148,6 +1658,9 @@ BOOL GameMonitor_Init(HANDLE hProcess, DWORD processId)
     memset(&g_gmCurrent, 0, sizeof(GAME_STATE_SNAPSHOT));
     memset(&g_gmPrevious, 0, sizeof(GAME_STATE_SNAPSHOT));
 
+    /* Инициализация таблицы обнаружения офсетов */
+    InitDiscoveryTable();
+
     Logger_Write(COLOR_DEFAULT, "\n");
     Logger_WriteHeader(
         "GAME MONITOR INITIALIZED (MONITOR IGROVYH DEJSTVIJ)");
@@ -1156,7 +1669,10 @@ BOOL GameMonitor_Init(HANDLE hProcess, DWORD processId)
     Logger_Write(COLOR_INFO,
         "  Tracking ALL game actions: server, login, character, inventory,\n");
     Logger_Write(COLOR_INFO,
-        "  chat, teleport, combat, monsters, players, keyboard, mouse\n\n");
+        "  chat, teleport, combat, monsters, players, keyboard, mouse\n");
+    Logger_Write(COLOR_INFO,
+        "  Offset discovery: tracking %u game state offsets for new data\n\n",
+        (DWORD)DISC_COUNT);
 
     /* Выводим полный список отслеживаемых офсетов */
     LogAllGameOffsets();
@@ -1263,6 +1779,40 @@ void GameMonitor_Shutdown(void)
         "  Key presses:         %u\n", g_gmTotalKeyPresses);
     Logger_Write(COLOR_INFO,
         "  Mouse clicks:        %u\n", g_gmTotalMouseClicks);
+
+    /* Итоги обнаружения офсетов */
+    Logger_Write(COLOR_DEFAULT, "\n");
+    Logger_Write(COLOR_HEADER,
+        "  Offset discovery summary:\n");
+    Logger_Write(COLOR_INFO,
+        "    Discovered:  %u / %u offsets\n",
+        g_gmTotalDiscovered, (DWORD)DISC_COUNT);
+
+    {
+        DWORD i;
+        for (i = 0; i < DISC_COUNT; i++)
+        {
+            if (g_gmDiscovery[i].Discovered)
+            {
+                Logger_Write(COLOR_OFFSET,
+                    "    [+] 0x%08X  %s  (%s)\n",
+                    g_gmDiscovery[i].VA,
+                    g_gmDiscovery[i].Name,
+                    g_gmDiscovery[i].Category);
+            }
+        }
+        for (i = 0; i < DISC_COUNT; i++)
+        {
+            if (!g_gmDiscovery[i].Discovered)
+            {
+                Logger_Write(COLOR_INFO,
+                    "    [-] 0x%08X  %s  (%s) - not active\n",
+                    g_gmDiscovery[i].VA,
+                    g_gmDiscovery[i].Name,
+                    g_gmDiscovery[i].Category);
+            }
+        }
+    }
 
     if (g_gmCurrent.Character.Name[0] != '\0')
     {

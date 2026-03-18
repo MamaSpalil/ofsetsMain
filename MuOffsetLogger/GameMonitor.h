@@ -85,15 +85,21 @@ typedef struct _GAME_STATE_SNAPSHOT
 {
     /* Сцена */
     GAME_SCENE Scene;
+    DWORD  GameTick;
 
     /* Данные выбора сервера */
     DWORD  ServerGroup;
     DWORD  ServerIndex;
     char   ServerName[MAX_GAME_NAME_LEN];
+    BYTE   ServerConnected;
+    BYTE   ServerListReceived;
 
     /* Данные логина */
     char   LoginField[MAX_GAME_NAME_LEN];
     DWORD  LoginFieldLen;
+    DWORD  PasswordFieldLen;
+    DWORD  LoginState;
+    BYTE   LoginResult;
 
     /* Персонаж */
     DWORD  CharacterCount;
