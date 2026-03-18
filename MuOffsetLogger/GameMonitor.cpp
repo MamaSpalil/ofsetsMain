@@ -1410,21 +1410,22 @@ static DWORD DetectAndLogChanges(void)
     if (g_gmCurrent.InventoryItemCount != 0)
     {
         DiscoverOffset(DISC_INVENTORY_COUNT, g_gmCurrent.InventoryItemCount);
-        DiscoverOffset(DISC_INVENTORY_BASE, g_gmCurrent.InventoryItemCount);
+        /* Для BASE офсета читаем первый DWORD из массива как маркер активности */
+        DiscoverOffset(DISC_INVENTORY_BASE, ReadDword(OFFSET_INVENTORY_BASE));
     }
 
     /* Players */
     if (g_gmCurrent.NearbyPlayerCount != 0)
     {
         DiscoverOffset(DISC_PLAYER_LIST_COUNT, g_gmCurrent.NearbyPlayerCount);
-        DiscoverOffset(DISC_PLAYER_LIST_BASE, g_gmCurrent.NearbyPlayerCount);
+        DiscoverOffset(DISC_PLAYER_LIST_BASE, ReadDword(OFFSET_PLAYER_LIST_BASE));
     }
 
     /* Monsters */
     if (g_gmCurrent.NearbyMonsterCount != 0)
     {
         DiscoverOffset(DISC_MONSTER_LIST_COUNT, g_gmCurrent.NearbyMonsterCount);
-        DiscoverOffset(DISC_MONSTER_LIST_BASE, g_gmCurrent.NearbyMonsterCount);
+        DiscoverOffset(DISC_MONSTER_LIST_BASE, ReadDword(OFFSET_MONSTER_LIST_BASE));
     }
 
     /* Chat */
