@@ -28,6 +28,7 @@
 #include "OffsetDatabase.h"
 #include "FunctionScanner.h"
 #include "ProcessMonitor.h"
+#include "GameMonitor.h"
 
 /* Имя лог-файла */
 #define LOG_FILENAME    "MuOffsetLog.txt"
@@ -637,6 +638,12 @@ int main(int argc, char* argv[])
                     "  MONITORING MODE - Tracking main.exe"
                     " (PID=%u)\n", processId);
                 Logger_Write(COLOR_HEADER,
+                    "  Tracking ALL game actions: server,"
+                    " login, character, inventory,\n");
+                Logger_Write(COLOR_HEADER,
+                    "  chat, teleport, combat, monsters,"
+                    " players, keyboard, mouse\n");
+                Logger_Write(COLOR_HEADER,
                     "  Press Q / ESC / 5 to stop monitoring,"
                     " 6 to quit\n");
                 Logger_Write(COLOR_HEADER,
@@ -645,6 +652,16 @@ int main(int argc, char* argv[])
 
                 if (ProcessMonitor_Init(processId, hProcess))
                 {
+                    /* Инициализация GameMonitor для отслеживания
+                     * всех игровых действий через чтение памяти */
+                    if (!GameMonitor_Init(hProcess, processId))
+                    {
+                        Logger_Write(COLOR_WARN,
+                            "  [WARNING] GameMonitor init"
+                            " failed. Window monitoring"
+                            " only.\n");
+                    }
+
                     while (ProcessMonitor_IsRunning())
                     {
                         if (_kbhit())
@@ -675,9 +692,15 @@ int main(int argc, char* argv[])
                             break;
                         }
 
+                        /* Обновление GameMonitor:
+                         * чтение памяти, обнаружение
+                         * изменений игровых данных */
+                        GameMonitor_Update();
+
                         Sleep(100);
                     }
 
+                    GameMonitor_Shutdown();
                     ProcessMonitor_Shutdown();
                     /* hProcess закрыт в Shutdown — обнуляем */
                     hProcess  = NULL;

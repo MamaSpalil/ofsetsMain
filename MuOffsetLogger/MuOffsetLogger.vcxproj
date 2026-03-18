@@ -162,6 +162,7 @@
     <ClCompile Include="OffsetDatabase.cpp" />
     <ClCompile Include="FunctionScanner.cpp" />
     <ClCompile Include="ProcessMonitor.cpp" />
+    <ClCompile Include="GameMonitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Logger.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="OffsetDatabase.h" />
     <ClInclude Include="FunctionScanner.h" />
     <ClInclude Include="ProcessMonitor.h" />
+    <ClInclude Include="GameMonitor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
