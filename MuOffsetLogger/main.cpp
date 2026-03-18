@@ -32,6 +32,8 @@
 #define LOG_FILENAME    "MuOffsetLog.txt"
 /* Имя анализируемого исполняемого файла */
 #define TARGET_EXE      "main.exe"
+/* Код клавиши ESC */
+#define KEY_ESC         27
 
 /*
  * Получение пути к файлу в директории EXE
@@ -214,19 +216,18 @@ static BOOL LaunchMainExe(const char* exePath,
  * Вывод главного меню с текущим статусом
  */
 static void ShowMenu(BOOL exeFound, const char* exePath,
-                     DWORD processId, HANDLE hProcess,
-                     BOOL analysisComplete)
+                     DWORD processId, BOOL analysisComplete)
 {
     printf("\n");
     printf("  ============================================================\n");
     printf("  Menu:\n");
     printf("  ------------------------------------------------------------\n");
-    printf("  1 - Poisk main.exe              (Find main.exe)\n");
-    printf("  2 - Zapusk main.exe             (Launch main.exe)\n");
-    printf("  3 - Zapusk poiska ofsetov       (Start offset search)\n");
-    printf("  4 - Pauza programmy             (Pause program)\n");
-    printf("  5 - Ostanovit' otladku (debug)  (Stop debugging)\n");
-    printf("  6 - Zakryt' programmu           (Close program)\n");
+    printf("  1 - Poisk main.exe                (Find main.exe)\n");
+    printf("  2 - Zapusk main.exe               (Launch main.exe)\n");
+    printf("  3 - Zapusk poiska ofsetov         (Start offset search)\n");
+    printf("  4 - Pauza programmy               (Pause program)\n");
+    printf("  5 - Ostanovit' otladku (debug)    (Stop debugging)\n");
+    printf("  6 - Zakryt' programmu             (Close program)\n");
     printf("  ------------------------------------------------------------\n");
 
     /* Строка статуса */
@@ -338,7 +339,7 @@ int main(int argc, char* argv[])
             }
         }
 
-        ShowMenu(exeFound, exePath, processId, hProcess, analysisComplete);
+        ShowMenu(exeFound, exePath, processId, analysisComplete);
 
         choice = _getch();
         printf("%c\n\n", choice);
@@ -372,14 +373,26 @@ int main(int argc, char* argv[])
                 DWORD pid = ProcessMonitor_FindProcess(TARGET_EXE);
                 if (pid != 0)
                 {
+                    HANDLE h;
                     printf("  [INFO] main.exe is already running"
                            " (PID=%u)\n", pid);
                     if (hProcess != NULL)
                         CloseHandle(hProcess);
-                    processId = pid;
-                    hProcess = OpenProcess(
+                    h = OpenProcess(
                         PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
                         | SYNCHRONIZE, FALSE, pid);
+                    if (h != NULL)
+                    {
+                        processId = pid;
+                        hProcess  = h;
+                    }
+                    else
+                    {
+                        printf("  [WARNING] Cannot open process"
+                               " handle.\n");
+                        hProcess  = NULL;
+                        processId = 0;
+                    }
                 }
                 else
                 {
@@ -590,7 +603,7 @@ int main(int argc, char* argv[])
                         {
                             int key = _getch();
                             if (key == '5' || key == 'q'
-                                || key == 'Q' || key == 27)
+                                || key == 'Q' || key == KEY_ESC)
                             {
                                 Logger_Write(COLOR_INFO,
                                     "\n  Monitoring stopped"
