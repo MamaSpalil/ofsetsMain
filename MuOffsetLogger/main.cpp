@@ -29,6 +29,7 @@
 #include "FunctionScanner.h"
 #include "ProcessMonitor.h"
 #include "GameMonitor.h"
+#include "OffsetStore.h"
 
 /* Имя лог-файла */
 #define LOG_FILENAME    "MuOffsetLog.txt"
@@ -272,8 +273,8 @@ static void ShowMenu(BOOL exeFound, const char* exePath,
     printf("  Menu:\n");
     printf("  ------------------------------------------------------------\n");
     printf("  1 - Poisk main.exe                (Find main.exe)\n");
-    printf("  2 - Zapusk main.exe               (Launch main.exe)\n");
-    printf("  3 - Zapusk poiska ofsetov         (Start offset search)\n");
+    printf("  2 - Zapusk main.exe + avto-poisk   (Launch + auto offset search)\n");
+    printf("  3 - Zapusk poiska ofsetov          (Start offset search)\n");
     printf("  4 - Pauza programmy               (Pause program)\n");
     printf("  5 - Ostanovit' otladku (debug)    (Stop debugging)\n");
     printf("  6 - Zakryt' programmu             (Close program)\n");
@@ -452,10 +453,17 @@ int main(int argc, char* argv[])
         }
 
         /* ==============================================================
-         * 2 — Запуск main.exe
+         * 2 — Запуск main.exe + автоматический поиск офсетов
          * ============================================================== */
         case '2':
         {
+            BYTE* fileBuffer  = NULL;
+            BYTE* imageBuffer = NULL;
+            DWORD fileSize    = 0;
+            static PE_FILE_INFO peInfo2;
+            DWORD totalOffsets;
+            char  dbPath[MAX_PATH];
+
             if (!exeFound)
             {
                 printf("  [ERROR] main.exe not found!"
@@ -470,15 +478,300 @@ int main(int argc, char* argv[])
             }
 
             printf("  Launching %s...\n", TARGET_EXE);
-            if (LaunchMainExe(exePath, &processId, &hProcess))
-            {
-                printf("  [OK] main.exe launched! (PID=%u)\n", processId);
-            }
-            else
+            if (!LaunchMainExe(exePath, &processId, &hProcess))
             {
                 printf("  [ERROR] Failed to launch (error: %u)\n",
                        GetLastError());
+                break;
             }
+            printf("  [OK] main.exe launched! (PID=%u)\n", processId);
+
+            /* === Автоматический запуск поиска офсетов === */
+            printf("\n  [AUTO] Starting automatic offset search...\n");
+
+            /* Чтение и маппинг main.exe */
+            printf("  Reading %s from disk...\n", TARGET_EXE);
+            fileBuffer = ReadFileToBuffer(exePath, &fileSize);
+            if (fileBuffer == NULL)
+            {
+                printf("  [ERROR] Cannot read file: %s\n", exePath);
+                break;
+            }
+
+            printf("  File size: %u bytes (0x%08X)\n", fileSize, fileSize);
+            printf("  Mapping PE sections into memory...\n");
+
+            imageBuffer = MapPEImage(fileBuffer, fileSize);
+            VirtualFree(fileBuffer, 0, MEM_RELEASE);
+            fileBuffer = NULL;
+
+            if (imageBuffer == NULL)
+            {
+                printf("  [ERROR] Failed to map PE image!\n");
+                break;
+            }
+
+            printf("  PE image mapped successfully.\n\n");
+
+            /* Инициализация логгера (один раз) */
+            if (!loggerInitialized)
+            {
+                GetPathInExeDir(LOG_FILENAME, logPath, MAX_PATH);
+                if (!Logger_Init(logPath))
+                {
+                    printf("  [ERROR] Failed to initialize logger!\n");
+                    VirtualFree(imageBuffer, 0, MEM_RELEASE);
+                    break;
+                }
+                loggerInitialized = TRUE;
+            }
+
+            /* Инициализация базы данных офсетов */
+            GetPathInExeDir(OSTORE_DB_FILENAME, dbPath, MAX_PATH);
+            OffsetStore_Init(dbPath);
+
+            Logger_Write(COLOR_HEADER,
+                "\n  MuOffsetLogger v2.0 - MU Online main.exe"
+                " Offset Analyzer\n");
+            Logger_Write(COLOR_INFO,
+                "  AUTO-LAUNCH MODE: analyzing %s + continuous"
+                " monitoring\n", TARGET_EXE);
+            Logger_Write(COLOR_INFO,
+                "  File: %s\n", exePath);
+            Logger_Write(COLOR_INFO,
+                "  File size: %u bytes (0x%08X)\n\n",
+                fileSize, fileSize);
+
+            /* ЭТАП 1: Анализ PE-структуры */
+            Logger_WriteHeader(
+                "STAGE 1: PE STRUCTURE ANALYSIS"
+                " (ANALIZ PE-STRUKTURY)");
+
+            if (!PEAnalyzer_Parse((HMODULE)imageBuffer, &peInfo2))
+            {
+                Logger_Write(COLOR_WARN,
+                    "[ERROR] Failed to parse PE headers!\n");
+                VirtualFree(imageBuffer, 0, MEM_RELEASE);
+                break;
+            }
+
+            Logger_Write(COLOR_INFO,
+                "  Mapped image base address: 0x%08X\n",
+                (DWORD)(DWORD_PTR)imageBuffer);
+            Logger_Write(COLOR_INFO,
+                "  PE ImageBase: 0x%08X\n\n", peInfo2.ImageBase);
+
+            PEAnalyzer_LogHeaders(&peInfo2);
+            PEAnalyzer_LogSections(&peInfo2);
+            PEAnalyzer_LogImports(&peInfo2);
+
+            /* Записать секции и импорты в базу данных офсетов */
+            {
+                DWORD s;
+                for (s = 0; s < peInfo2.SectionCount; s++)
+                {
+                    OffsetStore_Add(
+                        peInfo2.ImageBase
+                            + peInfo2.Sections[s].VirtualAddress,
+                        "",
+                        peInfo2.Sections[s].Name,
+                        "SectionBase");
+                }
+                for (s = 0; s < peInfo2.ImportDllCount; s++)
+                {
+                    DWORD f;
+                    for (f = 0; f < peInfo2.Imports[s].FunctionCount; f++)
+                    {
+                        OffsetStore_Add(
+                            peInfo2.Imports[s].Functions[f].IatVA,
+                            peInfo2.Imports[s].Functions[f].FunctionName,
+                            peInfo2.Imports[s].DllName,
+                            "ImportFunction");
+                    }
+                }
+            }
+
+            /* ЭТАП 2: База известных офсетов */
+            Logger_WriteHeader(
+                "STAGE 2: KNOWN OFFSETS DATABASE"
+                " (BAZA IZVESTNYH OFSETOV)");
+            OffsetDB_LogAllOffsets((DWORD_PTR)peInfo2.ImageBase);
+
+            /* Записать все известные офсеты в базу данных */
+            {
+                DWORD count = 0;
+                const OFFSET_ENTRY* allOffsets
+                    = OffsetDB_GetAllOffsets(&count);
+                DWORD k;
+                for (k = 0; k < count; k++)
+                {
+                    OffsetStore_Add(allOffsets[k].VA,
+                        (allOffsets[k].Type == OT_FUNCTION)
+                            ? allOffsets[k].Name : "",
+                        allOffsets[k].Category,
+                        (allOffsets[k].Type != OT_FUNCTION)
+                            ? allOffsets[k].Name : "");
+                }
+            }
+
+            /* ЭТАП 3: Сканирование функций в .text секции */
+            Logger_WriteHeader(
+                "STAGE 3: FUNCTION SCANNING (.text section)");
+            FuncScanner_ScanTextSection(&peInfo2, imageBuffer);
+            FuncScanner_LogResults();
+
+            /* ЭТАП 4: Сканирование строковых ссылок */
+            Logger_WriteHeader(
+                "STAGE 4: STRING REFERENCE SCANNING"
+                " (POISK STROK)");
+            FuncScanner_ScanStringRefs(&peInfo2, imageBuffer);
+            FuncScanner_LogStringRefs();
+
+            /* ЭТАП 5: Автоклассификация функций */
+            Logger_WriteHeader(
+                "STAGE 5: AUTO-CLASSIFICATION"
+                " (AVTOKLASSIFIKATSIYA FUNKTSIJ)");
+            Logger_Write(COLOR_INFO,
+                "  Analyzing function bodies for import calls"
+                " and string refs...\n");
+            Logger_Write(COLOR_INFO,
+                "  This auto-detects function purpose regardless"
+                " of main.exe version.\n\n");
+            FuncScanner_AutoClassify(&peInfo2, imageBuffer);
+            FuncScanner_LogAutoClassified();
+
+            /* Итоги анализа */
+            totalOffsets = Logger_GetOffsetCount();
+
+            Logger_Write(COLOR_DEFAULT, "\n");
+            Logger_WriteHeader("ANALYSIS COMPLETE (ANALIZ ZAVERSHEN)");
+
+            Logger_Write(COLOR_HEADER,
+                "  Total offsets logged:         %u\n", totalOffsets);
+            Logger_Write(COLOR_DEFAULT,
+                "  Functions discovered:         %u\n",
+                FuncScanner_GetCount());
+            Logger_Write(COLOR_DEFAULT,
+                "  Import DLLs:                  %u\n",
+                peInfo2.ImportDllCount);
+            Logger_Write(COLOR_DEFAULT,
+                "  PE Sections:                  %u\n",
+                peInfo2.SectionCount);
+            Logger_Write(COLOR_HEADER,
+                "  Database records:             %u\n",
+                OffsetStore_GetCount());
+            Logger_Write(COLOR_HEADER,
+                "  Log file saved to:            %s\n", logPath);
+
+            Logger_Write(COLOR_DEFAULT, "\n");
+
+            VirtualFree(imageBuffer, 0, MEM_RELEASE);
+            imageBuffer = NULL;
+            analysisComplete = TRUE;
+
+            /* Непрерывный мониторинг до закрытия main.exe */
+            Logger_Write(COLOR_HEADER, "\n");
+            Logger_Write(COLOR_HEADER,
+                "  ======================================"
+                "====================\n");
+            Logger_Write(COLOR_HEADER,
+                "  CONTINUOUS MONITORING - Tracking main.exe"
+                " (PID=%u)\n", processId);
+            Logger_Write(COLOR_HEADER,
+                "  Tracking ALL game actions: server,"
+                " login, character, inventory,\n");
+            Logger_Write(COLOR_HEADER,
+                "  chat, teleport, combat, monsters,"
+                " players, keyboard, mouse\n");
+            Logger_Write(COLOR_HEADER,
+                "  All offsets saved to database:"
+                " %s\n", OSTORE_DB_FILENAME);
+            Logger_Write(COLOR_HEADER,
+                "  Format: Offset | FunctionName |"
+                " ModuleName | VariableName\n");
+            Logger_Write(COLOR_HEADER,
+                "  Press Q / ESC / 5 to stop monitoring,"
+                " 6 to quit\n");
+            Logger_Write(COLOR_HEADER,
+                "  ======================================"
+                "====================\n\n");
+
+            if (ProcessMonitor_Init(processId, hProcess))
+            {
+                /* Инициализация GameMonitor для отслеживания
+                 * всех игровых действий через чтение памяти */
+                if (!GameMonitor_Init(hProcess, processId))
+                {
+                    Logger_Write(COLOR_WARN,
+                        "  [WARNING] GameMonitor init"
+                        " failed. Window monitoring"
+                        " only.\n");
+                }
+
+                /* Непрерывный цикл мониторинга до закрытия main.exe */
+                while (ProcessMonitor_IsRunning())
+                {
+                    if (_kbhit())
+                    {
+                        int key = _getch();
+                        if (key == '5' || key == 'q'
+                            || key == 'Q' || key == KEY_ESC)
+                        {
+                            Logger_Write(COLOR_INFO,
+                                "\n  Monitoring stopped"
+                                " by user.\n");
+                            break;
+                        }
+                        if (key == '6')
+                        {
+                            Logger_Write(COLOR_INFO,
+                                "\n  Exiting program...\n");
+                            running = 0;
+                            break;
+                        }
+                    }
+
+                    if (!ProcessMonitor_Update())
+                    {
+                        Logger_Write(COLOR_INFO,
+                            "\n  main.exe has closed."
+                            " Monitoring stopped.\n");
+                        break;
+                    }
+
+                    /* Обновление GameMonitor:
+                     * чтение памяти, обнаружение
+                     * изменений игровых данных,
+                     * запись офсетов в базу данных */
+                    GameMonitor_Update();
+
+                    Sleep(100);
+                }
+
+                /* Flush database before shutdown summary */
+                OffsetStore_Flush();
+
+                GameMonitor_Shutdown();
+                ProcessMonitor_Shutdown();
+
+                Logger_Write(COLOR_HEADER,
+                    "\n  [OffsetStore] Total offsets in database:"
+                    " %u\n", OffsetStore_GetCount());
+
+                OffsetStore_Shutdown();
+
+                /* hProcess закрыт в Shutdown — обнуляем */
+                hProcess  = NULL;
+                processId = 0;
+            }
+            else
+            {
+                Logger_Write(COLOR_WARN,
+                    "  [WARNING] Failed to initialize"
+                    " process monitor.\n");
+                OffsetStore_Shutdown();
+            }
+
             break;
         }
 
@@ -492,6 +785,7 @@ int main(int argc, char* argv[])
             DWORD fileSize    = 0;
             static PE_FILE_INFO peInfo;
             DWORD totalOffsets;
+            char  dbPath3[MAX_PATH];
 
             if (!exeFound)
             {
@@ -537,6 +831,10 @@ int main(int argc, char* argv[])
                 loggerInitialized = TRUE;
             }
 
+            /* Инициализация базы данных офсетов */
+            GetPathInExeDir(OSTORE_DB_FILENAME, dbPath3, MAX_PATH);
+            OffsetStore_Init(dbPath3);
+
             Logger_Write(COLOR_HEADER,
                 "\n  MuOffsetLogger v2.0 - MU Online main.exe"
                 " Offset Analyzer\n");
@@ -575,6 +873,23 @@ int main(int argc, char* argv[])
                 "STAGE 2: KNOWN OFFSETS DATABASE"
                 " (BAZA IZVESTNYH OFSETOV)");
             OffsetDB_LogAllOffsets((DWORD_PTR)peInfo.ImageBase);
+
+            /* Записать все известные офсеты в базу данных */
+            {
+                DWORD count3 = 0;
+                const OFFSET_ENTRY* allOffsets3
+                    = OffsetDB_GetAllOffsets(&count3);
+                DWORD k3;
+                for (k3 = 0; k3 < count3; k3++)
+                {
+                    OffsetStore_Add(allOffsets3[k3].VA,
+                        (allOffsets3[k3].Type == OT_FUNCTION)
+                            ? allOffsets3[k3].Name : "",
+                        allOffsets3[k3].Category,
+                        (allOffsets3[k3].Type != OT_FUNCTION)
+                            ? allOffsets3[k3].Name : "");
+                }
+            }
 
             /* ЭТАП 3: Сканирование функций в .text секции */
             Logger_WriteHeader(
@@ -619,6 +934,9 @@ int main(int argc, char* argv[])
                 "  PE Sections:                  %u\n",
                 peInfo.SectionCount);
             Logger_Write(COLOR_HEADER,
+                "  Database records:             %u\n",
+                OffsetStore_GetCount());
+            Logger_Write(COLOR_HEADER,
                 "  Log file saved to:            %s\n", logPath);
 
             Logger_Write(COLOR_DEFAULT, "\n");
@@ -643,6 +961,9 @@ int main(int argc, char* argv[])
                 Logger_Write(COLOR_HEADER,
                     "  chat, teleport, combat, monsters,"
                     " players, keyboard, mouse\n");
+                Logger_Write(COLOR_HEADER,
+                    "  All offsets saved to database:"
+                    " %s\n", OSTORE_DB_FILENAME);
                 Logger_Write(COLOR_HEADER,
                     "  Press Q / ESC / 5 to stop monitoring,"
                     " 6 to quit\n");
@@ -700,8 +1021,16 @@ int main(int argc, char* argv[])
                         Sleep(100);
                     }
 
+                    OffsetStore_Flush();
                     GameMonitor_Shutdown();
                     ProcessMonitor_Shutdown();
+
+                    Logger_Write(COLOR_HEADER,
+                        "\n  [OffsetStore] Total offsets in database:"
+                        " %u\n", OffsetStore_GetCount());
+
+                    OffsetStore_Shutdown();
+
                     /* hProcess закрыт в Shutdown — обнуляем */
                     hProcess  = NULL;
                     processId = 0;
@@ -711,6 +1040,7 @@ int main(int argc, char* argv[])
                     Logger_Write(COLOR_WARN,
                         "  [WARNING] Failed to initialize"
                         " process monitor.\n");
+                    OffsetStore_Shutdown();
                 }
             }
             else
@@ -718,6 +1048,7 @@ int main(int argc, char* argv[])
                 Logger_Write(COLOR_INFO,
                     "  File analysis mode."
                     " No process monitoring.\n");
+                OffsetStore_Shutdown();
             }
 
             break;

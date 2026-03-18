@@ -12,6 +12,7 @@
 
 #include "GameMonitor.h"
 #include "Logger.h"
+#include "OffsetStore.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -539,6 +540,15 @@ static void LogGameEvent(const char* category, DWORD va,
 
     Logger_Write(COLOR_DEFAULT,
         " %s\n", details);
+
+    /* Записать в базу данных офсетов */
+    if (va != 0)
+    {
+        OffsetStore_Add(va,
+            (funcName != NULL) ? funcName : "",
+            (category != NULL) ? category : "",
+            (varName != NULL) ? varName : "");
+    }
 
     g_gmEventCount++;
 }
