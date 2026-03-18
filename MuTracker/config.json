@@ -1,0 +1,34 @@
+{
+  "target": {
+    "process": "main.exe",
+    "window_title": "MU",
+    "auto_attach": true,
+    "reconnect_interval_ms": 2000
+  },
+  "hooks": {
+    "mode": "inline",
+    "scan_on_attach": true,
+    "patterns": [
+      { "name": "FuncPrologue",  "sig": "55 8B EC",                         "offset": 0 },
+      { "name": "PlayerMove",    "sig": "55 8B EC 83 EC ?? 56 57 8B F9",    "offset": 0 },
+      { "name": "AttackFunc",    "sig": "55 8B EC 53 8B 5D 08 56",          "offset": 0 },
+      { "name": "RenderFrame",   "sig": "55 8B EC 83 E4 F8 81 EC",          "offset": 0 }
+    ]
+  },
+  "filter": {
+    "include_modules": ["main.exe"],
+    "exclude_ranges": [
+      { "from": "0x00400000", "to": "0x00401000" }
+    ],
+    "min_call_frequency": 1,
+    "capture_args": true,
+    "capture_stack": false,
+    "stack_depth": 8
+  },
+  "output": {
+    "log_file": "trace_output.log",
+    "real_time_ui": true,
+    "log_format": "json",
+    "max_records": 100000
+  }
+}
