@@ -1,0 +1,71 @@
+>------ Собрать все запущено: проект: MuTracker, конфигурация: x86-Release ------
+  Microsoft (R) Build Engine версии 16.11.2+f32259642 для .NET Framework
+  (C) Корпорация Майкрософт (Microsoft Corporation). Все права защищены.
+  
+    Checking Build System
+    Building Custom Rule C:/Users/HOME/Downloads/ofsetsMain-main16/MuTracker/CMakeLists.txt
+    hde32.c
+    DisasmEngine.cpp
+    MemoryUtils.cpp
+    PatternScanner.cpp
+    HookEngine.cpp
+    CallTracer.cpp
+    Logger.cpp
+    Config.cpp
+D:\Visual\VC\Tools\MSVC\14.29.30133\include\algorithm(2650,24): warning C4244: =: преобразование "int" в "char", возможна потеря данных (компилируется исходный файл C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\core\MemoryUtils.cpp) 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\core\MemoryUtils.cpp(276): message : выполняется компиляция ссылки на экземпляр шаблон функции "_OutIt std::transform<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,int(__cdecl *)(int)>(const _InIt,const _InIt,_OutIt,_Fn)" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLib.vcxproj]
+            with
+            [
+                _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                _Elem=char,
+                _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                _Fn=int (__cdecl *)(int)
+            ]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\core\HookEngine.cpp(84,18): warning C4101: disasm: неиспользованная локальная переменная 
+D:\Visual\VC\Tools\MSVC\14.29.30133\include\algorithm(2650,24): warning C4244: =: преобразование "int" в "char", возможна потеря данных (компилируется исходный файл C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\core\HookEngine.cpp) 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\core\HookEngine.cpp(356): message : выполняется компиляция ссылки на экземпляр шаблон функции "_OutIt std::transform<std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,int(__cdecl *)(int)>(const _InIt,const _InIt,_OutIt,_Fn)" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLib.vcxproj]
+            with
+            [
+                _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                _Elem=char,
+                _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
+                _Fn=int (__cdecl *)(int)
+            ]
+    MuTrackerLib.vcxproj -> C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\Release\MuTrackerLib.lib
+    Building Custom Rule C:/Users/HOME/Downloads/ofsetsMain-main16/MuTracker/CMakeLists.txt
+    dllmain.cpp
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp(17,1): warning C4005: NOMINMAX: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp : message : см. предыдущее определение "NOMINMAX" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerDLL.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp(18,1): warning C4005: _CRT_SECURE_NO_WARNINGS: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp : message : см. предыдущее определение "_CRT_SECURE_NO_WARNINGS" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerDLL.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp(86,34): warning C4100: param: неиспользованный формальный параметр 
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\dll\MuTrackerDLL\dllmain.cpp(379,31): warning C4100: lpReserved: неиспользованный формальный параметр 
+    Создание кода
+    Создание кода завершено
+    MuTrackerDLL.vcxproj -> C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\bin\Release\MuTrackerDLL.dll
+    Building Custom Rule C:/Users/HOME/Downloads/ofsetsMain-main16/MuTracker/CMakeLists.txt
+    main.cpp
+    MainWindow.cpp
+    TraceViewer.cpp
+    ProcessAttacher.cpp
+    DLLInjector.cpp
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\TraceViewer.cpp(8,1): warning C4005: NOMINMAX: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\TraceViewer.cpp : message : см. предыдущее определение "NOMINMAX" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\TraceViewer.cpp(9,1): warning C4005: _CRT_SECURE_NO_WARNINGS: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\TraceViewer.cpp : message : см. предыдущее определение "_CRT_SECURE_NO_WARNINGS" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\main.cpp(17,1): warning C4005: NOMINMAX: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\main.cpp : message : см. предыдущее определение "NOMINMAX" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp(11,1): warning C4005: NOMINMAX: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp : message : см. предыдущее определение "NOMINMAX" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\main.cpp(18,1): warning C4005: _CRT_SECURE_NO_WARNINGS: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\main.cpp : message : см. предыдущее определение "_CRT_SECURE_NO_WARNINGS" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp(12,1): warning C4005: _CRT_SECURE_NO_WARNINGS: изменение макроопределения 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp : message : см. предыдущее определение "_CRT_SECURE_NO_WARNINGS" [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp(483,9): error C2188: 128190: слишком большое значение для расширенного символа 
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\loader\MuTrackerLoader\MainWindow.cpp(490,9): error C2188: 128465: слишком большое значение для расширенного символа 
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\attach\DLLInjector.cpp(28,27): error C2838: "LoadLibraryW": недопустимое полное имя в объявлении члена 
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\attach\DLLInjector.cpp(28,38): error C2440: приведение типов: невозможно преобразовать "HMODULE (__stdcall *)(LPCWSTR)" в "MuTracker::InjectionMethod" 
+  C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\attach\DLLInjector.cpp(28,38): message : Контекст не позволяет устранить неоднозначность перегруженной функции [C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\build\x86-Release\MuTrackerLoader.vcxproj]
+C:\Users\HOME\Downloads\ofsetsMain-main16\MuTracker\src\attach\DLLInjector.cpp(28,5): error C2046: недопустимый вариант выбора 
+
+Сбой Собрать все.
