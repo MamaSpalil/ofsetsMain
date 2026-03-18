@@ -234,18 +234,30 @@ std::vector<ModuleInfo> MemoryUtils::EnumModules()
                                             m_processId);
     if (snap == INVALID_HANDLE_VALUE) return modules;
 
-    MODULEENTRY32 me;
+    MODULEENTRY32W me;
     me.dwSize = sizeof(me);
 
-    if (Module32First(snap, &me)) {
+    if (Module32FirstW(snap, &me)) {
         do {
             ModuleInfo info;
-            info.name = me.szModule;
+            int nameLen = WideCharToMultiByte(CP_UTF8, 0, me.szModule, -1,
+                                              nullptr, 0, nullptr, nullptr);
+            if (nameLen > 0) {
+                info.name.resize(nameLen - 1);
+                WideCharToMultiByte(CP_UTF8, 0, me.szModule, -1,
+                                    &info.name[0], nameLen, nullptr, nullptr);
+            }
             info.baseAddress = reinterpret_cast<uintptr_t>(me.modBaseAddr);
             info.imageSize = me.modBaseSize;
-            info.fullPath = me.szExePath;
+            int pathLen = WideCharToMultiByte(CP_UTF8, 0, me.szExePath, -1,
+                                              nullptr, 0, nullptr, nullptr);
+            if (pathLen > 0) {
+                info.fullPath.resize(pathLen - 1);
+                WideCharToMultiByte(CP_UTF8, 0, me.szExePath, -1,
+                                    &info.fullPath[0], pathLen, nullptr, nullptr);
+            }
             modules.push_back(info);
-        } while (Module32Next(snap, &me));
+        } while (Module32NextW(snap, &me));
     }
 
     CloseHandle(snap);

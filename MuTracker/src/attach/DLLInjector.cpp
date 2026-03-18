@@ -185,18 +185,22 @@ uintptr_t DLLInjector::GetRemoteModuleHandle(uint32_t pid, const char* moduleNam
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
     if (snap == INVALID_HANDLE_VALUE) return 0;
 
-    MODULEENTRY32 me;
+    MODULEENTRY32W me;
     me.dwSize = sizeof(me);
+
+    /* Convert narrow module name to wide for comparison */
+    wchar_t wModuleName[MAX_MODULE_NAME32 + 1] = {};
+    MultiByteToWideChar(CP_UTF8, 0, moduleName, -1, wModuleName, MAX_MODULE_NAME32 + 1);
 
     uintptr_t base = 0;
 
-    if (Module32First(snap, &me)) {
+    if (Module32FirstW(snap, &me)) {
         do {
-            if (_stricmp(me.szModule, moduleName) == 0) {
+            if (_wcsicmp(me.szModule, wModuleName) == 0) {
                 base = reinterpret_cast<uintptr_t>(me.modBaseAddr);
                 break;
             }
-        } while (Module32Next(snap, &me));
+        } while (Module32NextW(snap, &me));
     }
 
     CloseHandle(snap);
