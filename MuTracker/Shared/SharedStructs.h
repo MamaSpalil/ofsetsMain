@@ -23,7 +23,7 @@
 #define MUTRACKER_PIPE_NAME     L"\\\\.\\pipe\\MuTrackerIPC"
 #define MUTRACKER_SHMEM_NAME    L"MuTrackerSharedMem"
 #define MUTRACKER_SHMEM_SIZE    (1024 * 1024 * 4)   /* 4 MB ring buffer */
-#define MUTRACKER_MAX_FUNCTIONS 128968
+#define MUTRACKER_MAX_FUNCTIONS 4096
 #define MUTRACKER_MAX_MODULES   64
 #define MUTRACKER_MAX_VARIABLES 256
 #define MUTRACKER_MAX_RECORDS   65536
@@ -167,6 +167,10 @@ struct SharedMemHeader {
 };
 
 #pragma pack(pop)
+
+/* Ensure SharedMemHeader fits within the allocated shared memory region */
+static_assert(sizeof(SharedMemHeader) <= MUTRACKER_SHMEM_SIZE,
+    "SharedMemHeader exceeds MUTRACKER_SHMEM_SIZE! Reduce array sizes or increase SHMEM_SIZE.");
 
 /* ================================================================== */
 /*  Inline Helpers                                                     */
