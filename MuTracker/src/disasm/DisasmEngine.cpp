@@ -27,7 +27,6 @@ Instruction DisasmEngine::Decode(uintptr_t address, const void* code)
     }
 
     /* Classify the instruction */
-    const uint8_t* p = static_cast<const uint8_t*>(code);
     uint8_t op = hs.opcode;
 
     /* Skip prefixes for classification */

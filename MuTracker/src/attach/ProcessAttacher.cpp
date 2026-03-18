@@ -35,19 +35,23 @@ uint32_t ProcessAttacher::FindProcessByName(const char* processName)
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) return 0;
 
-    PROCESSENTRY32 pe;
+    PROCESSENTRY32W pe;
     pe.dwSize = sizeof(pe);
+
+    /* Convert narrow process name to wide for comparison */
+    wchar_t wProcessName[MAX_PATH] = {};
+    MultiByteToWideChar(CP_UTF8, 0, processName, -1, wProcessName, MAX_PATH);
 
     uint32_t pid = 0;
 
-    if (Process32First(snap, &pe)) {
+    if (Process32FirstW(snap, &pe)) {
         do {
             /* Case-insensitive comparison */
-            if (_stricmp(pe.szExeFile, processName) == 0) {
+            if (_wcsicmp(pe.szExeFile, wProcessName) == 0) {
                 pid = pe.th32ProcessID;
                 break;
             }
-        } while (Process32Next(snap, &pe));
+        } while (Process32NextW(snap, &pe));
     }
 
     CloseHandle(snap);
@@ -65,21 +69,31 @@ std::vector<ProcessInfo> ProcessAttacher::FindAllProcesses(const char* processNa
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) return result;
 
-    PROCESSENTRY32 pe;
+    PROCESSENTRY32W pe;
     pe.dwSize = sizeof(pe);
 
-    if (Process32First(snap, &pe)) {
+    /* Convert narrow process name to wide for comparison */
+    wchar_t wProcessName[MAX_PATH] = {};
+    MultiByteToWideChar(CP_UTF8, 0, processName, -1, wProcessName, MAX_PATH);
+
+    if (Process32FirstW(snap, &pe)) {
         do {
-            if (_stricmp(pe.szExeFile, processName) == 0) {
+            if (_wcsicmp(pe.szExeFile, wProcessName) == 0) {
                 ProcessInfo info;
                 info.pid = pe.th32ProcessID;
-                info.name = pe.szExeFile;
+                int exeLen = WideCharToMultiByte(CP_UTF8, 0, pe.szExeFile, -1,
+                                                  nullptr, 0, nullptr, nullptr);
+                if (exeLen > 0) {
+                    info.name.resize(exeLen - 1);
+                    WideCharToMultiByte(CP_UTF8, 0, pe.szExeFile, -1,
+                                        &info.name[0], exeLen, nullptr, nullptr);
+                }
                 info.moduleBase = GetModuleBase(info.pid, processName);
                 info.moduleSize = GetModuleSize(info.pid, processName);
                 info.is32bit = true; /* MuOnline is always 32-bit */
                 result.push_back(info);
             }
-        } while (Process32Next(snap, &pe));
+        } while (Process32NextW(snap, &pe));
     }
 
     CloseHandle(snap);
@@ -164,18 +178,22 @@ uintptr_t ProcessAttacher::GetModuleBase(uint32_t pid, const char* moduleName)
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
     if (snap == INVALID_HANDLE_VALUE) return 0;
 
-    MODULEENTRY32 me;
+    MODULEENTRY32W me;
     me.dwSize = sizeof(me);
+
+    /* Convert narrow module name to wide for comparison */
+    wchar_t wModuleName[MAX_MODULE_NAME32 + 1] = {};
+    MultiByteToWideChar(CP_UTF8, 0, moduleName, -1, wModuleName, MAX_MODULE_NAME32 + 1);
 
     uintptr_t base = 0;
 
-    if (Module32First(snap, &me)) {
+    if (Module32FirstW(snap, &me)) {
         do {
-            if (_stricmp(me.szModule, moduleName) == 0) {
+            if (_wcsicmp(me.szModule, wModuleName) == 0) {
                 base = reinterpret_cast<uintptr_t>(me.modBaseAddr);
                 break;
             }
-        } while (Module32Next(snap, &me));
+        } while (Module32NextW(snap, &me));
     }
 
     CloseHandle(snap);
@@ -191,18 +209,22 @@ size_t ProcessAttacher::GetModuleSize(uint32_t pid, const char* moduleName)
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
     if (snap == INVALID_HANDLE_VALUE) return 0;
 
-    MODULEENTRY32 me;
+    MODULEENTRY32W me;
     me.dwSize = sizeof(me);
+
+    /* Convert narrow module name to wide for comparison */
+    wchar_t wModuleName[MAX_MODULE_NAME32 + 1] = {};
+    MultiByteToWideChar(CP_UTF8, 0, moduleName, -1, wModuleName, MAX_MODULE_NAME32 + 1);
 
     size_t size = 0;
 
-    if (Module32First(snap, &me)) {
+    if (Module32FirstW(snap, &me)) {
         do {
-            if (_stricmp(me.szModule, moduleName) == 0) {
+            if (_wcsicmp(me.szModule, wModuleName) == 0) {
                 size = me.modBaseSize;
                 break;
             }
-        } while (Module32Next(snap, &me));
+        } while (Module32NextW(snap, &me));
     }
 
     CloseHandle(snap);
