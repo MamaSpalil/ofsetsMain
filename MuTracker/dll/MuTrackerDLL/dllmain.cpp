@@ -95,6 +95,7 @@ static void TrackerThread(LPVOID param)
 
     /* ============================================================== */
     /*  Initialize SharedMemory IPC for Loader GUI                     */
+    /*  Starting base of offsets, functions, variables, modules = 0    */
     /* ============================================================== */
 
     g_hSharedMem = CreateFileMappingW(
@@ -106,7 +107,15 @@ static void TrackerThread(LPVOID param)
                                      0, 0, MUTRACKER_SHMEM_SIZE);
         if (pView) {
             g_pSharedHeader = static_cast<SharedMemHeader*>(pView);
-            /* Zero only the header fields, not the entire large structure */
+
+            /*
+             * Zero-initialize the ENTIRE shared memory region.
+             * The starting base for all offsets, functions, variables
+             * and modules MUST be zero before population from main.exe.
+             */
+            memset(g_pSharedHeader, 0, MUTRACKER_SHMEM_SIZE);
+
+            /* Set header identification fields */
             g_pSharedHeader->magic        = 0x4D555452; /* "MUTR" */
             g_pSharedHeader->version      = MUTRACKER_VERSION;
             g_pSharedHeader->writeIndex   = 0;
@@ -115,15 +124,20 @@ static void TrackerThread(LPVOID param)
             g_pSharedHeader->injectedPid  = GetCurrentProcessId();
             g_pSharedHeader->dllReady     = true;
             g_pSharedHeader->tracingEnabled = false;
-            g_pSharedHeader->totalRecords = 0;
+
+            /* All counters start at zero - no data until main.exe scan */
+            g_pSharedHeader->totalRecords   = 0;
             g_pSharedHeader->droppedRecords = 0;
-            g_pSharedHeader->functionCount = 0;
-            g_pSharedHeader->moduleCount  = 0;
+            g_pSharedHeader->functionCount  = 0;
+            g_pSharedHeader->moduleCount    = 0;
+            g_pSharedHeader->variableCount  = 0;
             g_pSharedHeader->activeHookCount = 0;
-            g_pSharedHeader->totalCalls   = 0;
-            g_pSharedHeader->uptimeMs     = 0;
-            g_pSharedHeader->statusText[0] = '\0';
+            g_pSharedHeader->totalCalls     = 0;
+            g_pSharedHeader->uptimeMs       = 0;
+            g_pSharedHeader->statusText[0]  = '\0';
+
             MULOG_INFO("SharedMemory IPC initialized (4 MB)");
+            MULOG_INFO("Starting base: offsets=0, functions=0, variables=0, modules=0");
         } else {
             MULOG_WARN("Failed to map shared memory view (error: %d)",
                         GetLastError());
@@ -173,7 +187,52 @@ static void TrackerThread(LPVOID param)
     }
 
     /* ============================================================== */
-    /*  Step 1: Find function prologues (55 8B EC pattern)            */
+    /*  Populate database from main.exe: Module Enumeration            */
+    /*  Scan and record all loaded modules in the process              */
+    /* ============================================================== */
+
+    log.LogHeader("Module Enumeration");
+
+    auto loadedModules = g_memory.EnumModules();
+    MULOG_INFO("Found %zu loaded modules in process", loadedModules.size());
+
+    if (g_pSharedHeader && !loadedModules.empty()) {
+        uint32_t modCount = 0;
+        for (size_t i = 0; i < loadedModules.size() &&
+             modCount < MUTRACKER_MAX_MODULES; ++i) {
+            auto& mod = g_pSharedHeader->modules[modCount];
+            mod.baseAddress = loadedModules[i].baseAddress;
+            mod.sizeOfImage = static_cast<uint32_t>(loadedModules[i].imageSize);
+            mod.isMainExe = (loadedModules[i].name == "main.exe" ||
+                              loadedModules[i].name == "MAIN.EXE");
+
+            strncpy(mod.moduleName, loadedModules[i].name.c_str(),
+                    sizeof(mod.moduleName) - 1);
+            mod.moduleName[sizeof(mod.moduleName) - 1] = '\0';
+
+            strncpy(mod.modulePath, loadedModules[i].fullPath.c_str(),
+                    sizeof(mod.modulePath) - 1);
+            mod.modulePath[sizeof(mod.modulePath) - 1] = '\0';
+
+            MULOG_INFO("  Module [%u]: %s base=0x%08X size=0x%08X%s",
+                       modCount,
+                       loadedModules[i].name.c_str(),
+                       static_cast<uint32_t>(loadedModules[i].baseAddress),
+                       static_cast<uint32_t>(loadedModules[i].imageSize),
+                       mod.isMainExe ? " [MAIN]" : "");
+
+            log.LogOffset(loadedModules[i].baseAddress, 0,
+                          "MODULE", loadedModules[i].name.c_str());
+
+            modCount++;
+        }
+        g_pSharedHeader->moduleCount = modCount;
+        MULOG_INFO("Published %u modules to SharedMemory", modCount);
+    }
+
+    /* ============================================================== */
+    /*  Populate database from main.exe: Function Prologues            */
+    /*  Scan for 55 8B EC pattern (push ebp; mov ebp, esp)            */
     /* ============================================================== */
 
     log.LogHeader("Pattern Scanning: Function Prologues");
@@ -221,7 +280,8 @@ static void TrackerThread(LPVOID param)
                g_scanner.GetCacheMisses());
 
     /* ============================================================== */
-    /*  Step 2: Publish discovered functions to SharedMemory           */
+    /*  Publish discovered functions to SharedMemory                    */
+    /*  Each entry starts at zero and is populated from scan results    */
     /* ============================================================== */
 
     if (g_pSharedHeader && !prologues.empty()) {
@@ -248,7 +308,96 @@ static void TrackerThread(LPVOID param)
     }
 
     /* ============================================================== */
-    /*  Step 3: Demonstrate inline hooking                             */
+    /*  Populate database from main.exe: Variable/Data Section Scan    */
+    /*  Scan .data section for trackable variables                     */
+    /* ============================================================== */
+
+    log.LogHeader("Data Section Variable Scan");
+
+    {
+        uintptr_t dataBase = 0;
+        size_t dataSize = 0;
+        DWORD dataSectionRVA = 0;
+
+        /* Read PE headers to find .data section */
+        IMAGE_DOS_HEADER dosHeader;
+        if (g_memory.Read(mainBase, &dosHeader, sizeof(dosHeader)) &&
+            dosHeader.e_magic == IMAGE_DOS_SIGNATURE) {
+
+            IMAGE_NT_HEADERS ntHeaders;
+            if (g_memory.Read(mainBase + dosHeader.e_lfanew,
+                              &ntHeaders, sizeof(ntHeaders)) &&
+                ntHeaders.Signature == IMAGE_NT_SIGNATURE) {
+
+                uintptr_t sectionBase = mainBase + dosHeader.e_lfanew +
+                    sizeof(DWORD) + sizeof(IMAGE_FILE_HEADER) +
+                    ntHeaders.FileHeader.SizeOfOptionalHeader;
+
+                for (WORD s = 0; s < ntHeaders.FileHeader.NumberOfSections; ++s) {
+                    IMAGE_SECTION_HEADER sec;
+                    g_memory.Read(sectionBase + s * sizeof(IMAGE_SECTION_HEADER),
+                                  &sec, sizeof(sec));
+                    if (strncmp(reinterpret_cast<const char*>(sec.Name),
+                                ".data", 5) == 0) {
+                        dataBase = mainBase + sec.VirtualAddress;
+                        dataSize = sec.Misc.VirtualSize;
+                        dataSectionRVA = sec.VirtualAddress;
+                        break;
+                    }
+                }
+            }
+        }
+
+        uint32_t varCount = 0;
+        if (dataBase != 0 && dataSize > 0 && g_pSharedHeader) {
+            MULOG_INFO(".data section: base=0x%08X size=0x%X",
+                       static_cast<uint32_t>(dataBase),
+                       static_cast<uint32_t>(dataSize));
+
+            /*
+             * Sample variables from .data section at regular intervals.
+             * Track up to MUTRACKER_MAX_VARIABLES entries.
+             * Names are auto-generated as var_XXXXXXXX (hex offset from
+             * module base) since no symbol information is available.
+             */
+            size_t maxVars = MUTRACKER_MAX_VARIABLES;
+            size_t stride = (maxVars > 0) ? (dataSize / maxVars) : dataSize;
+            if (stride < sizeof(uint32_t)) stride = sizeof(uint32_t);
+
+            for (size_t off = 0;
+                 off + sizeof(uint32_t) <= dataSize &&
+                 varCount < MUTRACKER_MAX_VARIABLES;
+                 off += stride) {
+
+                uint32_t value = 0;
+                if (g_memory.ReadValue<uint32_t>(dataBase + off, value)) {
+                    auto& var = g_pSharedHeader->variables[varCount];
+                    var.address       = dataBase + off;
+                    var.offset        = static_cast<uintptr_t>(
+                                          dataSectionRVA + off);
+                    var.size          = sizeof(uint32_t);
+                    var.currentValue  = value;
+                    var.previousValue = value;
+                    var.changed       = false;
+
+                    sprintf_s(var.name, sizeof(var.name),
+                               "var_%08X",
+                               static_cast<uint32_t>(var.address - mainBase));
+                    sprintf_s(var.moduleName, sizeof(var.moduleName),
+                               "main.exe");
+                    varCount++;
+                }
+            }
+
+            g_pSharedHeader->variableCount = varCount;
+            MULOG_INFO("Tracking %u variables from .data section", varCount);
+        } else {
+            MULOG_WARN("Could not locate .data section for variable tracking");
+        }
+    }
+
+    /* ============================================================== */
+    /*  Demonstrate inline hooking                                     */
     /*  (Only hook first prologue as demonstration)                    */
     /* ============================================================== */
 
@@ -276,26 +425,59 @@ static void TrackerThread(LPVOID param)
     }
 
     /* ============================================================== */
-    /*  Step 4: Monitoring loop                                        */
+    /*  Real-Time Monitoring Loop                                       */
+    /*  Continuously scans and tracks all actions in main.exe:          */
+    /*    - Function call statistics                                    */
+    /*    - Variable value changes in .data section                     */
+    /*    - New module loads/unloads                                    */
+    /*  All changes are logged to MuTracker.log and shared memory.      */
     /* ============================================================== */
 
     log.LogHeader("Real-Time Monitoring");
     MULOG_INFO("Monitoring started. DLL will unload on process exit.");
-    MULOG_INFO("Check MuTracker.log for full output.");
+    MULOG_INFO("Tracking: %u functions, %u modules, %u variables",
+               g_pSharedHeader ? g_pSharedHeader->functionCount : 0,
+               g_pSharedHeader ? g_pSharedHeader->moduleCount : 0,
+               g_pSharedHeader ? g_pSharedHeader->variableCount : 0);
+    MULOG_INFO("All game actions are being recorded to MuTracker.log");
 
     if (g_pSharedHeader) {
         g_pSharedHeader->tracingEnabled = true;
         sprintf_s(g_pSharedHeader->statusText,
                    sizeof(g_pSharedHeader->statusText),
-                   "Monitoring active");
+                   "Monitoring active - scanning in real-time");
     }
 
     /* Run monitoring loop */
     uint32_t updateCounter = 0;
+    uint32_t prevModuleCount = g_pSharedHeader ? g_pSharedHeader->moduleCount : 0;
     auto startTime = std::chrono::steady_clock::now();
 
     while (g_running) {
-        /* Update tracer stats every second */
+        /* === Every 100ms: check for variable changes === */
+        if (g_pSharedHeader) {
+            uint32_t vCount = g_pSharedHeader->variableCount;
+            for (uint32_t v = 0; v < vCount; ++v) {
+                auto& var = g_pSharedHeader->variables[v];
+                uint32_t newValue = 0;
+                if (g_memory.ReadValue<uint32_t>(var.address, newValue)) {
+                    if (newValue != var.currentValue) {
+                        var.previousValue = var.currentValue;
+                        var.currentValue  = newValue;
+                        var.changed       = true;
+
+                        MULOG_INFO("[VAR_CHANGE] %s at 0x%08X (+0x%08X): "
+                                   "0x%08X -> 0x%08X",
+                                   var.name,
+                                   static_cast<uint32_t>(var.address),
+                                   static_cast<uint32_t>(var.offset),
+                                   var.previousValue, var.currentValue);
+                    }
+                }
+            }
+        }
+
+        /* === Every 1 second: full stats update === */
         if (updateCounter % 10 == 0) {
             g_tracer.UpdateStats();
 
@@ -321,6 +503,85 @@ static void TrackerThread(LPVOID param)
                         std::chrono::duration_cast<std::chrono::milliseconds>(
                             elapsed).count());
             }
+        }
+
+        /* === Every 5 seconds: check for new module loads === */
+        if (updateCounter % 50 == 0 && g_pSharedHeader) {
+            auto currentModules = g_memory.EnumModules();
+            uint32_t knownCount = g_pSharedHeader->moduleCount;
+
+            if (currentModules.size() != static_cast<size_t>(prevModuleCount)) {
+                MULOG_INFO("[MODULE_CHANGE] Module count changed: %zu -> %zu",
+                           static_cast<size_t>(prevModuleCount),
+                           currentModules.size());
+
+                /* Re-populate module table with current state */
+                uint32_t modCount = 0;
+                for (size_t i = 0; i < currentModules.size() &&
+                     modCount < MUTRACKER_MAX_MODULES; ++i) {
+
+                    /* Check if this is a new module */
+                    bool isNew = true;
+                    for (uint32_t k = 0; k < knownCount; ++k) {
+                        if (g_pSharedHeader->modules[k].baseAddress ==
+                            currentModules[i].baseAddress) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+
+                    auto& mod = g_pSharedHeader->modules[modCount];
+                    mod.baseAddress = currentModules[i].baseAddress;
+                    mod.sizeOfImage = static_cast<uint32_t>(
+                                       currentModules[i].imageSize);
+                    mod.isMainExe = (currentModules[i].name == "main.exe" ||
+                                      currentModules[i].name == "MAIN.EXE");
+
+                    strncpy(mod.moduleName,
+                            currentModules[i].name.c_str(),
+                            sizeof(mod.moduleName) - 1);
+                    mod.moduleName[sizeof(mod.moduleName) - 1] = '\0';
+
+                    strncpy(mod.modulePath,
+                            currentModules[i].fullPath.c_str(),
+                            sizeof(mod.modulePath) - 1);
+                    mod.modulePath[sizeof(mod.modulePath) - 1] = '\0';
+
+                    if (isNew) {
+                        MULOG_INFO("[MODULE_LOAD] %s base=0x%08X size=0x%08X",
+                                   currentModules[i].name.c_str(),
+                                   static_cast<uint32_t>(
+                                       currentModules[i].baseAddress),
+                                   static_cast<uint32_t>(
+                                       currentModules[i].imageSize));
+                        log.LogOffset(currentModules[i].baseAddress, 0,
+                                      "MODULE", currentModules[i].name.c_str(),
+                                      "loaded");
+                    }
+                    modCount++;
+                }
+                g_pSharedHeader->moduleCount = modCount;
+                prevModuleCount = static_cast<uint32_t>(currentModules.size());
+            }
+        }
+
+        /* === Every 30 seconds: periodic summary log === */
+        if (updateCounter % 300 == 0 && updateCounter > 0) {
+            auto elapsed = std::chrono::steady_clock::now() - startTime;
+            auto elapsedSec = std::chrono::duration_cast<
+                std::chrono::seconds>(elapsed).count();
+
+            MULOG_INFO("[SUMMARY] Uptime: %lld s | Functions: %u | "
+                       "Modules: %u | Variables: %u | "
+                       "Total calls: %llu | Hooks: %u",
+                       static_cast<long long>(elapsedSec),
+                       g_pSharedHeader ? g_pSharedHeader->functionCount : 0,
+                       g_pSharedHeader ? g_pSharedHeader->moduleCount : 0,
+                       g_pSharedHeader ? g_pSharedHeader->variableCount : 0,
+                       g_pSharedHeader
+                           ? static_cast<unsigned long long>(
+                                 g_pSharedHeader->totalCalls) : 0ULL,
+                       g_pSharedHeader ? g_pSharedHeader->activeHookCount : 0);
         }
 
         updateCounter++;

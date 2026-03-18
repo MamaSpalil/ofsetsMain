@@ -45,6 +45,10 @@ struct TraceViewStats {
     bool        tracingActive;
     DWORD       targetPid;
     std::string statusText;
+    uint32_t    moduleCount;
+    uint32_t    variableCount;
+    uint32_t    functionCount;
+    uint32_t    changedVariables;
 };
 
 /* ================================================================== */

@@ -111,6 +111,21 @@ bool TraceViewer::Update()
     m_stats.dllConnected    = m_pHeader->dllReady;
     m_stats.tracingActive   = m_pHeader->tracingEnabled;
     m_stats.targetPid       = m_pHeader->injectedPid;
+    m_stats.functionCount   = m_pHeader->functionCount;
+    m_stats.moduleCount     = m_pHeader->moduleCount;
+    m_stats.variableCount   = m_pHeader->variableCount;
+
+    /* Count changed variables */
+    m_stats.changedVariables = 0;
+    uint32_t varCount = m_pHeader->variableCount;
+    if (varCount > MUTRACKER_MAX_VARIABLES) {
+        varCount = MUTRACKER_MAX_VARIABLES;
+    }
+    for (uint32_t v = 0; v < varCount; ++v) {
+        if (m_pHeader->variables[v].changed) {
+            m_stats.changedVariables++;
+        }
+    }
 
     /* Copy status text safely */
     char buf[256];
@@ -190,7 +205,8 @@ bool TraceViewer::ExportCSV(const std::wstring& filePath) const
         return false;
     }
 
-    /* Header */
+    /* Functions header */
+    fprintf(fp, "=== Functions (starting base = 0, populated from main.exe) ===\n");
     fprintf(fp, "Offset,Address,Name,Module,TotalCalls,Calls/sec,ThreadID,Hooked\n");
 
     /* Data rows */
@@ -204,6 +220,42 @@ bool TraceViewer::ExportCSV(const std::wstring& filePath) const
                 e.callsPerSec,
                 e.threadId,
                 e.hooked ? "Yes" : "No");
+    }
+
+    /* Modules section */
+    if (m_pHeader && m_pHeader->moduleCount > 0) {
+        fprintf(fp, "\n=== Modules ===\n");
+        fprintf(fp, "BaseAddress,Size,Name,Path,IsMain\n");
+        uint32_t modCount = m_pHeader->moduleCount;
+        if (modCount > MUTRACKER_MAX_MODULES) modCount = MUTRACKER_MAX_MODULES;
+        for (uint32_t i = 0; i < modCount; ++i) {
+            const auto& mod = m_pHeader->modules[i];
+            fprintf(fp, "0x%08X,0x%08X,%s,%s,%s\n",
+                    static_cast<uint32_t>(mod.baseAddress),
+                    mod.sizeOfImage,
+                    mod.moduleName,
+                    mod.modulePath,
+                    mod.isMainExe ? "Yes" : "No");
+        }
+    }
+
+    /* Variables section */
+    if (m_pHeader && m_pHeader->variableCount > 0) {
+        fprintf(fp, "\n=== Variables (tracked from .data section) ===\n");
+        fprintf(fp, "Address,Offset,Name,Module,CurrentValue,PreviousValue,Changed\n");
+        uint32_t varCount = m_pHeader->variableCount;
+        if (varCount > MUTRACKER_MAX_VARIABLES) varCount = MUTRACKER_MAX_VARIABLES;
+        for (uint32_t i = 0; i < varCount; ++i) {
+            const auto& var = m_pHeader->variables[i];
+            fprintf(fp, "0x%08X,0x%08X,%s,%s,0x%08X,0x%08X,%s\n",
+                    static_cast<uint32_t>(var.address),
+                    static_cast<uint32_t>(var.offset),
+                    var.name,
+                    var.moduleName,
+                    var.currentValue,
+                    var.previousValue,
+                    var.changed ? "Yes" : "No");
+        }
     }
 
     fclose(fp);

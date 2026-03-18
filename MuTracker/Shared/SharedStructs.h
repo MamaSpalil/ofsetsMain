@@ -25,6 +25,7 @@
 #define MUTRACKER_SHMEM_SIZE    (1024 * 1024 * 4)   /* 4 MB ring buffer */
 #define MUTRACKER_MAX_FUNCTIONS 4096
 #define MUTRACKER_MAX_MODULES   64
+#define MUTRACKER_MAX_VARIABLES 256
 #define MUTRACKER_MAX_RECORDS   65536
 
 /* ================================================================== */
@@ -89,6 +90,21 @@ struct TrackedFunctionEntry {
 };
 
 /* ================================================================== */
+/*  Tracked Variable Entry (for data section monitoring)               */
+/* ================================================================== */
+
+struct TrackedVariableEntry {
+    uintptr_t   address;            /* Absolute address                 */
+    uintptr_t   offset;             /* Relative to module base          */
+    char        name[128];          /* Variable name / label            */
+    char        moduleName[64];     /* Module name                      */
+    uint32_t    size;               /* Size of variable in bytes        */
+    uint32_t    currentValue;       /* Current value (first 4 bytes)    */
+    uint32_t    previousValue;      /* Previous value for change detect */
+    volatile bool changed;          /* Value changed since last check?  */
+};
+
+/* ================================================================== */
 /*  Shared Memory Header (beginning of the mapped region)              */
 /* ================================================================== */
 
@@ -111,6 +127,10 @@ struct SharedMemHeader {
     /* Module table */
     volatile uint32_t   moduleCount;
     SharedModuleInfo     modules[MUTRACKER_MAX_MODULES];
+
+    /* Variable table for data section monitoring */
+    volatile uint32_t   variableCount;
+    TrackedVariableEntry variables[MUTRACKER_MAX_VARIABLES];
 
     /* Status info */
     volatile uint32_t   activeHookCount;
