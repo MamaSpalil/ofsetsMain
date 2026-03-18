@@ -22,6 +22,7 @@
 #include "../src/core/PatternScanner.h"
 #include "../src/core/HookEngine.h"
 #include "../src/core/CallTracer.h"
+#include "../src/core/GameActionMonitor.h"
 #include "../src/log/Logger.h"
 #include "../src/config/Config.h"
 #include "../src/attach/ProcessAttacher.h"
@@ -44,6 +45,7 @@ static PatternScanner   g_scanner;
 static HookEngine       g_hookEngine;
 static CallTracer       g_tracer;
 static Config           g_config;
+static GameActionMonitor g_gameMonitor;
 static std::atomic<bool> g_running(false);
 static HMODULE          g_hModule = nullptr;
 
@@ -131,10 +133,14 @@ static void TrackerThread(LPVOID param)
             g_pSharedHeader->functionCount  = 0;
             g_pSharedHeader->moduleCount    = 0;
             g_pSharedHeader->variableCount  = 0;
+            g_pSharedHeader->gameEventCount = 0;
+            g_pSharedHeader->gameEventWriteIdx = 0;
             g_pSharedHeader->activeHookCount = 0;
             g_pSharedHeader->totalCalls     = 0;
+            g_pSharedHeader->totalGameActions = 0;
             g_pSharedHeader->uptimeMs       = 0;
             g_pSharedHeader->statusText[0]  = '\0';
+            g_pSharedHeader->dbFilePath[0]  = '\0';
 
             MULOG_INFO("SharedMemory IPC initialized (4 MB)");
             MULOG_INFO("Starting base: offsets=0, functions=0, variables=0, modules=0");
@@ -425,12 +431,40 @@ static void TrackerThread(LPVOID param)
     }
 
     /* ============================================================== */
+    /*  Initialize Game Action Monitor                                  */
+    /*  Tracks ALL user actions in main.exe: keyboard, HP, MP, Level,  */
+    /*  Zen, kills, map changes, UI events, combat, etc.               */
+    /*  Database (MuTrackerDB.csv) is rewritten on each launch.        */
+    /* ============================================================== */
+
+    log.LogHeader("Game Action Monitor Initialization");
+
+    if (!g_gameMonitor.Init(&g_memory, &g_scanner, mainBase,
+                             "MuTrackerDB.csv")) {
+        MULOG_WARN("Failed to initialize Game Action Monitor");
+    } else {
+        MULOG_INFO("Game Action Monitor initialized");
+        MULOG_INFO("Database file: MuTrackerDB.csv (rewritten on each launch)");
+        MULOG_INFO("Monitoring ALL game actions: keyboard, HP, MP, Level, "
+                   "Zen, kills, map changes, UI, combat...");
+
+        if (g_pSharedHeader) {
+            strncpy(g_pSharedHeader->dbFilePath, "MuTrackerDB.csv",
+                    sizeof(g_pSharedHeader->dbFilePath) - 1);
+            g_pSharedHeader->dbFilePath[
+                sizeof(g_pSharedHeader->dbFilePath) - 1] = '\0';
+        }
+    }
+
+    /* ============================================================== */
     /*  Real-Time Monitoring Loop                                       */
     /*  Continuously scans and tracks all actions in main.exe:          */
     /*    - Function call statistics                                    */
     /*    - Variable value changes in .data section                     */
     /*    - New module loads/unloads                                    */
+    /*    - ALL game actions (keyboard, HP, MP, Level, Zen, kills...)  */
     /*  All changes are logged to MuTracker.log and shared memory.      */
+    /*  Database (MuTrackerDB.csv) is fully rewritten each launch.     */
     /* ============================================================== */
 
     log.LogHeader("Real-Time Monitoring");
@@ -440,12 +474,13 @@ static void TrackerThread(LPVOID param)
                g_pSharedHeader ? g_pSharedHeader->moduleCount : 0,
                g_pSharedHeader ? g_pSharedHeader->variableCount : 0);
     MULOG_INFO("All game actions are being recorded to MuTracker.log");
+    MULOG_INFO("Database MuTrackerDB.csv is rewritten after each launch");
 
     if (g_pSharedHeader) {
         g_pSharedHeader->tracingEnabled = true;
         sprintf_s(g_pSharedHeader->statusText,
                    sizeof(g_pSharedHeader->statusText),
-                   "Monitoring active - scanning in real-time");
+                   "Monitoring active - tracking ALL game actions in real-time");
     }
 
     /* Run monitoring loop */
@@ -454,6 +489,45 @@ static void TrackerThread(LPVOID param)
     auto startTime = std::chrono::steady_clock::now();
 
     while (g_running) {
+        /* === Every 100ms: Game Action Monitor update === */
+        /* Polls game state, detects changes, logs events */
+        g_gameMonitor.Update();
+
+        /* Publish game action events to shared memory */
+        if (g_pSharedHeader) {
+            auto recentEvents = g_gameMonitor.GetRecentEvents(
+                MUTRACKER_MAX_GAME_EVENTS);
+            uint32_t evtCount = 0;
+            for (size_t i = 0; i < recentEvents.size() &&
+                 evtCount < MUTRACKER_MAX_GAME_EVENTS; ++i) {
+                auto& dst = g_pSharedHeader->gameEvents[evtCount];
+                const auto& src = recentEvents[i];
+                dst.actionType = static_cast<uint32_t>(src.type);
+                dst.timestamp = src.timestamp;
+                strncpy(dst.description, src.description,
+                        sizeof(dst.description) - 1);
+                dst.description[sizeof(dst.description) - 1] = '\0';
+                dst.offset = src.lookup.offset;
+                strncpy(dst.functionName, src.lookup.functionName,
+                        sizeof(dst.functionName) - 1);
+                dst.functionName[sizeof(dst.functionName) - 1] = '\0';
+                strncpy(dst.variableName, src.lookup.variableName,
+                        sizeof(dst.variableName) - 1);
+                dst.variableName[sizeof(dst.variableName) - 1] = '\0';
+                strncpy(dst.moduleName, src.lookup.moduleName,
+                        sizeof(dst.moduleName) - 1);
+                dst.moduleName[sizeof(dst.moduleName) - 1] = '\0';
+                dst.offsetFound   = src.lookup.offsetFound;
+                dst.functionFound = src.lookup.functionFound;
+                dst.variableFound = src.lookup.variableFound;
+                dst.moduleFound   = src.lookup.moduleFound;
+                evtCount++;
+            }
+            g_pSharedHeader->gameEventCount = evtCount;
+            g_pSharedHeader->totalGameActions =
+                static_cast<uint64_t>(g_gameMonitor.GetEventCount());
+        }
+
         /* === Every 100ms: check for variable changes === */
         if (g_pSharedHeader) {
             uint32_t vCount = g_pSharedHeader->variableCount;
@@ -565,7 +639,7 @@ static void TrackerThread(LPVOID param)
             }
         }
 
-        /* === Every 30 seconds: periodic summary log === */
+        /* === Every 30 seconds: periodic summary log + DB flush === */
         if (updateCounter % 300 == 0 && updateCounter > 0) {
             auto elapsed = std::chrono::steady_clock::now() - startTime;
             auto elapsedSec = std::chrono::duration_cast<
@@ -573,7 +647,8 @@ static void TrackerThread(LPVOID param)
 
             MULOG_INFO("[SUMMARY] Uptime: %lld s | Functions: %u | "
                        "Modules: %u | Variables: %u | "
-                       "Total calls: %llu | Hooks: %u",
+                       "Total calls: %llu | Hooks: %u | "
+                       "Game actions: %u",
                        static_cast<long long>(elapsedSec),
                        g_pSharedHeader ? g_pSharedHeader->functionCount : 0,
                        g_pSharedHeader ? g_pSharedHeader->moduleCount : 0,
@@ -581,7 +656,11 @@ static void TrackerThread(LPVOID param)
                        g_pSharedHeader
                            ? static_cast<unsigned long long>(
                                  g_pSharedHeader->totalCalls) : 0ULL,
-                       g_pSharedHeader ? g_pSharedHeader->activeHookCount : 0);
+                       g_pSharedHeader ? g_pSharedHeader->activeHookCount : 0,
+                       g_gameMonitor.GetEventCount());
+
+            /* Flush database to disk periodically */
+            g_gameMonitor.FlushDatabase();
         }
 
         updateCounter++;
@@ -597,6 +676,12 @@ static void TrackerThread(LPVOID param)
 
     g_hookEngine.RemoveAllHooks();
     MULOG_INFO("All hooks removed cleanly");
+
+    /* Shutdown Game Action Monitor (flushes database) */
+    MULOG_INFO("Shutting down Game Action Monitor...");
+    g_gameMonitor.Shutdown();
+    MULOG_INFO("Game Action Monitor shutdown. Total actions tracked: %u",
+               g_gameMonitor.GetEventCount());
 
     /* Mark SharedMemory as shutting down */
     if (g_pSharedHeader) {

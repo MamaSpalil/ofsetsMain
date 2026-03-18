@@ -71,12 +71,14 @@ set(CORE_SOURCES
     src/core/PatternScanner.cpp
     src/core/HookEngine.cpp
     src/core/CallTracer.cpp
+    src/core/GameActionMonitor.cpp
 )
 set(CORE_HEADERS
     src/core/MemoryUtils.h
     src/core/PatternScanner.h
     src/core/HookEngine.h
     src/core/CallTracer.h
+    src/core/GameActionMonitor.h
 )
 
 # Attach module sources

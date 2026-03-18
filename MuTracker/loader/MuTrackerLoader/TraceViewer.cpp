@@ -86,6 +86,7 @@ void TraceViewer::Disconnect()
     }
     m_connected = false;
     m_entries.clear();
+    m_gameEvents.clear();
 }
 
 /* ================================================================== */
@@ -114,6 +115,14 @@ bool TraceViewer::Update()
     m_stats.functionCount   = m_pHeader->functionCount;
     m_stats.moduleCount     = m_pHeader->moduleCount;
     m_stats.variableCount   = m_pHeader->variableCount;
+    m_stats.totalGameActions = m_pHeader->totalGameActions;
+    m_stats.recentGameEvents = m_pHeader->gameEventCount;
+
+    /* Copy database file path */
+    char dbBuf[256];
+    strncpy(dbBuf, (const char*)m_pHeader->dbFilePath, sizeof(dbBuf) - 1);
+    dbBuf[sizeof(dbBuf) - 1] = '\0';
+    m_stats.dbFilePath = dbBuf;
 
     /* Count changed variables */
     m_stats.changedVariables = 0;
@@ -172,6 +181,49 @@ bool TraceViewer::Update()
             return a.totalCalls > b.totalCalls;
         });
 
+    /* Read game action events */
+    uint32_t evtCount = m_pHeader->gameEventCount;
+    if (evtCount > MUTRACKER_MAX_GAME_EVENTS) {
+        evtCount = MUTRACKER_MAX_GAME_EVENTS;
+    }
+
+    m_gameEvents.clear();
+    m_gameEvents.reserve(evtCount);
+
+    for (uint32_t i = 0; i < evtCount; ++i) {
+        const auto& src = m_pHeader->gameEvents[i];
+        GameActionViewEntry ge;
+        ge.actionType = src.actionType;
+        ge.timestamp  = src.timestamp;
+        ge.offset     = src.offset;
+        ge.offsetFound   = src.offsetFound;
+        ge.functionFound = src.functionFound;
+        ge.variableFound = src.variableFound;
+        ge.moduleFound   = src.moduleFound;
+
+        char descBuf[256];
+        strncpy(descBuf, src.description, sizeof(descBuf) - 1);
+        descBuf[sizeof(descBuf) - 1] = '\0';
+        ge.description = descBuf;
+
+        char fnBuf[128];
+        strncpy(fnBuf, src.functionName, sizeof(fnBuf) - 1);
+        fnBuf[sizeof(fnBuf) - 1] = '\0';
+        ge.functionName = fnBuf;
+
+        char vnBuf[128];
+        strncpy(vnBuf, src.variableName, sizeof(vnBuf) - 1);
+        vnBuf[sizeof(vnBuf) - 1] = '\0';
+        ge.variableName = vnBuf;
+
+        char mnBuf[64];
+        strncpy(mnBuf, src.moduleName, sizeof(mnBuf) - 1);
+        mnBuf[sizeof(mnBuf) - 1] = '\0';
+        ge.moduleName = mnBuf;
+
+        m_gameEvents.push_back(ge);
+    }
+
     return true;
 }
 
@@ -189,6 +241,12 @@ TraceViewStats TraceViewer::GetStats() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_stats;
+}
+
+std::vector<GameActionViewEntry> TraceViewer::GetGameEvents() const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_gameEvents;
 }
 
 /* ================================================================== */
@@ -258,6 +316,28 @@ bool TraceViewer::ExportCSV(const std::wstring& filePath) const
         }
     }
 
+    /* Game Action Events section */
+    if (!m_gameEvents.empty()) {
+        fprintf(fp, "\n=== Game Action Events (total: %llu) ===\n",
+                static_cast<unsigned long long>(m_stats.totalGameActions));
+        fprintf(fp, "Timestamp,ActionType,Description,Offset,Function,Variable,Module,"
+                    "OffsetFound,FuncFound,VarFound,ModFound\n");
+        for (const auto& ge : m_gameEvents) {
+            fprintf(fp, "%llu,%u,%s,0x%08X,%s,%s,%s,%s,%s,%s,%s\n",
+                    static_cast<unsigned long long>(ge.timestamp),
+                    ge.actionType,
+                    ge.description.c_str(),
+                    static_cast<uint32_t>(ge.offset),
+                    ge.functionName.c_str(),
+                    ge.variableName.c_str(),
+                    ge.moduleName.c_str(),
+                    ge.offsetFound   ? "Yes" : "No",
+                    ge.functionFound ? "Yes" : "No",
+                    ge.variableFound ? "Yes" : "No",
+                    ge.moduleFound   ? "Yes" : "No");
+        }
+    }
+
     fclose(fp);
     return true;
 }
@@ -270,6 +350,7 @@ void TraceViewer::Clear()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_entries.clear();
+    m_gameEvents.clear();
     m_stats = {};
 }
 
