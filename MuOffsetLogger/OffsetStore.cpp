@@ -159,7 +159,7 @@ static BOOL ParseLine(const char* line, OFFSET_RECORD* rec)
             p++;
     }
 
-    /* Must have at least an offset */
+    /* Must have at least an offset; VA=0 is invalid for this PE (ImageBase=0x00400000) */
     return (fieldIdx >= 1 && rec->Offset != 0) ? TRUE : FALSE;
 }
 
@@ -338,6 +338,7 @@ BOOL OffsetStore_Add(DWORD offset, const char* funcName,
         return FALSE;
     if (g_recordCount >= OSTORE_MAX_RECORDS)
         return FALSE;
+    /* VA=0 is not a valid offset for this PE (ImageBase=0x00400000) */
     if (offset == 0)
         return FALSE;
 

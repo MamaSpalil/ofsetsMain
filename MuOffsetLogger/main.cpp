@@ -785,7 +785,7 @@ int main(int argc, char* argv[])
             DWORD fileSize    = 0;
             static PE_FILE_INFO peInfo;
             DWORD totalOffsets;
-            char  dbPath3[MAX_PATH];
+            char  dbPath[MAX_PATH];
 
             if (!exeFound)
             {
@@ -832,7 +832,7 @@ int main(int argc, char* argv[])
             }
 
             /* Инициализация базы данных офсетов */
-            GetPathInExeDir(OSTORE_DB_FILENAME, dbPath3, MAX_PATH);
+            GetPathInExeDir(OSTORE_DB_FILENAME, dbPath, MAX_PATH);
             OffsetStore_Init(dbPath3);
 
             Logger_Write(COLOR_HEADER,
@@ -876,18 +876,18 @@ int main(int argc, char* argv[])
 
             /* Записать все известные офсеты в базу данных */
             {
-                DWORD count3 = 0;
-                const OFFSET_ENTRY* allOffsets3
-                    = OffsetDB_GetAllOffsets(&count3);
-                DWORD k3;
-                for (k3 = 0; k3 < count3; k3++)
+                DWORD knownOffsetCount = 0;
+                const OFFSET_ENTRY* knownOffsets
+                    = OffsetDB_GetAllOffsets(&knownOffsetCount);
+                DWORD offsetIdx;
+                for (offsetIdx = 0; offsetIdx < knownOffsetCount; offsetIdx++)
                 {
-                    OffsetStore_Add(allOffsets3[k3].VA,
-                        (allOffsets3[k3].Type == OT_FUNCTION)
-                            ? allOffsets3[k3].Name : "",
-                        allOffsets3[k3].Category,
-                        (allOffsets3[k3].Type != OT_FUNCTION)
-                            ? allOffsets3[k3].Name : "");
+                    OffsetStore_Add(knownOffsets[offsetIdx].VA,
+                        (knownOffsets[offsetIdx].Type == OT_FUNCTION)
+                            ? knownOffsets[offsetIdx].Name : "",
+                        knownOffsets[offsetIdx].Category,
+                        (knownOffsets[offsetIdx].Type != OT_FUNCTION)
+                            ? knownOffsets[offsetIdx].Name : "");
                 }
             }
 
