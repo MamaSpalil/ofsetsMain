@@ -75,6 +75,44 @@ static const uintptr_t DEFAULT_PLAYER_X_OFFSET      = 0x3B5A00;
 static const uintptr_t DEFAULT_PLAYER_Y_OFFSET      = 0x3B5A04;
 
 /* ================================================================== */
+/*  Reference File Parsing Constants                                    */
+/* ================================================================== */
+
+/* UTF-8 em-dash (U+2014) first byte and length in bytes */
+static const char     UTF8_EM_DASH_START  = '\xe2';
+static const size_t   UTF8_EM_DASH_LENGTH = 3;
+
+/* Action entry terminator string (marks end of multi-line entry) */
+static const char*    ACTION_ENTRY_TERMINATOR = "module found.";
+
+/* ================================================================== */
+/*  Section Number Constants (from reference files)                    */
+/*  MuOnline_S3E1_Actions_1.02Q_Part1.txt / Part2.txt                  */
+/* ================================================================== */
+
+static const uint32_t SECTION_PROCESS_INIT    = 1;
+static const uint32_t SECTION_NETWORK         = 5;
+static const uint32_t SECTION_LOGIN           = 6;
+static const uint32_t SECTION_CHAR_SELECT     = 7;
+static const uint32_t SECTION_GAME_ENTRY      = 8;
+static const uint32_t SECTION_MOVEMENT        = 9;
+static const uint32_t SECTION_COMBAT_ATTACK   = 10;
+static const uint32_t SECTION_COMBAT_SKILLS   = 11;
+static const uint32_t SECTION_CHAR_STATS      = 12;
+static const uint32_t SECTION_INVENTORY       = 13;
+static const uint32_t SECTION_SKILL_WINDOW    = 14;
+static const uint32_t SECTION_MAP_MINIMAP     = 15;
+static const uint32_t SECTION_CHAT            = 16;
+static const uint32_t SECTION_NPC_SHOP        = 17;
+static const uint32_t SECTION_PARTY           = 19;
+static const uint32_t SECTION_GUILD           = 20;
+static const uint32_t SECTION_FRIENDS_TRADE   = 21;
+static const uint32_t SECTION_PVP_PK          = 22;
+static const uint32_t SECTION_WARP_MAP        = 25;
+static const uint32_t SECTION_HUD_UI          = 27;
+static const uint32_t SECTION_INPUT_HANDLING  = 39;
+
+/* ================================================================== */
 /*  Key Name Table                                                      */
 /* ================================================================== */
 
@@ -1343,7 +1381,8 @@ size_t GameActionMonitor::ParseActionFile(const char* filePath)
 
                 if (dashPtr) {
                     /* Skip the dash and whitespace */
-                    if (dashPtr[0] == '\xe2') dashPtr += 3; /* UTF-8 em-dash is 3 bytes */
+                    if (dashPtr[0] == UTF8_EM_DASH_START)
+                        dashPtr += UTF8_EM_DASH_LENGTH;
                     else dashPtr += 2; /* " -" or "--" */
 
                     while (*dashPtr == ' ' || *dashPtr == '-') dashPtr++;
@@ -1406,7 +1445,7 @@ size_t GameActionMonitor::ParseActionFile(const char* filePath)
             std::string fullDesc = descStart;
 
             /* Read continuation lines if the entry spans multiple lines */
-            while (!strstr(fullDesc.c_str(), "module found.")) {
+            while (!strstr(fullDesc.c_str(), ACTION_ENTRY_TERMINATOR)) {
                 if (!fgets(line, sizeof(line), fp)) break;
                 len = strlen(line);
                 while (len > 0 && (line[len - 1] == '\n' ||
@@ -1492,20 +1531,20 @@ const ActionDefinition* GameActionMonitor::FindActionDef(
     case GameActionType::KeyRelease:
         /* Check context for specific key actions */
         if (context) {
-            if (strstr(context, "Chat")) targetSection = 16;
-            else if (strstr(context, "Inventory")) targetSection = 13;
-            else if (strstr(context, "Character")) targetSection = 12;
-            else if (strstr(context, "SkillTree")) targetSection = 14;
-            else if (strstr(context, "SkillHotkey")) targetSection = 11;
-            else if (strstr(context, "MapList")) targetSection = 15;
-            else if (strstr(context, "MainMenu")) targetSection = 27;
-            else if (strstr(context, "MiniMap")) targetSection = 15;
-            else targetSection = 39; /* Section 39 = Input handling */
+            if (strstr(context, "Chat")) targetSection = SECTION_CHAT;
+            else if (strstr(context, "Inventory")) targetSection = SECTION_INVENTORY;
+            else if (strstr(context, "Character")) targetSection = SECTION_CHAR_STATS;
+            else if (strstr(context, "SkillTree")) targetSection = SECTION_SKILL_WINDOW;
+            else if (strstr(context, "SkillHotkey")) targetSection = SECTION_COMBAT_SKILLS;
+            else if (strstr(context, "MapList")) targetSection = SECTION_MAP_MINIMAP;
+            else if (strstr(context, "MainMenu")) targetSection = SECTION_HUD_UI;
+            else if (strstr(context, "MiniMap")) targetSection = SECTION_MAP_MINIMAP;
+            else targetSection = SECTION_INPUT_HANDLING;
         }
         break;
     case GameActionType::MouseClick:
     case GameActionType::MouseMove:
-        targetSection = 9; /* Movement */
+        targetSection = SECTION_MOVEMENT;
         break;
     case GameActionType::HPChanged:
     case GameActionType::MPChanged:
@@ -1517,53 +1556,53 @@ const ActionDefinition* GameActionMonitor::FindActionDef(
     case GameActionType::AgiChanged:
     case GameActionType::VitChanged:
     case GameActionType::EneChanged:
-        targetSection = 12; /* Character Stats */
+        targetSection = SECTION_CHAR_STATS;
         break;
     case GameActionType::PlayerKill:
     case GameActionType::PlayerDeath:
-        targetSection = 22; /* PvP/PK */
+        targetSection = SECTION_PVP_PK;
         break;
     case GameActionType::MonsterKill:
     case GameActionType::DamageDealt:
     case GameActionType::DamageReceived:
-        targetSection = 10; /* Combat: Attacking */
+        targetSection = SECTION_COMBAT_ATTACK;
         break;
     case GameActionType::SkillUsed:
     case GameActionType::BuffApplied:
-        targetSection = 11; /* Combat: Skills */
+        targetSection = SECTION_COMBAT_SKILLS;
         break;
     case GameActionType::MapChanged:
     case GameActionType::TeleportUsed:
-        targetSection = 25; /* Warp/Map Change */
+        targetSection = SECTION_WARP_MAP;
         break;
     case GameActionType::MapListOpened:
-        targetSection = 15; /* Map & Minimap */
+        targetSection = SECTION_MAP_MINIMAP;
         break;
     case GameActionType::ChatMessage:
-        targetSection = 16; /* Chat System */
+        targetSection = SECTION_CHAT;
         break;
     case GameActionType::PartyJoined:
     case GameActionType::PartyLeft:
-        targetSection = 19; /* Party */
+        targetSection = SECTION_PARTY;
         break;
     case GameActionType::GuildAction:
-        targetSection = 20; /* Guild */
+        targetSection = SECTION_GUILD;
         break;
     case GameActionType::TradeStarted:
     case GameActionType::TradeCompleted:
-        targetSection = 21; /* Friends & Trade */
+        targetSection = SECTION_FRIENDS_TRADE;
         break;
     case GameActionType::ItemPickedUp:
     case GameActionType::ItemDropped:
     case GameActionType::ItemEquipped:
     case GameActionType::ItemUnequipped:
-        targetSection = 13; /* Inventory & Items */
+        targetSection = SECTION_INVENTORY;
         break;
     case GameActionType::ShopOpened:
     case GameActionType::ShopClosed:
     case GameActionType::ItemBought:
     case GameActionType::ItemSold:
-        targetSection = 17; /* NPC & Shop */
+        targetSection = SECTION_NPC_SHOP;
         break;
     case GameActionType::CharWindowOpened:
     case GameActionType::InventoryOpened:
@@ -1571,20 +1610,20 @@ const ActionDefinition* GameActionMonitor::FindActionDef(
     case GameActionType::QuestLogOpened:
     case GameActionType::MiniMapToggled:
     case GameActionType::MenuOpened:
-        targetSection = 27; /* HUD & UI */
+        targetSection = SECTION_HUD_UI;
         break;
     case GameActionType::ServerConnected:
     case GameActionType::ServerDisconnected:
-        targetSection = 5; /* Network */
+        targetSection = SECTION_NETWORK;
         break;
     case GameActionType::LoginSuccess:
-        targetSection = 6; /* Login */
+        targetSection = SECTION_LOGIN;
         break;
     case GameActionType::CharacterSelected:
-        targetSection = 7; /* Character Select */
+        targetSection = SECTION_CHAR_SELECT;
         break;
     case GameActionType::SceneChanged:
-        targetSection = 8; /* Game World Entry */
+        targetSection = SECTION_GAME_ENTRY;
         break;
     default:
         targetSection = 0;
