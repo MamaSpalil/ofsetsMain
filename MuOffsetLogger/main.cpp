@@ -507,7 +507,7 @@ int main(int argc, char* argv[])
                     break;
                 }
 
-                Sleep(50); /* 50 мс — ~20 проверок в секунду */
+                Sleep(100); /* 100 мс — aligned with monitor's update throttle */
             }
 
             ProcessMonitor_Shutdown();

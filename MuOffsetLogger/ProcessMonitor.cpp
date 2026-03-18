@@ -276,8 +276,10 @@ BOOL ProcessMonitor_Update(void)
             g_MonState     = GS_WINDOW_CREATED;
 
             GetWindowTextA(g_hGameWindow, g_MonWinTitle, sizeof(g_MonWinTitle));
+            g_MonWinTitle[sizeof(g_MonWinTitle) - 1] = '\0';
             _snprintf(g_MonPrevWinTitle, sizeof(g_MonPrevWinTitle) - 1,
                 "%s", g_MonWinTitle);
+            g_MonPrevWinTitle[sizeof(g_MonPrevWinTitle) - 1] = '\0';
 
             GetWindowRect(g_hGameWindow, &g_MonWinRect);
             memcpy(&g_MonPrevWinRect, &g_MonWinRect, sizeof(RECT));
@@ -330,8 +332,10 @@ BOOL ProcessMonitor_Update(void)
 
                 _snprintf(g_MonPrevWinTitle, sizeof(g_MonPrevWinTitle) - 1,
                     "%s", currentTitle);
+                g_MonPrevWinTitle[sizeof(g_MonPrevWinTitle) - 1] = '\0';
                 _snprintf(g_MonWinTitle, sizeof(g_MonWinTitle) - 1,
                     "%s", currentTitle);
+                g_MonWinTitle[sizeof(g_MonWinTitle) - 1] = '\0';
             }
         }
 

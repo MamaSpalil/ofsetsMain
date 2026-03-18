@@ -634,10 +634,14 @@ void FuncScanner_AutoClassify(const PE_FILE_INFO* pInfo,
         if (scanLen > 512)
             scanLen = 512;
 
+        /* Нужно минимум 6 байт для анализа инструкций */
+        if (scanLen < 6)
+            continue;
+
         importsCalled[0] = '\0';
         stringFound[0]   = '\0';
 
-        for (i = 0; i < scanLen - 6; i++)
+        for (i = 0; i + 6 <= scanLen; i++)
         {
             BYTE* ptr = textBase + funcStart + i;
             BYTE  opcode;
@@ -646,7 +650,7 @@ void FuncScanner_AutoClassify(const PE_FILE_INFO* pInfo,
                 continue;
 
             /* CALL DWORD PTR [imm32]: FF 15 xx xx xx xx */
-            if (opcode == 0xFF && i + 5 < scanLen)
+            if (opcode == 0xFF && i + 6 <= scanLen)
             {
                 BYTE modRM;
                 if (SafeRead(ptr + 1, &modRM, 1) && modRM == 0x15)
@@ -664,12 +668,16 @@ void FuncScanner_AutoClassify(const PE_FILE_INFO* pInfo,
 
                         if (impName != NULL)
                         {
+                            DWORD curLen = (DWORD)strlen(importsCalled);
+                            DWORD nameLen = (DWORD)strlen(impName);
+
                             if (importCount > 0 &&
-                                strlen(importsCalled) + strlen(impName) + 2 < sizeof(importsCalled))
+                                curLen + nameLen + 2 < sizeof(importsCalled))
                             {
                                 strcat(importsCalled, ", ");
+                                curLen += 2;
                             }
-                            if (strlen(importsCalled) + strlen(impName) < sizeof(importsCalled) - 1)
+                            if (curLen + nameLen < sizeof(importsCalled) - 1)
                             {
                                 strcat(importsCalled, impName);
                             }
@@ -686,7 +694,7 @@ void FuncScanner_AutoClassify(const PE_FILE_INFO* pInfo,
             }
 
             /* PUSH imm32: 68 xx xx xx xx — возможная строковая ссылка */
-            if (opcode == 0x68 && i + 4 < scanLen && stringFound[0] == '\0')
+            if (opcode == 0x68 && i + 5 <= scanLen && stringFound[0] == '\0')
             {
                 DWORD pushAddr;
                 if (SafeRead(ptr + 1, &pushAddr, 4))
