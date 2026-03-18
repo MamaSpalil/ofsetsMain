@@ -159,8 +159,8 @@ static BOOL ParseLine(const char* line, OFFSET_RECORD* rec)
             p++;
     }
 
-    /* Must have at least an offset; VA=0 is invalid for this PE (ImageBase=0x00400000) */
-    return (fieldIdx >= 1 && rec->Offset != 0) ? TRUE : FALSE;
+    /* Must have at least an offset field parsed */
+    return (fieldIdx >= 1) ? TRUE : FALSE;
 }
 
 /*
@@ -338,9 +338,6 @@ BOOL OffsetStore_Add(DWORD offset, const char* funcName,
         return FALSE;
     if (g_recordCount >= OSTORE_MAX_RECORDS)
         return FALSE;
-    /* VA=0 is not a valid offset for this PE (ImageBase=0x00400000) */
-    if (offset == 0)
-        return FALSE;
 
     /* Deduplicate */
     if (IsDuplicate(offset, funcName, moduleName, varName))
@@ -396,4 +393,61 @@ void OffsetStore_Shutdown(void)
 
     g_initialized = FALSE;
     g_recordCount = 0;
+}
+
+BOOL OffsetStore_Reset(void)
+{
+    DWORD bytesWritten;
+    const char* header = "Offset|FunctionName|ModuleName|VariableName\r\n";
+
+    if (!g_initialized)
+        return FALSE;
+
+    /* Сброс записей в памяти */
+    g_recordCount = 0;
+    memset(g_records, 0, sizeof(g_records));
+
+    /* Закрыть текущий файл */
+    if (g_dbFile != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(g_dbFile);
+        g_dbFile = INVALID_HANDLE_VALUE;
+    }
+
+    /* Пересоздать файл (усечение до нуля) */
+    g_dbFile = CreateFileA(g_dbFilePath,
+                           GENERIC_WRITE,
+                           FILE_SHARE_READ,
+                           NULL,
+                           CREATE_ALWAYS,
+                           FILE_ATTRIBUTE_NORMAL,
+                           NULL);
+
+    if (g_dbFile == INVALID_HANDLE_VALUE)
+    {
+        Logger_Write(COLOR_WARN,
+            "  [OffsetStore] WARNING: Cannot reset database file: %s\n",
+            g_dbFilePath);
+        return FALSE;
+    }
+
+    /* Записать заголовок CSV */
+    WriteFile(g_dbFile, header, (DWORD)strlen(header),
+              &bytesWritten, NULL);
+
+    /* Переоткрыть в режиме дозаписи */
+    CloseHandle(g_dbFile);
+    g_dbFile = CreateFileA(g_dbFilePath,
+                           FILE_APPEND_DATA,
+                           FILE_SHARE_READ,
+                           NULL,
+                           OPEN_ALWAYS,
+                           FILE_ATTRIBUTE_NORMAL,
+                           NULL);
+
+    Logger_Write(COLOR_OFFSET,
+        "  [OffsetStore] Database reset to zero (0 records). File: %s\n",
+        g_dbFilePath);
+
+    return TRUE;
 }

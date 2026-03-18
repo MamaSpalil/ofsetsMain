@@ -81,6 +81,14 @@ void OffsetStore_Flush(void);
  */
 void OffsetStore_Shutdown(void);
 
+/*
+ * Reset the offset store to zero state.
+ * Clears all records in memory and truncates the database file.
+ * Call before starting a new analysis session.
+ * Returns TRUE on success.
+ */
+BOOL OffsetStore_Reset(void);
+
 #ifdef __cplusplus
 }
 #endif

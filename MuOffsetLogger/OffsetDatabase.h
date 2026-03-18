@@ -2,7 +2,9 @@
  * OffsetDatabase.h
  * MuOffsetLogger - Система логирования офсетов main.exe MU Online
  *
- * База данных известных офсетов из анализа main.exe.
+ * База данных офсетов main.exe.
+ * Стартовая база = 0 (пустая). Заполняется из main.exe после анализа PE.
+ * Справочные (reference) офсеты хранятся отдельно для сопоставления.
  * Каждый офсет содержит VA, File Offset, категорию, имя и описание.
  * Совместимость: Visual Studio 2010 (v100), Windows 10 x86/x64
  */
@@ -11,6 +13,9 @@
 #define OFFSET_DATABASE_H
 
 #include <windows.h>
+
+/* Максимальное количество офсетов в активной базе */
+#define OFFSETDB_MAX_ACTIVE  4096
 
 /* Тип офсета */
 typedef enum _OFFSET_TYPE
@@ -42,14 +47,50 @@ extern "C" {
 #endif
 
 /*
- * Получить массив всех известных офсетов
+ * Сброс активной базы данных в ноль (стартовое состояние).
+ * Вызывать перед началом нового анализа main.exe.
+ * После вызова OffsetDB_GetAllOffsets() вернёт 0 записей.
+ */
+void OffsetDB_Reset(void);
+
+/*
+ * Получить массив активных (обнаруженных) офсетов.
+ * Стартовая база = 0. Заполняется после анализа main.exe.
  * pCount - указатель для записи количества офсетов
  * Возвращает указатель на массив OFFSET_ENTRY
  */
 const OFFSET_ENTRY* OffsetDB_GetAllOffsets(DWORD* pCount);
 
 /*
- * Логирует все известные офсеты из базы данных, группируя по категориям
+ * Получить массив справочных (reference) офсетов.
+ * Это эталонные офсеты для сопоставления с данными из main.exe.
+ * pCount - указатель для записи количества
+ */
+const OFFSET_ENTRY* OffsetDB_GetReferenceOffsets(DWORD* pCount);
+
+/*
+ * Добавить офсет в активную базу данных.
+ * Возвращает TRUE если добавлен, FALSE если дубликат или база полна.
+ */
+BOOL OffsetDB_AddEntry(DWORD va, DWORD fileOffset, OFFSET_TYPE type,
+                       const char* category, const char* name,
+                       const char* description);
+
+/*
+ * Заполнить активную базу из PE-образа main.exe.
+ * Сканирует образ, сопоставляет со справочными офсетами,
+ * добавляет только те, которые подтверждены в PE.
+ * imageBuffer - указатель на замапленный PE-образ
+ * imageBase   - базовый адрес загрузки из PE-заголовков
+ * imageSize   - размер образа в памяти
+ * Возвращает количество добавленных офсетов.
+ */
+DWORD OffsetDB_PopulateFromScan(const BYTE* imageBuffer,
+                                DWORD imageBase, DWORD imageSize);
+
+/*
+ * Логирует все офсеты из активной базы данных, группируя по категориям.
+ * Если база пуста (стартовое состояние = 0), выводит сообщение об этом.
  * baseAddress - базовый адрес загрузки main.exe (для проверки/коррекции)
  */
 void OffsetDB_LogAllOffsets(DWORD_PTR baseAddress);
