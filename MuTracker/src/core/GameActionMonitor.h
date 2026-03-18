@@ -14,11 +14,11 @@
  *   - Mouse actions (clicks, movement)
  *
  * For each detected action the monitor:
- *   1. Logs the action description (Russian locale)
- *   2. Searches for offset   -> logs "офсет найден"
- *   3. Searches for function -> logs "функция найдена"
- *   4. Searches for variable -> logs "переменная найдена"
- *   5. Searches for module   -> logs "модуль найден"
+ *   1. Logs the action description
+ *   2. Searches for offset   -> logs "offset found"
+ *   3. Searches for function -> logs "function found"
+ *   4. Searches for variable -> logs "variable found"
+ *   5. Searches for module   -> logs "module found"
  *
  * The results are written to the persistent database file
  * (MuTrackerDB.csv) which is fully rewritten on every launch.
@@ -146,7 +146,7 @@ struct ActionLookupResult {
 struct GameActionEvent {
     GameActionType  type;
     uint64_t        timestamp;          /* QPC value */
-    char            description[512];   /* Human-readable (Russian) */
+    char            description[512];   /* Human-readable description */
     ActionLookupResult lookup;          /* Offset/func/var/module */
 
     /* Extra data depending on type */
@@ -355,8 +355,8 @@ private:
     /* Add event to the log and database */
     void EmitEvent(const GameActionEvent& event);
 
-    /* Log event in the required Russian format */
-    void LogActionRussian(const GameActionEvent& event);
+    /* Log event in the required format */
+    void LogAction(const GameActionEvent& event);
 
     /* Write full database to CSV file */
     void WriteDatabaseCSV();

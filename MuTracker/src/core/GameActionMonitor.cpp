@@ -4,9 +4,9 @@
  * Monitors ALL actions in the MuOnline main.exe game client and logs
  * results in the format required by the specification:
  *
- *   "Вы нажали кнопку "C" в клиенте с игрой, ищу офсет: офсет найден,
- *    ищу функцию, функция найдена, ищу переменную, переменная найдена,
- *    ищу модуль, модуль найден."
+ *   "You pressed button "C" in the game client, searching for offset: offset found,
+ *    searching for function, function found, searching for variable, variable found,
+ *    searching for module, module found."
  *
  * Database file (MuTrackerDB.csv) is fully rewritten on each launch.
  *
@@ -584,15 +584,15 @@ void GameActionMonitor::EmitEvent(const GameActionEvent& event)
     dbEntry.timestamp = event.timestamp;
     m_dbEntries.push_back(dbEntry);
 
-    /* Log in Russian format */
-    LogActionRussian(event);
+    /* Log in required format */
+    LogAction(event);
 }
 
 /* ================================================================== */
-/*  Log Action (Russian Format)                                        */
+/*  Log Action                                                         */
 /* ================================================================== */
 
-void GameActionMonitor::LogActionRussian(const GameActionEvent& event)
+void GameActionMonitor::LogAction(const GameActionEvent& event)
 {
     Logger& log = Logger::Instance();
 
@@ -600,22 +600,22 @@ void GameActionMonitor::LogActionRussian(const GameActionEvent& event)
 
     /*
      * Build the lookup result string:
-     * "ищу офсет: офсет найден, ищу функцию, функция найдена,
-     *  ищу переменную, переменная найдена, ищу модуль, модуль найден."
+     * "searching for offset: offset found, searching for function, function found,
+     *  searching for variable, variable found, searching for module, module found."
      */
     char lookupStr[512];
     sprintf_s(lookupStr, sizeof(lookupStr),
-              "ищу офсет: %s (0x%08X), "
-              "ищу функцию, %s (%s), "
-              "ищу переменную, %s (%s), "
-              "ищу модуль, %s (%s).",
-              lr.offsetFound   ? "офсет найден"     : "офсет не найден",
+              "searching for offset: %s (0x%08X), "
+              "searching for function, %s (%s), "
+              "searching for variable, %s (%s), "
+              "searching for module, %s (%s).",
+              lr.offsetFound   ? "offset found"     : "offset not found",
               static_cast<uint32_t>(lr.offset),
-              lr.functionFound ? "функция найдена"   : "функция не найдена",
+              lr.functionFound ? "function found"   : "function not found",
               lr.functionName[0] ? lr.functionName   : "N/A",
-              lr.variableFound ? "переменная найдена" : "переменная не найдена",
+              lr.variableFound ? "variable found" : "variable not found",
               lr.variableName[0] ? lr.variableName   : "N/A",
-              lr.moduleFound   ? "модуль найден"     : "модуль не найден",
+              lr.moduleFound   ? "module found"     : "module not found",
               lr.moduleName[0] ? lr.moduleName       : "N/A");
 
     /* Log the full event */
@@ -673,64 +673,64 @@ void GameActionMonitor::CheckKeyboard()
             switch (vk) {
             case 'C':
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "открыто окно персонажа (Character)",
+                          "You pressed button \"%s\" in the game client, "
+                          "character window opened (Character)",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.charWindowOpen,
                                               "CharacterWindow");
                 break;
             case 'V':
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "открыт инвентарь (Inventory)",
+                          "You pressed button \"%s\" in the game client, "
+                          "inventory opened (Inventory)",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.inventoryOpen,
                                               "InventoryWindow");
                 break;
             case 'M':
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "появился MapList с выбором локаций(городов)",
+                          "You pressed button \"%s\" in the game client, "
+                          "MapList with location (town) selection appeared",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.mapListOpen,
                                               "MapListWindow");
                 break;
             case 'I':
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "открыт инвентарь",
+                          "You pressed button \"%s\" in the game client, "
+                          "inventory opened",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.inventoryOpen,
                                               "InventoryOpen");
                 break;
             case 'S':
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "открыто дерево навыков (Skill Tree)",
+                          "You pressed button \"%s\" in the game client, "
+                          "skill tree opened (Skill Tree)",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.skillTreeOpen,
                                               "SkillTreeWindow");
                 break;
             case VK_RETURN:
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "активирован ввод чата",
+                          "You pressed button \"%s\" in the game client, "
+                          "chat input activated",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.chatInputActive,
                                               "ChatInput");
                 break;
             case VK_TAB:
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "переключение мини-карты",
+                          "You pressed button \"%s\" in the game client, "
+                          "mini-map toggle",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.currentMapId,
                                               "MiniMapToggle");
                 break;
             case VK_ESCAPE:
                 sprintf_s(event.description, sizeof(event.description),
-                          "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                          "открыто главное меню",
+                          "You pressed button \"%s\" in the game client, "
+                          "main menu opened",
                           keyName);
                 event.lookup = PerformLookup(m_offsets.currentScene,
                                               "MainMenu");
@@ -739,27 +739,27 @@ void GameActionMonitor::CheckKeyboard()
                 /* Function keys F1-F12 - skill hotkeys */
                 if (vk >= VK_F1 && vk <= VK_F12) {
                     sprintf_s(event.description, sizeof(event.description),
-                              "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                              "использование навыка (хоткей %s)",
+                              "You pressed button \"%s\" in the game client, "
+                              "skill usage (hotkey %s)",
                               keyName, keyName);
                     event.lookup = PerformLookup(m_offsets.skillTreeOpen,
                                                   "SkillHotkey");
                 } else if (vk >= '0' && vk <= '9') {
                     sprintf_s(event.description, sizeof(event.description),
-                              "Вы нажали кнопку \"%s\" в клиенте с игрой, "
-                              "использование предмета из хоткей панели",
+                              "You pressed button \"%s\" in the game client, "
+                              "item usage from hotkey panel",
                               keyName);
                     event.lookup = PerformLookup(m_offsets.inventoryOpen,
                                                   "ItemHotkey");
                 } else if (vk >= 'A' && vk <= 'Z') {
                     sprintf_s(event.description, sizeof(event.description),
-                              "Вы нажали кнопку \"%s\" в клиенте с игрой",
+                              "You pressed button \"%s\" in the game client",
                               keyName);
                     event.lookup = PerformLookup(m_mainBase,
                                                   "KeyboardInput");
                 } else {
                     sprintf_s(event.description, sizeof(event.description),
-                              "Вы нажали кнопку \"%s\" в клиенте с игрой",
+                              "You pressed button \"%s\" in the game client",
                               keyName);
                     event.lookup = PerformLookup(m_mainBase,
                                                   "KeyboardInput");
@@ -819,11 +819,11 @@ void GameActionMonitor::DetectChanges()
         int32_t diff = m_currState.hp - m_prevState.hp;
         if (diff < 0) {
             sprintf_s(event.description, sizeof(event.description),
-                      "Ваше HP уменьшилось на %d единиц (было: %d, стало: %d)",
+                      "Your HP decreased by %d units (was: %d, now: %d)",
                       -diff, m_prevState.hp, m_currState.hp);
         } else {
             sprintf_s(event.description, sizeof(event.description),
-                      "Ваше HP увеличилось на %d единиц (было: %d, стало: %d)",
+                      "Your HP increased by %d units (was: %d, now: %d)",
                       diff, m_prevState.hp, m_currState.hp);
         }
         event.lookup = PerformLookup(m_offsets.characterHP, "CharacterHP");
@@ -841,11 +841,11 @@ void GameActionMonitor::DetectChanges()
         int32_t diff = m_currState.mp - m_prevState.mp;
         if (diff < 0) {
             sprintf_s(event.description, sizeof(event.description),
-                      "Ваша MP уменьшилась на %d единиц (было: %d, стало: %d)",
+                      "Your MP decreased by %d units (was: %d, now: %d)",
                       -diff, m_prevState.mp, m_currState.mp);
         } else {
             sprintf_s(event.description, sizeof(event.description),
-                      "Ваша MP увеличилась на %d единиц (было: %d, стало: %d)",
+                      "Your MP increased by %d units (was: %d, now: %d)",
                       diff, m_prevState.mp, m_currState.mp);
         }
         event.lookup = PerformLookup(m_offsets.characterMP, "CharacterMP");
@@ -863,7 +863,7 @@ void GameActionMonitor::DetectChanges()
         event.data.stat.newVal = m_currState.level;
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Вы достигли %d уровня (было: %d)",
+                  "You reached level %d (was: %d)",
                   m_currState.level, m_prevState.level);
         event.lookup = PerformLookup(m_offsets.characterLevel, "CharacterLevel");
         EmitEvent(event);
@@ -879,7 +879,7 @@ void GameActionMonitor::DetectChanges()
 
         uint32_t gained = m_currState.exp - m_prevState.exp;
         sprintf_s(event.description, sizeof(event.description),
-                  "%u опыта получено (всего: %u)",
+                  "%u experience gained (total: %u)",
                   gained, m_currState.exp);
         event.lookup = PerformLookup(m_offsets.characterExp, "CharacterExp");
         EmitEvent(event);
@@ -897,11 +897,11 @@ void GameActionMonitor::DetectChanges()
 
         if (m_currState.zen > m_prevState.zen) {
             sprintf_s(event.description, sizeof(event.description),
-                      "%u Zen поднято (всего: %u)",
+                      "%u Zen gained (total: %u)",
                       m_currState.zen - m_prevState.zen, m_currState.zen);
         } else {
             sprintf_s(event.description, sizeof(event.description),
-                      "%u Zen потрачено (осталось: %u)",
+                      "%u Zen spent (remaining: %u)",
                       m_prevState.zen - m_currState.zen, m_currState.zen);
         }
         event.lookup = PerformLookup(m_offsets.characterZen, "CharacterZen");
@@ -916,7 +916,7 @@ void GameActionMonitor::DetectChanges()
         event.data.stat.oldVal = m_prevState.str;
         event.data.stat.newVal = m_currState.str;
         sprintf_s(event.description, sizeof(event.description),
-                  "Сила (Strength) изменена: %d -> %d",
+                  "Strength changed: %d -> %d",
                   m_prevState.str, m_currState.str);
         event.lookup = PerformLookup(m_offsets.characterStr, "CharacterStr");
         EmitEvent(event);
@@ -930,7 +930,7 @@ void GameActionMonitor::DetectChanges()
         event.data.stat.oldVal = m_prevState.agi;
         event.data.stat.newVal = m_currState.agi;
         sprintf_s(event.description, sizeof(event.description),
-                  "Ловкость (Agility) изменена: %d -> %d",
+                  "Agility changed: %d -> %d",
                   m_prevState.agi, m_currState.agi);
         event.lookup = PerformLookup(m_offsets.characterAgi, "CharacterAgi");
         EmitEvent(event);
@@ -944,7 +944,7 @@ void GameActionMonitor::DetectChanges()
         event.data.stat.oldVal = m_prevState.vit;
         event.data.stat.newVal = m_currState.vit;
         sprintf_s(event.description, sizeof(event.description),
-                  "Живучесть (Vitality) изменена: %d -> %d",
+                  "Vitality changed: %d -> %d",
                   m_prevState.vit, m_currState.vit);
         event.lookup = PerformLookup(m_offsets.characterVit, "CharacterVit");
         EmitEvent(event);
@@ -958,7 +958,7 @@ void GameActionMonitor::DetectChanges()
         event.data.stat.oldVal = m_prevState.ene;
         event.data.stat.newVal = m_currState.ene;
         sprintf_s(event.description, sizeof(event.description),
-                  "Энергия (Energy) изменена: %d -> %d",
+                  "Energy changed: %d -> %d",
                   m_prevState.ene, m_currState.ene);
         event.lookup = PerformLookup(m_offsets.characterEne, "CharacterEne");
         EmitEvent(event);
@@ -985,7 +985,7 @@ void GameActionMonitor::DetectChanges()
                 sizeof(event.data.combat.targetName) - 1);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Вы убили игрока %s в клиенте с игрой (всего убийств: %u)",
+                  "You killed player %s in the game client (total kills: %u)",
                   targetName, m_currState.killCount);
         event.lookup = PerformLookup(m_offsets.killCount, "KillCount");
         EmitEvent(event);
@@ -999,7 +999,7 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Ваш персонаж погиб (всего смертей: %u)",
+                  "Your character died (total deaths: %u)",
                   m_currState.deathCount);
         event.lookup = PerformLookup(m_offsets.deathCount, "DeathCount");
         EmitEvent(event);
@@ -1018,8 +1018,8 @@ void GameActionMonitor::DetectChanges()
                 sizeof(event.data.map.mapName) - 1);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Вы переместились на карту %s (ID: %u), "
-                  "предыдущая карта: %s (ID: %u)",
+                  "You moved to map %s (ID: %u), "
+                  "previous map: %s (ID: %u)",
                   mapName, m_currState.currentMapId,
                   GetMapName(m_prevState.currentMapId),
                   m_prevState.currentMapId);
@@ -1033,18 +1033,18 @@ void GameActionMonitor::DetectChanges()
         event.type = GameActionType::SceneChanged;
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
-        const char* sceneName = "Неизвестно";
+        const char* sceneName = "Unknown";
         switch (m_currState.currentScene) {
-        case 0: sceneName = "Заставка"; break;
-        case 1: sceneName = "Вход в систему (Login)"; break;
-        case 2: sceneName = "Список серверов"; break;
-        case 3: sceneName = "Выбор персонажа"; break;
-        case 4: sceneName = "Создание персонажа"; break;
-        case 5: sceneName = "Игровой мир"; break;
+        case 0: sceneName = "Splash Screen"; break;
+        case 1: sceneName = "Login"; break;
+        case 2: sceneName = "Server List"; break;
+        case 3: sceneName = "Character Select"; break;
+        case 4: sceneName = "Character Creation"; break;
+        case 5: sceneName = "Game World"; break;
         }
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Смена сцены: %s (ID: %u -> %u)",
+                  "Scene changed: %s (ID: %u -> %u)",
                   sceneName, m_prevState.currentScene,
                   m_currState.currentScene);
         event.lookup = PerformLookup(m_offsets.currentScene, "CurrentScene");
@@ -1059,11 +1059,11 @@ void GameActionMonitor::DetectChanges()
         if (m_currState.isLoggedIn && !m_prevState.isLoggedIn) {
             event.type = GameActionType::LoginSuccess;
             sprintf_s(event.description, sizeof(event.description),
-                      "Успешный вход в систему");
+                      "Login successful");
         } else {
             event.type = GameActionType::ServerDisconnected;
             sprintf_s(event.description, sizeof(event.description),
-                      "Отключение от сервера");
+                      "Disconnected from server");
         }
         event.lookup = PerformLookup(m_offsets.isLoggedIn, "IsLoggedIn");
         EmitEvent(event);
@@ -1076,8 +1076,8 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Инвентарь %s",
-                  m_currState.inventoryOpen ? "открыт" : "закрыт");
+                  "Inventory %s",
+                  m_currState.inventoryOpen ? "opened" : "closed");
         event.lookup = PerformLookup(m_offsets.inventoryOpen,
                                       "InventoryWindow");
         EmitEvent(event);
@@ -1090,8 +1090,8 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Окно персонажа %s",
-                  m_currState.charWindowOpen ? "открыто" : "закрыто");
+                  "Character window %s",
+                  m_currState.charWindowOpen ? "opened" : "closed");
         event.lookup = PerformLookup(m_offsets.charWindowOpen,
                                       "CharacterWindow");
         EmitEvent(event);
@@ -1104,8 +1104,8 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Дерево навыков %s",
-                  m_currState.skillTreeOpen ? "открыто" : "закрыто");
+                  "Skill tree %s",
+                  m_currState.skillTreeOpen ? "opened" : "closed");
         event.lookup = PerformLookup(m_offsets.skillTreeOpen,
                                       "SkillTreeWindow");
         EmitEvent(event);
@@ -1118,8 +1118,8 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "MapList с выбором локаций(городов) %s",
-                  m_currState.mapListOpen ? "открыт" : "закрыт");
+                  "MapList with location (town) selection %s",
+                  m_currState.mapListOpen ? "opened" : "closed");
         event.lookup = PerformLookup(m_offsets.mapListOpen, "MapListWindow");
         EmitEvent(event);
     }
@@ -1131,8 +1131,8 @@ void GameActionMonitor::DetectChanges()
         event.timestamp = static_cast<uint64_t>(qpc.QuadPart);
 
         sprintf_s(event.description, sizeof(event.description),
-                  "Ввод чата %s",
-                  m_currState.chatInputActive ? "активирован" : "деактивирован");
+                  "Chat input %s",
+                  m_currState.chatInputActive ? "activated" : "deactivated");
         event.lookup = PerformLookup(m_offsets.chatInputActive,
                                       "ChatInputActive");
         EmitEvent(event);

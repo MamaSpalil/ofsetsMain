@@ -23,7 +23,7 @@
 #define MUTRACKER_PIPE_NAME     L"\\\\.\\pipe\\MuTrackerIPC"
 #define MUTRACKER_SHMEM_NAME    L"MuTrackerSharedMem"
 #define MUTRACKER_SHMEM_SIZE    (1024 * 1024 * 4)   /* 4 MB ring buffer */
-#define MUTRACKER_MAX_FUNCTIONS 4096
+#define MUTRACKER_MAX_FUNCTIONS 128968
 #define MUTRACKER_MAX_MODULES   64
 #define MUTRACKER_MAX_VARIABLES 256
 #define MUTRACKER_MAX_RECORDS   65536
@@ -113,7 +113,7 @@ struct TrackedVariableEntry {
 struct GameActionEventEntry {
     uint32_t    actionType;             /* GameActionType enum value    */
     uint64_t    timestamp;              /* QPC value                    */
-    char        description[256];       /* Human-readable (Russian)     */
+    char        description[256];       /* Human-readable description */
     uintptr_t   offset;                 /* Found offset                 */
     char        functionName[128];      /* Found function name          */
     char        variableName[128];      /* Found variable name          */
