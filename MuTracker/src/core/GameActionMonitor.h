@@ -206,6 +206,18 @@ struct MuGameOffsets {
 };
 
 /* ================================================================== */
+/*  Action Definition (loaded from reference files)                    */
+/* ================================================================== */
+
+struct ActionDefinition {
+    char        sectionName[128];   /* Section name from file */
+    char        actionId[32];       /* e.g. "9.001" */
+    char        description[512];   /* Full description text */
+    uint32_t    sectionNum;         /* Section number */
+    uint32_t    entryNum;           /* Entry number within section */
+};
+
+/* ================================================================== */
 /*  Database Entry (for CSV output)                                    */
 /* ================================================================== */
 
@@ -242,6 +254,31 @@ public:
 
     /* Shutdown and flush database */
     void Shutdown();
+
+    /*
+     * Load action definitions from the two reference files:
+     *   MuOnline_S3E1_Actions_1.02Q_Part1.txt
+     *   MuOnline_S3E1_Actions_1.02Q_Part2.txt
+     *
+     * @param part1Path  Path to Part1 reference file
+     * @param part2Path  Path to Part2 reference file
+     * @return           Total number of action definitions loaded
+     */
+    size_t LoadActionDefinitions(const char* part1Path, const char* part2Path);
+
+    /*
+     * Check whether the main.exe game window is currently the
+     * foreground (active) window. When the game is minimized or
+     * another window is in focus, offset search is paused.
+     *
+     * @return true if main.exe window is in the foreground
+     */
+    bool IsGameWindowActive() const;
+
+    /*
+     * Get the number of loaded action definitions.
+     */
+    size_t GetActionDefinitionCount() const { return m_actionDefs.size(); }
 
     /*
      * Poll game state and detect changes.
@@ -340,6 +377,16 @@ private:
     /* Database entries */
     std::vector<DatabaseEntry>   m_dbEntries;
 
+    /* Action definitions loaded from reference files */
+    std::vector<ActionDefinition> m_actionDefs;
+
+    /* Section name to action definition index mapping */
+    std::unordered_map<uint32_t, std::string> m_sectionNames;
+
+    /* Cached game window handle for foreground check */
+    mutable HWND                m_gameHwnd;
+    mutable DWORD               m_gamePid;
+
     /* ---- Internal methods ---- */
 
     /* Read current game state from memory */
@@ -372,6 +419,16 @@ private:
 
     /* Scan .data section for HP/MP/Level/Zen patterns */
     void ScanDataSection();
+
+    /* Parse a single reference file and append to m_actionDefs */
+    size_t ParseActionFile(const char* filePath);
+
+    /* Find the best matching action definition for an event */
+    const ActionDefinition* FindActionDef(GameActionType type,
+                                           const char* context) const;
+
+    /* Find game window by PID (helper for IsGameWindowActive) */
+    void CacheGameWindow() const;
 };
 
 } /* namespace MuTracker */

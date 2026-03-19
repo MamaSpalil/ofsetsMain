@@ -75,6 +75,44 @@ static const uintptr_t DEFAULT_PLAYER_X_OFFSET      = 0x3B5A00;
 static const uintptr_t DEFAULT_PLAYER_Y_OFFSET      = 0x3B5A04;
 
 /* ================================================================== */
+/*  Reference File Parsing Constants                                    */
+/* ================================================================== */
+
+/* UTF-8 em-dash (U+2014) first byte and length in bytes */
+static const char     UTF8_EM_DASH_START  = '\xe2';
+static const size_t   UTF8_EM_DASH_LENGTH = 3;
+
+/* Action entry terminator string (marks end of multi-line entry) */
+static const char*    ACTION_ENTRY_TERMINATOR = "module found.";
+
+/* ================================================================== */
+/*  Section Number Constants (from reference files)                    */
+/*  MuOnline_S3E1_Actions_1.02Q_Part1.txt / Part2.txt                  */
+/* ================================================================== */
+
+static const uint32_t SECTION_PROCESS_INIT    = 1;
+static const uint32_t SECTION_NETWORK         = 5;
+static const uint32_t SECTION_LOGIN           = 6;
+static const uint32_t SECTION_CHAR_SELECT     = 7;
+static const uint32_t SECTION_GAME_ENTRY      = 8;
+static const uint32_t SECTION_MOVEMENT        = 9;
+static const uint32_t SECTION_COMBAT_ATTACK   = 10;
+static const uint32_t SECTION_COMBAT_SKILLS   = 11;
+static const uint32_t SECTION_CHAR_STATS      = 12;
+static const uint32_t SECTION_INVENTORY       = 13;
+static const uint32_t SECTION_SKILL_WINDOW    = 14;
+static const uint32_t SECTION_MAP_MINIMAP     = 15;
+static const uint32_t SECTION_CHAT            = 16;
+static const uint32_t SECTION_NPC_SHOP        = 17;
+static const uint32_t SECTION_PARTY           = 19;
+static const uint32_t SECTION_GUILD           = 20;
+static const uint32_t SECTION_FRIENDS_TRADE   = 21;
+static const uint32_t SECTION_PVP_PK          = 22;
+static const uint32_t SECTION_WARP_MAP        = 25;
+static const uint32_t SECTION_HUD_UI          = 27;
+static const uint32_t SECTION_INPUT_HANDLING  = 39;
+
+/* ================================================================== */
 /*  Key Name Table                                                      */
 /* ================================================================== */
 
@@ -265,6 +303,8 @@ GameActionMonitor::GameActionMonitor()
     , m_mainBase(0)
     , m_initialized(false)
     , m_eventCount(0)
+    , m_gameHwnd(nullptr)
+    , m_gamePid(0)
 {
     memset(&m_offsets, 0, sizeof(m_offsets));
     memset(&m_prevState, 0, sizeof(m_prevState));
@@ -353,10 +393,18 @@ bool GameActionMonitor::Init(MemoryUtils* memory, PatternScanner* scanner,
     m_events.reserve(MAX_EVENTS);
     m_initialized = true;
 
+    /* Cache the game process ID for foreground window checks */
+    m_gamePid = GetCurrentProcessId();
+    CacheGameWindow();
+
     MULOG_INFO("[GameActionMonitor] Initialized. Base=0x%08X, DB=%s",
                static_cast<uint32_t>(mainBase), m_dbFilePath.c_str());
     MULOG_INFO("[GameActionMonitor] Tracking ALL game actions in main.exe");
     MULOG_INFO("[GameActionMonitor] Database will be rewritten on each launch");
+    MULOG_INFO("[GameActionMonitor] Action definitions loaded: %zu",
+               m_actionDefs.size());
+    MULOG_INFO("[GameActionMonitor] Foreground window check: ACTIVE "
+               "(offset search pauses when main.exe is not in focus)");
 
     return true;
 }
@@ -621,6 +669,15 @@ void GameActionMonitor::LogAction(const GameActionEvent& event)
     /* Log the full event */
     log.Log(LogLevel::Info, "[ACTION] %s, %s", event.description, lookupStr);
 
+    /* Log matching action definition from reference files if available */
+    const ActionDefinition* actionDef = FindActionDef(event.type,
+        lr.variableName[0] ? lr.variableName : nullptr);
+    if (actionDef) {
+        log.Log(LogLevel::Info, "[ACTION_REF] [%s] Section: %s | %s",
+                actionDef->actionId, actionDef->sectionName,
+                actionDef->description);
+    }
+
     /* Also log the offset in standard format */
     if (lr.offsetFound) {
         log.LogOffset(lr.offset + m_mainBase, lr.offset,
@@ -636,6 +693,15 @@ void GameActionMonitor::LogAction(const GameActionEvent& event)
 void GameActionMonitor::CheckKeyboard()
 {
     if (!m_initialized) return;
+
+    /*
+     * Only check keyboard when main.exe is the active window.
+     * When main.exe is minimized or not in foreground, skip input
+     * scanning to avoid false positives from other applications.
+     */
+    if (!IsGameWindowActive()) {
+        return;
+    }
 
     /*
      * Check all virtual key codes for state changes.
@@ -781,6 +847,16 @@ void GameActionMonitor::CheckKeyboard()
 void GameActionMonitor::Update()
 {
     if (!m_initialized) return;
+
+    /*
+     * Check that main.exe is the foreground window.
+     * If the game window is minimized or another application is in focus,
+     * offset searching and game state polling is paused until the player
+     * returns to the game window.
+     */
+    if (!IsGameWindowActive()) {
+        return;
+    }
 
     /* Read current game state */
     ReadGameState(m_currState);
@@ -1185,6 +1261,10 @@ void GameActionMonitor::WriteDatabaseCSV()
     /* Header */
     fprintf(fp, "=== MuTracker Database ===\n");
     fprintf(fp, "=== Rewritten on each program launch ===\n");
+    fprintf(fp, "=== Data sources: MuOnline_S3E1_Actions_1.02Q_Part1.txt, "
+                "MuOnline_S3E1_Actions_1.02Q_Part2.txt ===\n");
+    fprintf(fp, "=== Action definitions loaded: %zu ===\n",
+            m_actionDefs.size());
     fprintf(fp, "=== Total entries: %zu ===\n\n", m_dbEntries.size());
 
     /* Column headers */
@@ -1212,6 +1292,433 @@ void GameActionMonitor::WriteDatabaseCSV()
 
     MULOG_DEBUG("[GameActionMonitor] Database written: %zu entries to %s",
                 m_dbEntries.size(), m_dbFilePath.c_str());
+}
+
+/* ================================================================== */
+/*  Load Action Definitions from Reference Files                        */
+/* ================================================================== */
+
+size_t GameActionMonitor::LoadActionDefinitions(const char* part1Path,
+                                                  const char* part2Path)
+{
+    m_actionDefs.clear();
+    m_sectionNames.clear();
+
+    size_t count1 = 0;
+    size_t count2 = 0;
+
+    if (part1Path && part1Path[0] != '\0') {
+        count1 = ParseActionFile(part1Path);
+        MULOG_INFO("[GameActionMonitor] Loaded %zu action definitions from Part1: %s",
+                   count1, part1Path);
+    }
+
+    if (part2Path && part2Path[0] != '\0') {
+        count2 = ParseActionFile(part2Path);
+        MULOG_INFO("[GameActionMonitor] Loaded %zu action definitions from Part2: %s",
+                   count2, part2Path);
+    }
+
+    size_t total = count1 + count2;
+    MULOG_INFO("[GameActionMonitor] Total action definitions loaded: %zu "
+               "(Part1: %zu, Part2: %zu, Sections: %zu)",
+               total, count1, count2, m_sectionNames.size());
+
+    return total;
+}
+
+/* ================================================================== */
+/*  Parse a Single Action Reference File                                */
+/*                                                                      */
+/*  File format (from MuOnline_S3E1_Actions_1.02Q):                    */
+/*    SECTION N — SECTION_NAME                                          */
+/*    [N.NNN] Description text,                                         */
+/*      searching for offset: offset found, ...                         */
+/* ================================================================== */
+
+size_t GameActionMonitor::ParseActionFile(const char* filePath)
+{
+    if (!filePath) return 0;
+
+    FILE* fp = fopen(filePath, "r");
+    if (!fp) {
+        MULOG_WARN("[GameActionMonitor] Cannot open action file: %s", filePath);
+        return 0;
+    }
+
+    size_t loadedCount = 0;
+    char line[1024];
+    char currentSection[128] = {0};
+    uint32_t currentSectionNum = 0;
+
+    while (fgets(line, sizeof(line), fp)) {
+        /* Remove trailing newline/CR */
+        size_t len = strlen(line);
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+            line[--len] = '\0';
+
+        /* Skip empty lines and separator lines */
+        if (len == 0) continue;
+        if (line[0] == '=' && len > 5) continue;
+
+        /* Detect SECTION header lines:
+         *   "  SECTION N — SECTION_NAME"
+         */
+        const char* secPtr = strstr(line, "SECTION ");
+        if (secPtr) {
+            /* Parse section number and name */
+            uint32_t secNum = 0;
+            char secNameBuf[128] = {0};
+
+            /* Try pattern: "SECTION %d" followed by dash and name */
+            if (sscanf(secPtr, "SECTION %u", &secNum) == 1) {
+                currentSectionNum = secNum;
+
+                /* Find the dash separator to get the name */
+                const char* dashPtr = strstr(secPtr, "\xe2\x80\x94"); /* UTF-8 em-dash */
+                if (!dashPtr) dashPtr = strstr(secPtr, " - ");
+                if (!dashPtr) dashPtr = strstr(secPtr, "-- ");
+
+                if (dashPtr) {
+                    /* Skip the dash and whitespace */
+                    if (dashPtr[0] == UTF8_EM_DASH_START)
+                        dashPtr += UTF8_EM_DASH_LENGTH;
+                    else dashPtr += 2; /* " -" or "--" */
+
+                    while (*dashPtr == ' ' || *dashPtr == '-') dashPtr++;
+
+                    strncpy(secNameBuf, dashPtr, sizeof(secNameBuf) - 1);
+                    secNameBuf[sizeof(secNameBuf) - 1] = '\0';
+
+                    /* Trim trailing whitespace */
+                    size_t slen = strlen(secNameBuf);
+                    while (slen > 0 && (secNameBuf[slen - 1] == ' ' ||
+                                         secNameBuf[slen - 1] == '\t'))
+                        secNameBuf[--slen] = '\0';
+                }
+
+                strncpy(currentSection, secNameBuf, sizeof(currentSection) - 1);
+                currentSection[sizeof(currentSection) - 1] = '\0';
+                m_sectionNames[secNum] = currentSection;
+            }
+            continue;
+        }
+
+        /* Detect action entry lines: "[N.NNN] Description text," */
+        if (line[0] == '[' || (len > 2 && line[0] == ' ' && line[1] == '[')) {
+            /* Find the bracket start */
+            const char* bracketStart = strchr(line, '[');
+            if (!bracketStart) continue;
+
+            uint32_t secNum = 0, entryNum = 0;
+            if (sscanf(bracketStart, "[%u.%u]", &secNum, &entryNum) != 2)
+                continue;
+
+            /* Find the description after "] " */
+            const char* descStart = strchr(bracketStart, ']');
+            if (!descStart) continue;
+            descStart++; /* Skip ']' */
+            while (*descStart == ' ') descStart++;
+
+            /* Build the description by collecting continuation lines
+             * until we find the "module found." terminator */
+            ActionDefinition def;
+            memset(&def, 0, sizeof(def));
+
+            def.sectionNum = secNum;
+            def.entryNum   = entryNum;
+            sprintf_s(def.actionId, sizeof(def.actionId), "%u.%03u",
+                       secNum, entryNum);
+
+            /* Use the section name from the current SECTION header */
+            if (m_sectionNames.count(secNum)) {
+                strncpy(def.sectionName, m_sectionNames[secNum].c_str(),
+                        sizeof(def.sectionName) - 1);
+            } else {
+                strncpy(def.sectionName, currentSection,
+                        sizeof(def.sectionName) - 1);
+            }
+            def.sectionName[sizeof(def.sectionName) - 1] = '\0';
+
+            /* Copy the description part (before the "searching for" part) */
+            /* The description ends at the comma before "searching for offset" */
+            std::string fullDesc = descStart;
+
+            /* Read continuation lines if the entry spans multiple lines */
+            while (!strstr(fullDesc.c_str(), ACTION_ENTRY_TERMINATOR)) {
+                if (!fgets(line, sizeof(line), fp)) break;
+                len = strlen(line);
+                while (len > 0 && (line[len - 1] == '\n' ||
+                                    line[len - 1] == '\r'))
+                    line[--len] = '\0';
+
+                /* Skip leading whitespace */
+                const char* p = line;
+                while (*p == ' ' || *p == '\t') p++;
+                fullDesc += " ";
+                fullDesc += p;
+            }
+
+            /* Extract the actual description (before "searching for offset") */
+            std::string cleanDesc;
+            size_t searchPos = fullDesc.find("searching for offset");
+            if (searchPos != std::string::npos) {
+                cleanDesc = fullDesc.substr(0, searchPos);
+                /* Trim trailing comma and whitespace */
+                while (!cleanDesc.empty() &&
+                       (cleanDesc.back() == ',' || cleanDesc.back() == ' ' ||
+                        cleanDesc.back() == '\t'))
+                    cleanDesc.pop_back();
+            } else {
+                cleanDesc = fullDesc;
+            }
+
+            strncpy(def.description, cleanDesc.c_str(),
+                    sizeof(def.description) - 1);
+            def.description[sizeof(def.description) - 1] = '\0';
+
+            m_actionDefs.push_back(def);
+            loadedCount++;
+        }
+    }
+
+    fclose(fp);
+    return loadedCount;
+}
+
+/* ================================================================== */
+/*  Find Action Definition                                              */
+/*  Match a game event type + context to a loaded action definition     */
+/* ================================================================== */
+
+const ActionDefinition* GameActionMonitor::FindActionDef(
+    GameActionType type, const char* context) const
+{
+    if (m_actionDefs.empty()) return nullptr;
+
+    /*
+     * Map GameActionType to the most likely SECTION numbers from the
+     * reference files:
+     *   Section 1   — Process Init
+     *   Section 5   — Network/Server
+     *   Section 6   — Login Screen
+     *   Section 7   — Character Select
+     *   Section 8   — Game World Entry
+     *   Section 9   — Movement
+     *   Section 10  — Combat: Attacking
+     *   Section 11  — Combat: Skills
+     *   Section 12  — Character Stats
+     *   Section 13  — Inventory & Items
+     *   Section 14  — Skill Window
+     *   Section 15  — Map & Minimap
+     *   Section 16  — Chat System
+     *   Section 17  — NPC & Shop
+     *   Section 18  — Chaos Machine
+     *   Section 19  — Party System
+     *   Section 20  — Guild System
+     *   Section 21  — Friends & Trade
+     *   Section 22  — PvP/PK
+     *   Section 23  — Events
+     *   Section 24  — Pets & Mounts
+     *   Section 25  — Warp/Map Change
+     *   Section 27  — HUD & UI
+     *   Section 31  — Game Exit
+     *   Section 32+ — Packets, Buffs, etc.
+     */
+    uint32_t targetSection = 0;
+    switch (type) {
+    case GameActionType::KeyPress:
+    case GameActionType::KeyRelease:
+        /* Check context for specific key actions */
+        if (context) {
+            if (strstr(context, "Chat")) targetSection = SECTION_CHAT;
+            else if (strstr(context, "Inventory")) targetSection = SECTION_INVENTORY;
+            else if (strstr(context, "Character")) targetSection = SECTION_CHAR_STATS;
+            else if (strstr(context, "SkillTree")) targetSection = SECTION_SKILL_WINDOW;
+            else if (strstr(context, "SkillHotkey")) targetSection = SECTION_COMBAT_SKILLS;
+            else if (strstr(context, "MapList")) targetSection = SECTION_MAP_MINIMAP;
+            else if (strstr(context, "MainMenu")) targetSection = SECTION_HUD_UI;
+            else if (strstr(context, "MiniMap")) targetSection = SECTION_MAP_MINIMAP;
+            else targetSection = SECTION_INPUT_HANDLING;
+        }
+        break;
+    case GameActionType::MouseClick:
+    case GameActionType::MouseMove:
+        targetSection = SECTION_MOVEMENT;
+        break;
+    case GameActionType::HPChanged:
+    case GameActionType::MPChanged:
+    case GameActionType::LevelUp:
+    case GameActionType::ExpGained:
+    case GameActionType::ZenChanged:
+    case GameActionType::StatPointGained:
+    case GameActionType::StrChanged:
+    case GameActionType::AgiChanged:
+    case GameActionType::VitChanged:
+    case GameActionType::EneChanged:
+        targetSection = SECTION_CHAR_STATS;
+        break;
+    case GameActionType::PlayerKill:
+    case GameActionType::PlayerDeath:
+        targetSection = SECTION_PVP_PK;
+        break;
+    case GameActionType::MonsterKill:
+    case GameActionType::DamageDealt:
+    case GameActionType::DamageReceived:
+        targetSection = SECTION_COMBAT_ATTACK;
+        break;
+    case GameActionType::SkillUsed:
+    case GameActionType::BuffApplied:
+        targetSection = SECTION_COMBAT_SKILLS;
+        break;
+    case GameActionType::MapChanged:
+    case GameActionType::TeleportUsed:
+        targetSection = SECTION_WARP_MAP;
+        break;
+    case GameActionType::MapListOpened:
+        targetSection = SECTION_MAP_MINIMAP;
+        break;
+    case GameActionType::ChatMessage:
+        targetSection = SECTION_CHAT;
+        break;
+    case GameActionType::PartyJoined:
+    case GameActionType::PartyLeft:
+        targetSection = SECTION_PARTY;
+        break;
+    case GameActionType::GuildAction:
+        targetSection = SECTION_GUILD;
+        break;
+    case GameActionType::TradeStarted:
+    case GameActionType::TradeCompleted:
+        targetSection = SECTION_FRIENDS_TRADE;
+        break;
+    case GameActionType::ItemPickedUp:
+    case GameActionType::ItemDropped:
+    case GameActionType::ItemEquipped:
+    case GameActionType::ItemUnequipped:
+        targetSection = SECTION_INVENTORY;
+        break;
+    case GameActionType::ShopOpened:
+    case GameActionType::ShopClosed:
+    case GameActionType::ItemBought:
+    case GameActionType::ItemSold:
+        targetSection = SECTION_NPC_SHOP;
+        break;
+    case GameActionType::CharWindowOpened:
+    case GameActionType::InventoryOpened:
+    case GameActionType::SkillTreeOpened:
+    case GameActionType::QuestLogOpened:
+    case GameActionType::MiniMapToggled:
+    case GameActionType::MenuOpened:
+        targetSection = SECTION_HUD_UI;
+        break;
+    case GameActionType::ServerConnected:
+    case GameActionType::ServerDisconnected:
+        targetSection = SECTION_NETWORK;
+        break;
+    case GameActionType::LoginSuccess:
+        targetSection = SECTION_LOGIN;
+        break;
+    case GameActionType::CharacterSelected:
+        targetSection = SECTION_CHAR_SELECT;
+        break;
+    case GameActionType::SceneChanged:
+        targetSection = SECTION_GAME_ENTRY;
+        break;
+    default:
+        targetSection = 0;
+        break;
+    }
+
+    /* Find the first entry in the matching section */
+    if (targetSection > 0) {
+        for (const auto& def : m_actionDefs) {
+            if (def.sectionNum == targetSection) {
+                return &def;
+            }
+        }
+    }
+
+    /* Fallback: return the first available definition */
+    if (!m_actionDefs.empty()) {
+        return &m_actionDefs[0];
+    }
+
+    return nullptr;
+}
+
+/* ================================================================== */
+/*  Foreground Window Check                                             */
+/*  Offset search pauses when main.exe window is not active            */
+/* ================================================================== */
+
+/* Helper callback for EnumWindows to find the game window */
+struct FindWindowData {
+    DWORD pid;
+    HWND  hwnd;
+};
+
+static BOOL CALLBACK FindWindowByPidCallback(HWND hwnd, LPARAM lParam)
+{
+    FindWindowData* data = reinterpret_cast<FindWindowData*>(lParam);
+    DWORD windowPid = 0;
+    GetWindowThreadProcessId(hwnd, &windowPid);
+
+    if (windowPid == data->pid) {
+        /* Check if this is a visible, non-child top-level window */
+        if (IsWindowVisible(hwnd) && GetParent(hwnd) == nullptr) {
+            data->hwnd = hwnd;
+            return FALSE; /* Stop enumeration */
+        }
+    }
+    return TRUE; /* Continue */
+}
+
+void GameActionMonitor::CacheGameWindow() const
+{
+    FindWindowData data;
+    data.pid  = m_gamePid;
+    data.hwnd = nullptr;
+
+    EnumWindows(FindWindowByPidCallback, reinterpret_cast<LPARAM>(&data));
+
+    m_gameHwnd = data.hwnd;
+
+    if (m_gameHwnd) {
+        MULOG_DEBUG("[GameActionMonitor] Game window cached: HWND=0x%p PID=%u",
+                    reinterpret_cast<void*>(m_gameHwnd), m_gamePid);
+    }
+}
+
+bool GameActionMonitor::IsGameWindowActive() const
+{
+    /*
+     * Check if main.exe game window is currently the foreground window.
+     * When the game is minimized or another application is in focus,
+     * offset search and action monitoring are paused.
+     */
+    HWND foreground = GetForegroundWindow();
+    if (!foreground) return false;
+
+    /* Check by PID — the foreground window must belong to our process */
+    DWORD fgPid = 0;
+    GetWindowThreadProcessId(foreground, &fgPid);
+
+    if (fgPid == m_gamePid) {
+        return true;
+    }
+
+    /* If cached HWND is stale, try to re-cache */
+    if (m_gameHwnd == nullptr || !IsWindow(m_gameHwnd)) {
+        CacheGameWindow();
+    }
+
+    /* Direct HWND comparison as fallback */
+    if (m_gameHwnd != nullptr && foreground == m_gameHwnd) {
+        return true;
+    }
+
+    return false;
 }
 
 } /* namespace MuTracker */
